@@ -1,0 +1,38 @@
+{
+   "$schema": "https://www.schemastore.org/tsconfig",
+   "compilerOptions": {
+      //语言和环境
+      "target": "ESNext",
+      "composite": true,
+
+      //模块和解析
+      "module": "esnext",
+      "baseUrl": ".",
+      "resolveJsonModule": true,
+      "moduleDetection": "force",
+      "verbatimModuleSyntax": true,
+
+      // JS 支持
+      "allowJs": true,
+      "checkJs": true,
+
+      // 互操作性
+      "allowSyntheticDefaultImports": true,
+      "forceConsistentCasingInFileNames": true,
+      "isolatedModules": true,
+
+      // 类型检查（仅检查，不输出）
+      "noEmit": true,
+      "strict": true,
+      "noFallthroughCasesInSwitch": true,
+      "noImplicitAny": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noUncheckedSideEffectImports": true,
+      "noUncheckedIndexedAccess": true,
+
+      // 跳过库检查
+      "skipLibCheck": true
+   },
+   "exclude": ["node_modules", ".vite", "out"]
+}
