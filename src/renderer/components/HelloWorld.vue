@@ -4,7 +4,6 @@ import { ref } from 'vue';
 import { useTheme } from '../hooks/useTheme';
 
 defineProps<{ msg: string }>();
-
 const count = ref(0);
 const changeTheme = () => {
    useTheme().toggleTheme();
