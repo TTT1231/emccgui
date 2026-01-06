@@ -1,0 +1,160 @@
+//================== 亮色主题 ===================
+$light-theme: (
+   'bg-primary': #fff,
+   'bg-secondary': #f9f9f9,
+   'bg-button': #f1f1f1,
+   'bg-button-hover': #e0e0e0,
+   'bg-input': #fff,
+   'text-primary': #213547,
+   'text-secondary': #586775,
+   'color-primary': #646cff,
+   'color-primary-hover': #535bf2,
+   'border-color': #e0e0e0,
+   'shadow-color': rgb(0 0 0 / 10%),
+);
+
+//================== 暗色主题 ===================
+$dark-theme: (
+   'bg-primary': #242424,
+   'bg-secondary': #2f2f2f,
+   'bg-button': #1a1a1a,
+   'bg-button-hover': #3a3a3a,
+   'bg-input': #1a1a1a,
+   'text-primary': rgb(255 255 255 / 87%),
+   'text-secondary': rgb(255 255 255 / 60%),
+   'color-primary': #646cff,
+   'color-primary-hover': #7d84ff,
+   'border-color': #3e3e3e,
+   'shadow-color': rgb(0 0 0 / 30%),
+);
+
+//================== CSS 变量生成 ===================
+// 混入：将 Sass Map 转换为 CSS 变量
+@mixin theme-props($theme-map) {
+   @each $key, $value in $theme-map {
+      --#{$key}: #{$value};
+   }
+}
+
+// 默认主题 (亮色) & 显式亮色主题
+:root,
+[theme='light'] {
+   @include theme-props($light-theme);
+
+   color-scheme: light;
+}
+
+// 暗色主题
+[theme='dark'] {
+   @include theme-props($dark-theme);
+
+   color-scheme: dark;
+}
+
+//================== 全局样式应用 ===================
+
+// 基础排版
+:root {
+   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+   line-height: 1.6;
+   font-weight: 400;
+   font-synthesis: none;
+   text-rendering: optimizelegibility;
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+   margin: 0;
+   display: flex;
+   place-items: center;
+   min-width: 320px;
+   min-height: 100vh;
+   background-color: var(--bg-primary);
+   color: var(--text-primary);
+   transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+}
+
+a {
+   font-weight: 500;
+   color: var(--color-primary);
+   text-decoration: inherit;
+   transition: color 0.2s;
+
+   &:hover {
+      color: var(--color-primary-hover);
+   }
+}
+
+h1 {
+   font-size: 3.2em;
+   line-height: 1.1;
+   color: var(--text-primary);
+}
+
+p {
+   color: var(--text-secondary);
+}
+
+button {
+   border-radius: 8px;
+   border: 1px solid transparent;
+   padding: 0.6em 1.2em;
+   font-size: 1em;
+   font-weight: 500;
+   font-family: inherit;
+   background-color: var(--bg-button);
+   color: var(--text-primary);
+   cursor: pointer;
+   transition:
+      border-color 0.2s,
+      background-color 0.2s,
+      transform 0.1s;
+
+   &:hover {
+      background-color: var(--bg-button-hover);
+      border-color: var(--color-primary);
+   }
+
+   &:active {
+      transform: scale(0.98);
+   }
+
+   &:focus,
+   &:focus-visible {
+      outline: 4px auto -webkit-focus-ring-color;
+   }
+}
+
+input {
+   background-color: var(--bg-input);
+   border: 1px solid var(--border-color);
+   color: var(--text-primary);
+   padding: 0.6em;
+   border-radius: 4px;
+   font-size: 1em;
+
+   &:focus {
+      border-color: var(--color-primary);
+      outline: none;
+   }
+}
+
+.card {
+   padding: 2em;
+   background-color: var(--bg-secondary);
+   border-radius: 12px;
+   box-shadow: 0 4px 6px var(--shadow-color);
+   margin-top: 1rem;
+}
+
+#app {
+   max-width: 1280px;
+   margin: 0 auto;
+   padding: 2rem;
+   text-align: center;
+   width: 100%;
+   box-sizing: border-box;
+}

@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import HelloWorld from './components/HelloWorld.vue';
 import logo from '/assets/vue.svg';
+
+const projectThemeSetting = document.documentElement.getAttribute('theme');
+if (projectThemeSetting === null) {
+   document.documentElement.setAttribute('theme', 'light');
+}
 </script>
 
 <template>

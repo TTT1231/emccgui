@@ -5,7 +5,7 @@
    // 复合词检查
    "allowCompoundWords": true,
    // 正确单词列表
-   "words": ["vite", "vitejs", "emcc", ".vite", "esbuild", "unrs"],
+   "words": ["vite", "vitejs", "emcc", ".vite", "esbuild", "unrs", "Avenir"],
    // 从cspell的配置文件为当前目录，file patterns为匹配
    "ignorePaths": [
       "**/node_modules/**",

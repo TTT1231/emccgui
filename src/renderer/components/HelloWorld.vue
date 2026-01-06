@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
+import { useTheme } from '../hooks/useTheme';
+
 defineProps<{ msg: string }>();
 
 const count = ref(0);
+const changeTheme = () => {
+   useTheme().toggleTheme();
+};
 </script>
 
 <template>
    <h1>{{ msg }}</h1>
    <div class="bg-red-500">111</div>
+   <button @click="changeTheme">主题切换</button>
    <div class="card">
       <button type="button" @click="count++">count is {{ count }}</button>
       <p>
@@ -33,6 +39,6 @@ const count = ref(0);
 
 <style scoped>
 .read-the-docs {
-   color: #888;
+   color: var(--text-secondary);
 }
 </style>
