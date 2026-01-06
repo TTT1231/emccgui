@@ -1,3 +1,16 @@
-// See the Electron documentation for details on how to use preload scripts:
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
-// src/preload.ts
+import { contextBridge } from 'electron/renderer';
+
+import { createPreloadApi, type ExposedApiStructure } from './ipcFactoryPreloadTypeUtil';
+
+const ipcRenderer = createPreloadApi<'IElectronApi', IElectronApi>();
+
+const electronApi: ExposedApiStructure<IElectronApi> = {
+   WindowControl: {
+      minimize: () => ipcRenderer.send('IElectronApi-WindowControl-minimize'),
+      maximize: () => ipcRenderer.send('IElectronApi-WindowControl-maximize'),
+      close: () => ipcRenderer.send('IElectronApi-WindowControl-close'),
+      openDevTools: () => ipcRenderer.send('IElectronApi-WindowControl-openDevTools'),
+   },
+};
+
+contextBridge.exposeInMainWorld('electronApi', electronApi);

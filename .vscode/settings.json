@@ -134,6 +134,12 @@
          "extensions": ["tsconfig.preload.json"],
          "filename": true,
          "format": "svg"
+      },
+      {
+         "icon": "vite",
+         "extensions": ["vite.renderer.config.ts", "vite.main.config.ts","vite.common.config.ts","vite.preload.config.ts"],
+         "filename": true,
+         "format": "svg"
       }
    ],
    "workbench.iconTheme": "vscode-icons",

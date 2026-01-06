@@ -4,6 +4,7 @@ $light-theme: (
    'bg-secondary': #f9f9f9,
    'bg-button': #f1f1f1,
    'bg-button-hover': #e0e0e0,
+   'bg-button-hover-danger': #ff4d4f,
    'bg-input': #fff,
    'text-primary': #213547,
    'text-secondary': #586775,
@@ -19,6 +20,7 @@ $dark-theme: (
    'bg-secondary': #2f2f2f,
    'bg-button': #1a1a1a,
    'bg-button-hover': #3a3a3a,
+   'bg-button-hover-danger': #ff4d4f,
    'bg-input': #1a1a1a,
    'text-primary': rgb(255 255 255 / 87%),
    'text-secondary': rgb(255 255 255 / 60%),
@@ -66,15 +68,20 @@ $dark-theme: (
 
 body {
    margin: 0;
-   display: flex;
-   place-items: center;
    min-width: 320px;
    min-height: 100vh;
    background-color: var(--bg-primary);
    color: var(--text-primary);
    transition:
-      background-color 0.3s ease,
-      color 0.3s ease;
+      background-color 0.2s ease,
+      color 0.2s ease;
+}
+
+#app {
+   height: 100vh;
+   overflow: hidden;
+   width: 100%;
+   box-sizing: border-box;
 }
 
 a {
@@ -148,13 +155,4 @@ input {
    border-radius: 12px;
    box-shadow: 0 4px 6px var(--shadow-color);
    margin-top: 1rem;
-}
-
-#app {
-   max-width: 1280px;
-   margin: 0 auto;
-   padding: 2rem;
-   text-align: center;
-   width: 100%;
-   box-sizing: border-box;
 }

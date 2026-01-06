@@ -93,3 +93,6 @@ out/
 
 # build output
 dist/
+
+# auto import unplugin
+components.d.ts

@@ -1,0 +1,47 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+    <filter id="drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+      <feOffset dx="0" dy="10" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 背景：圆角矩形，象征现代应用 -->
+  <rect x="32" y="32" width="448" height="448" rx="96" fill="url(#bg-gradient)" />
+
+  <!-- 内部容器：深色终端/面板风格 -->
+  <rect x="96" y="96" width="320" height="320" rx="32" fill="#1E293B" filter="url(#drop-shadow)" />
+
+  <!-- 顶部状态栏装饰 -->
+  <circle cx="136" cy="136" r="8" fill="#EF4444" />
+  <circle cx="168" cy="136" r="8" fill="#F59E0B" />
+  <circle cx="200" cy="136" r="8" fill="#10B981" />
+
+  <!-- 主要元素：命令行提示符 > 变形为 GUI 交互 -->
+  <!-- 绿色的 > 符号 -->
+  <path d="M140 200 L180 240 L140 280" stroke="#10B981" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- 模拟 GUI 选项条/开关 -->
+  <rect x="220" y="200" width="140" height="24" rx="12" fill="#334155" />
+  <rect x="220" y="250" width="100" height="24" rx="12" fill="#334155" />
+
+  <!-- 选中的高亮块，象征 GUI 选择 -->
+  <rect x="220" y="200" width="60" height="24" rx="12" fill="#3B82F6" />
+
+  <!-- 清理功能的象征：闪光/魔法棒效果 -->
+  <!-- 位于右下角，象征一键清理 node_modules 的清爽感 -->
+  <path d="M360 300 L370 270 L380 300 L410 310 L380 320 L370 350 L360 320 L330 310 Z" fill="#FBBF24" />
+  <path d="M300 340 L305 325 L310 340 L325 345 L310 350 L305 365 L300 350 L285 345 Z" fill="#FBBF24" opacity="0.8" />
+
+</svg>

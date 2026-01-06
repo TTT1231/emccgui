@@ -6,7 +6,10 @@ import { nativeImage } from 'electron';
 
 import { ResourceManager } from '@shared/resource-manager';
 
-const icon = nativeImage.createFromPath(ResourceManager.getSharedResourcePath('eyu.png'));
+import { registerIpcHandlers } from './ipc';
+import { registerShortcuts } from './shotcut';
+
+const icon = nativeImage.createFromPath(ResourceManager.getSharedResourcePath('logo.png'));
 if (started) {
    app.quit();
 }
@@ -16,10 +19,11 @@ const menu = Menu.buildFromTemplate([
       submenu: [{ role: 'copy' }, { role: 'paste' }],
    },
 ]);
+
 const createWindow = () => {
    // Create the browser window.
    const mainWindow = new BrowserWindow({
-      width: 800,
+      width: 1000,
       height: 600,
       icon: icon,
       webPreferences: {
@@ -42,6 +46,7 @@ const createWindow = () => {
    mainWindow.setMenu(menu);
    // Open the DevTools.
    mainWindow.webContents.openDevTools();
+   registerShortcuts(mainWindow);
 };
 
 // This method will be called when Electron has finished
@@ -49,6 +54,7 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
    createWindow();
+   registerIpcHandlers();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

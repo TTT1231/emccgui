@@ -16,5 +16,5 @@
 
       "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.preload.tsbuildinfo"
    },
-   "include": ["src/preload/**/*.ts", "src/preload/**/*.d.ts"]
+   "include": ["src/preload/**/*.ts", "src/preload/**/*.d.ts", "src/shared/types/**/*.d.ts"]
 }
