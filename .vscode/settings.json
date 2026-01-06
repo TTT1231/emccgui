@@ -104,7 +104,7 @@
    "explorer.fileNesting.patterns": {
       //file fold
       "package.json": "pnpm-lock.yaml, .gitignore, .browserslistrc, .gitattributes, .gitconfig, .npmrc, cspell.json",
-      "eslint.config.mjs": ".prettierignore, .prettierrc.json,.prettier,.editorconfig",
+      "eslint.config.mjs": ".prettierignore, .prettierrc.json,.prettier,.editorconfig,stylelint.config.mjs,.stylelintignore",
       "tsconfig.json": "tsconfig.*.json",
       "tailwind.config.js": "postcss.config.js",
       "vite.config.{js,ts}": "vite.*.{js,ts}",

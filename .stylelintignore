@@ -1,0 +1,10 @@
+dist
+resources
+out
+.vite
+.vscode
+node_modules
+src/main
+src/preload
+src/shared
+
