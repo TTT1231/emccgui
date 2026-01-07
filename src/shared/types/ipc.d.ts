@@ -5,6 +5,25 @@ declare interface IWindowControl {
    close: () => void;
    openDevTools: () => void;
 }
+
+declare interface BrowserControl {
+   openBrowser: (url: string) => void;
+}
+
+declare interface EmccExecuteResult {
+   success: boolean;
+   stdout?: string;
+   stderr?: string;
+   error?: string;
+}
+
+declare interface EmccControl {
+   executeCommand: (command: string, workDir?: string) => Promise<EmccExecuteResult>;
+   selectFile: () => Promise<{ filePath: string; fileName: string } | null>;
+}
+
 declare interface IElectronApi {
    WindowControl: IWindowControl;
+   BrowserControl: BrowserControl;
+   EmccControl: EmccControl;
 }

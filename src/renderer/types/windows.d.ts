@@ -4,6 +4,7 @@ declare global {
        * @description 渲染进程调用主线程提供的api
        */
       electronApi: IElectronApi;
+      getPathForFile: (file: File) => string;
    }
 }
 

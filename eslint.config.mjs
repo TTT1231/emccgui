@@ -18,6 +18,7 @@ export default [
          'forge.config.ts',
          'vite.*.config.ts',
          'forge.env.d.ts',
+         'components.d.ts',
       ],
    },
 

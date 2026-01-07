@@ -1,9 +1,18 @@
-import { BrowserWindow } from 'electron/main';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import path from 'node:path';
+
+import { shell } from 'electron';
+import { BrowserWindow, dialog } from 'electron/main';
 
 import { createIpcMain } from './utils/ipcFactoryMainTypeUtil';
 
+const execAsync = promisify(exec);
+
 export function registerIpcHandlers() {
    const ipcMain = createIpcMain<'IElectronApi', IElectronApi>();
+
+   //========================================== WindowControl ==========================================//
    ipcMain.on('IElectronApi-WindowControl-minimize', e => {
       const currentWindow = BrowserWindow.fromWebContents(e.sender);
       currentWindow?.minimize();
@@ -36,5 +45,57 @@ export function registerIpcHandlers() {
       } else {
          currentWindow.webContents.openDevTools();
       }
+   });
+   //========================================== BrowserControl ==========================================//
+   ipcMain.on('IElectronApi-BrowserControl-openBrowser', (_, url) => {
+      shell.openExternal(url);
+   });
+
+   //========================================== EmccControl ==========================================//
+   ipcMain.handle(
+      'IElectronApi-EmccControl-executeCommand',
+      async (_, command: string, workDir?: string) => {
+         try {
+            const options = workDir
+               ? { cwd: workDir, maxBuffer: 10 * 1024 * 1024 }
+               : { maxBuffer: 10 * 1024 * 1024 };
+            const { stdout, stderr } = await execAsync(command, options);
+            return {
+               success: true,
+               stdout: stdout || '',
+               stderr: stderr || '',
+            } as EmccExecuteResult;
+         } catch (error: unknown) {
+            return {
+               success: false,
+
+               // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               stdout: (error as unknown as any).stdout || '',
+               // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               stderr: (error as unknown as any).stderr || '',
+               // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               error: (error as unknown as any).message || '命令执行失败',
+            } as EmccExecuteResult;
+         }
+      },
+   );
+
+   ipcMain.handle('IElectronApi-EmccControl-selectFile', async () => {
+      const result = await dialog.showOpenDialog({
+         properties: ['openFile'],
+         filters: [
+            { name: 'C/C++ Files', extensions: ['cpp', 'c', 'cc'] },
+            { name: 'All Files', extensions: ['*'] },
+         ],
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+         return null;
+      }
+
+      const filePath = result.filePaths[0]!;
+      const fileName = path.basename(filePath);
+
+      return { filePath, fileName };
    });
 }

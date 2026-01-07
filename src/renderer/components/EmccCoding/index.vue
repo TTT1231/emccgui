@@ -1,7 +1,10 @@
+c
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
+import { message } from 'ant-design-vue';
 
 import {
+   optionsReferenceURL,
    compileOptionOptions,
    runtimeMethodOptions,
    optimizationLevels,
@@ -12,9 +15,8 @@ import {
    type CommandLine,
 } from './src/data';
 import SearchBtn from './src/SearchBtn.vue';
-
 // 文件相关
-const selectedFile = ref<File | null>(null);
+const selectedFile = ref<{ path: string; name: string } | null>(null);
 const outputFileName = ref('hello');
 const isDragOver = ref(false);
 
@@ -162,7 +164,7 @@ const commandLines = computed(() => {
    if (enabledMethods.length > 0 && isJsWasm) {
       lines.push({
          name: '-sEXPORTED_RUNTIME_METHODS',
-         value: `'["${enabledMethods.join('","')}"]'`,
+         value: enabledMethods.join(','),
          type: 'flag',
          isRuntimeMethods: true,
          methods: enabledMethods,
@@ -178,7 +180,17 @@ const fullCommand = computed(() => {
 });
 
 // 文件处理
-const handleDrop = (e: DragEvent) => {
+const handleFileSelect = async () => {
+   const result = await window.electronApi.EmccControl.selectFile();
+   if (result) {
+      selectedFile.value = { path: result.filePath, name: result.fileName };
+      // 自动设置输出文件名（不带扩展名）
+      outputFileName.value = result.fileName.replace(/\.(cpp|c|cc)$/, '');
+   }
+};
+
+// 拖放处理
+const handleDrop = async (e: DragEvent) => {
    isDragOver.value = false;
    const files = e.dataTransfer?.files;
    if (files && files.length > 0) {
@@ -187,7 +199,9 @@ const handleDrop = (e: DragEvent) => {
          file &&
          (file.name.endsWith('.cpp') || file.name.endsWith('.c') || file.name.endsWith('.cc'))
       ) {
-         selectedFile.value = file;
+         // 使用 webUtils.getPathForFile 获取真实路径
+         const filePath = window.getPathForFile(file);
+         selectedFile.value = { path: filePath, name: file.name };
          // 自动设置输出文件名（不带扩展名）
          outputFileName.value = file.name.replace(/\.(cpp|c|cc)$/, '');
       }
@@ -203,17 +217,6 @@ const handleDragLeave = () => {
    isDragOver.value = false;
 };
 
-const handleFileSelect = (e: Event) => {
-   const input = e.target as HTMLInputElement;
-   if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      if (file) {
-         selectedFile.value = file;
-         outputFileName.value = file.name.replace(/\.(cpp|c|cc)$/, '');
-      }
-   }
-};
-
 const removeFile = () => {
    selectedFile.value = null;
 };
@@ -223,14 +226,42 @@ const copyCommand = async () => {
    await navigator.clipboard.writeText(fullCommand.value);
 };
 
-// 执行命令（模拟）
-const executeCommand = () => {
+// 执行状态
+const isExecuting = ref(false);
+
+// 执行命令
+const executeCommand = async () => {
    if (!selectedFile.value) {
-      alert('请先选择一个文件');
+      message.warning('请先选择一个文件');
       return;
    }
-   console.log('执行命令:', fullCommand.value);
-   // 这里可以添加实际的执行逻辑
+
+   isExecuting.value = true;
+
+   try {
+      // 获取文件所在目录作为工作目录
+      const filePath = selectedFile.value.path;
+      const workDir = filePath.substring(
+         0,
+         Math.max(filePath.lastIndexOf('\\'), filePath.lastIndexOf('/')),
+      );
+
+      const result = await window.electronApi.EmccControl.executeCommand(
+         fullCommand.value,
+         workDir,
+      );
+
+      if (result.success) {
+         message.success('执行成功', 2);
+      } else {
+         message.error(`执行失败: ${result.error || ''}`, 2);
+      }
+   } catch (error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      message.error((error as unknown as any).message, 2);
+   } finally {
+      isExecuting.value = false;
+   }
 };
 const addOptionsStack = ref<string[]>([]);
 //手动添加编译选项命令
@@ -241,6 +272,11 @@ const handleRevokeCompileOptions = () => {
    const delVal = addOptionsStack.value.pop();
    if (!delVal) return;
 };
+
+const openBrowser = () => {
+   console.log('打开配置参考链接:', optionsReferenceURL);
+   window.electronApi.BrowserControl.openBrowser(optionsReferenceURL);
+};
 </script>
 
 <template>
@@ -250,33 +286,31 @@ const handleRevokeCompileOptions = () => {
          <div class="config-panel">
             <!-- 文件选择区域 -->
             <section class="section">
-               <h3 class="section-title">📁 文件选择</h3>
+               <h3 class="section-title flex flex-row flex-nowrap justify-between">
+                  <span>📁 文件选择</span>
+                  <span class="link-span" @click="openBrowser">完整配置参考</span>
+               </h3>
+
                <div
                   class="drop-zone"
                   :class="{ 'drag-over': isDragOver, 'has-file': selectedFile }"
+                  @click="handleFileSelect"
                   @drop.prevent="handleDrop"
                   @dragover="handleDragOver"
                   @dragleave="handleDragLeave"
                >
-                  <input
-                     type="file"
-                     accept=".cpp,.c,.cc"
-                     @change="handleFileSelect"
-                     class="file-input"
-                     id="file-input"
-                  />
-                  <label for="file-input" class="drop-content">
+                  <div class="drop-content">
                      <template v-if="!selectedFile">
                         <span class="drop-icon">📄</span>
-                        <span class="drop-text">拖拽文件到此处</span>
-                        <span class="drop-hint">或点击选择 .cpp / .c / .cc 文件</span>
+                        <span class="drop-text">拖拽文件到此处或点击选择</span>
+                        <span class="drop-hint">支持 .cpp / .c / .cc 文件</span>
                      </template>
                      <template v-else>
                         <span class="file-icon">📄</span>
                         <span class="file-name">{{ selectedFile.name }}</span>
-                        <button class="remove-btn" @click.prevent="removeFile">✕</button>
+                        <button class="remove-btn" @click.stop="removeFile">✕</button>
                      </template>
-                  </label>
+                  </div>
                </div>
 
                <!-- 输出格式选择 -->
@@ -420,12 +454,12 @@ const handleRevokeCompileOptions = () => {
                         <!-- 运行时方法特殊显示 -->
                         <template v-if="line.isRuntimeMethods && line.methods">
                            <span class="line-value methods-value"
-                              >'["<template v-for="(method, idx) in line.methods" :key="method"
+                              ><template v-for="(method, idx) in line.methods" :key="method"
                                  ><span class="method-item">{{ method }}</span
                                  ><template v-if="idx < line.methods.length - 1"
-                                    >","</template
+                                    >,</template
                                  ></template
-                              >"]'</span
+                              ></span
                            >
                         </template>
                         <span v-else class="line-value">{{ line.value }}</span>
@@ -468,9 +502,13 @@ const handleRevokeCompileOptions = () => {
             </section>
 
             <!-- 执行按钮 -->
-            <button class="execute-btn" @click="executeCommand" :disabled="!selectedFile">
-               <span class="btn-icon">▶</span>
-               <span class="btn-text">执行编译</span>
+            <button
+               class="execute-btn"
+               @click="executeCommand"
+               :disabled="!selectedFile || isExecuting"
+            >
+               <span class="btn-icon">{{ isExecuting ? '⏳' : '▶' }}</span>
+               <span class="btn-text">{{ isExecuting ? '编译中...' : '执行编译' }}</span>
             </button>
          </div>
       </div>
@@ -548,6 +586,7 @@ const handleRevokeCompileOptions = () => {
    transition: all 0.3s ease;
    background: var(--bg-primary);
    position: relative;
+   cursor: pointer;
 
    &:hover,
    &.drag-over {
@@ -561,19 +600,11 @@ const handleRevokeCompileOptions = () => {
    }
 }
 
-.file-input {
-   position: absolute;
-   inset: 0;
-   opacity: 0;
-   cursor: pointer;
-}
-
 .drop-content {
    display: flex;
    flex-direction: column;
    align-items: center;
    gap: 6px;
-   cursor: pointer;
 }
 
 .drop-icon {
@@ -1224,6 +1255,33 @@ const handleRevokeCompileOptions = () => {
 
    .btn-icon {
       font-size: 1.1em;
+   }
+}
+
+.link-span {
+   color: var(--color-primary);
+   cursor: pointer;
+   user-select: none;
+   transition: color 0.2s ease;
+   text-decoration: underline;
+   text-decoration-color: var(--color-primary);
+   text-underline-offset: 2px;
+   text-decoration-thickness: 1px;
+
+   &:hover {
+      color: var(--color-primary-hover);
+      text-decoration-color: var(--color-primary-hover);
+   }
+
+   &:focus,
+   &:focus-visible {
+      outline: 4px auto -webkit-focus-ring-color;
+      outline-offset: 2px;
+   }
+
+   // 可选：点击时下划线稍粗（增强交互反馈）
+   &:active {
+      text-decoration-thickness: 1.5px;
    }
 }
 </style>

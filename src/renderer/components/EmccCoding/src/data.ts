@@ -4,6 +4,9 @@ type CompileOptionValueType = 'boolean' | 'string' | 'number' | 'select';
 // 编译选项格式类型
 type CommandFormatType = 'flag' | 'setting' | 'arg';
 
+//配置参考地址
+export const optionsReferenceURL =
+   'https://ttt1231.github.io/Turw-docs/WebAssembly.html#%E9%85%8D%E7%BD%AE%E9%80%9F%E6%9F%A5';
 // 下拉选项类型
 export interface SelectOption {
    value: string;
@@ -56,7 +59,7 @@ export const compileOptionOptions: CompileOption[] = [
       defaultValue: 1,
       formatType: 'flag',
       jsWasmOnly: true,
-      hint: '以 ES6 模块格式导出，支持 import/export 语法',
+      hint: '生成 ES6 模块格式(需配合MODULARIZE)',
    },
    {
       key: 'modularize',
@@ -68,7 +71,7 @@ export const compileOptionOptions: CompileOption[] = [
       defaultValue: 1,
       formatType: 'flag',
       jsWasmOnly: true,
-      hint: '将编译结果封装为工厂函数，便于多次实例化',
+      hint: '将 JS 代码转化工厂函数(转化为异步)',
    },
    {
       key: 'exportName',
@@ -110,7 +113,7 @@ export const compileOptionOptions: CompileOption[] = [
       valueType: 'boolean',
       defaultValue: 1,
       formatType: 'flag',
-      hint: '生成 WebAssembly 二进制模块',
+      hint: '输出 WebAssembly',
    },
    {
       key: 'allowMemoryGrowth',
@@ -150,7 +153,7 @@ export const compileOptionOptions: CompileOption[] = [
       hasInput: true,
       inputLabel: 'TypeScript 定义文件名',
       inputPlaceholder: 'module.d.ts',
-      hint: '自动生成 TypeScript 类型定义文件 (.d.ts)',
+      hint: '生成类型定义文件 (.d.ts)',
    },
 
    // === 导出函数 ===
@@ -275,7 +278,7 @@ export const runtimeMethodOptions: RuntimeMethodOption[] = [
       key: 'stringToUTF8',
       name: 'stringToUTF8',
       enabled: false,
-      hint: '将 JavaScript 字符串写入 WASM 内存（UTF-8 编码）',
+      hint: '将 JavaScript 字符串写入 WASM 内存(UTF-8 编码)',
    },
    {
       key: 'allocate',
@@ -341,7 +344,7 @@ export function formatCommandLine(line: CommandLine): string {
 
 // 优化级别选项
 export const optimizationLevels = [
-   { value: 'O0', label: '-O0 (无优化)' },
+   { value: 'O0', label: '-O0 (默认值，无优化)' },
    { value: 'O1', label: '-O1 (基础优化)' },
    { value: 'O2', label: '-O2 (标准优化)' },
    { value: 'O3', label: '-O3 (最大优化)' },
