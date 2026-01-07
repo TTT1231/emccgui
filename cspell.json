@@ -15,7 +15,12 @@
       "unrs",
       "Avenir",
       "unplugin",
-      "unmaximize"
+      "unmaximize",
+      "gsource",
+      "fexceptions",
+      "pthread",
+      "ccall",
+      "cwrap"
    ],
    // 从cspell的配置文件为当前目录，file patterns为匹配
    "ignorePaths": [

@@ -1,10 +1,13 @@
 <script lang="ts" setup>
+import EmccCoding from '../components/EmccCoding/index.vue';
 import TitleBar from '../components/TitleBar.vue';
 </script>
 <template>
    <div class="app-container">
       <!-- 标题栏 -->
       <TitleBar />
+      <!-- 主要内容区 -->
+      <EmccCoding />
    </div>
 </template>
 

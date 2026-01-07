@@ -14,6 +14,9 @@ function registerGlobalShortcuts(mainWindow: BrowserWindow) {
          mainWindow.webContents.openDevTools();
       }
    });
+   globalShortcut.register('CommandOrControl+W', () => {
+      mainWindow.close();
+   });
 }
 
 export function registerShortcuts(mainWindow: BrowserWindow) {
