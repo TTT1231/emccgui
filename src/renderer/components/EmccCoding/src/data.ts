@@ -174,6 +174,18 @@ export const compileOptionOptions: CompileOption[] = [
       hint: '指定要导出的 C/C++ 函数，函数名需加下划线前缀',
    },
 
+   // === bind相关 ===
+   {
+      key: 'bind',
+      name: '--bind',
+      enabled: false,
+      cmdPrefix: '--',
+      cmdName: 'bind',
+      valueType: 'boolean',
+      formatType: 'arg',
+      hint: '启用 Embind，用于 C++ 和 JavaScript 之间的绑定',
+   },
+
    // === 调试相关 ===
    {
       key: 'debug',
