@@ -44,8 +44,6 @@ const createWindow = () => {
    }
 
    mainWindow.setMenu(menu);
-   // Open the DevTools.
-   mainWindow.webContents.openDevTools();
    registerShortcuts(mainWindow);
 };
 

@@ -1,9 +1,10 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'node:path';
+import os from 'node:os';
 
 import { shell } from 'electron';
-import { BrowserWindow, dialog } from 'electron/main';
+import { app, BrowserWindow, dialog } from 'electron/main';
 
 import { createIpcMain } from './utils/ipcFactoryMainTypeUtil';
 
@@ -97,5 +98,26 @@ export function registerIpcHandlers() {
       const fileName = path.basename(filePath);
 
       return { filePath, fileName };
+   });
+
+   //========================================== InternalShow ==========================================//
+   ipcMain.on('IElectronApi-InternalShow-showVersionInfo', () => {
+      const versionInfo = [
+         `应用版本: ${app.getVersion()}`,
+         `Electron 版本: ${process.versions.electron}`,
+         `Chrome 版本: ${process.versions.chrome}`,
+         `Node.js 版本: ${process.versions.node}`,
+         `V8 版本: ${process.versions.v8}`,
+         `操作系统: ${os.type()} ${os.release()} (${os.arch()})`,
+      ].join('\n\n');
+
+      dialog.showMessageBox({
+         type: 'info',
+         title: '版本信息',
+         message: '软件版本详情',
+         detail: versionInfo,
+         buttons: ['确定'],
+         noLink: true,
+      });
    });
 }

@@ -1,8 +1,8 @@
 {
-   "name": "my-electron-app",
-   "productName": "my-electron-app",
-   "version": "1.0.0",
-   "description": "My Electron application description",
+   "name": "emccgui",
+   "productName": "emccgui",
+   "version": "1.0.1",
+   "description": "emcc for GUI",
    "main": ".vite/build/main.js",
    "scripts": {
       "start": "electron-forge start",
@@ -13,7 +13,6 @@
       "lint": "eslint --ext .ts .",
       "format": "prettier --write ."
    },
-   "keywords": [],
    "author": {
       "name": "TTT1231",
       "email": "1799405509@qq.com"
