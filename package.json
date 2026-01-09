@@ -9,7 +9,7 @@
       "dev": "electron-forge start",
       "package": "electron-forge package",
       "make": "electron-forge make",
-      "publish": "electron-forge publish",
+      "publish": "node ./scripts/publish.mjs",
       "lint": "eslint --ext .ts .",
       "format": "prettier --write ."
    },

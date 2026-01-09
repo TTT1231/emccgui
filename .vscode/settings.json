@@ -103,7 +103,7 @@
    "explorer.fileNesting.expand": false, // 默认折叠嵌套文件（不展开）
    "explorer.fileNesting.patterns": {
       //file fold
-      "package.json": "pnpm-lock.yaml, .gitignore, .browserslistrc, .gitattributes, .gitconfig, .npmrc, cspell.json",
+      "package.json": "pnpm-lock.yaml, .gitignore, .browserslistrc, .gitattributes, .gitconfig, .npmrc, cspell.json,.env",
       "eslint.config.mjs": ".prettierignore, .prettierrc.json,.prettier,.editorconfig,stylelint.config.mjs,.stylelintignore",
       "tsconfig.json": "tsconfig.*.json",
       "tailwind.config.js": "postcss.config.js",
@@ -143,8 +143,7 @@
       }
    ],
    "workbench.iconTheme": "vscode-icons",
-   //version len
-   "versionlens.suggestions.showOnStartup": true,
+
    //error lens
    "errorLens.enabledDiagnosticLevels": ["warning", "error"],
    //error len 主动排除eslint和cSpell错误，交给各自的插件进行
