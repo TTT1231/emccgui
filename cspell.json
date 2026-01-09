@@ -8,7 +8,9 @@
    "words": [
       "vite",
       "vitejs",
+      "asar",
       "emcc",
+      "emccgui",
       "oxlint",
       ".vite",
       "esbuild",
