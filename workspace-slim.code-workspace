@@ -1,0 +1,49 @@
+{
+   "folders": [
+      {
+         "name": "root",
+         "path": ".",
+      },
+   ],
+   "settings": {
+      "files.exclude": {
+         // =========== 隐藏main里面文件 ============
+         "src/main/ipc/utils": true,
+         // =========== 隐藏preload里面文件 ============
+         "src/preload/ipcFactoryPreloadTypeUtil.ts": true,
+         // =========== 隐藏shared里面文件 ============
+         "src/shared/types/ipcFactoryType.d.ts": true,
+         "src/shared/types/ipcHelpType.d.ts": true,
+         // =========== 隐藏其他不需要的文件 ============
+
+         ".vscode": true,
+         ".vite": true,
+         "node_modules": true,
+         "scripts": true,
+         "components.d.ts": true,
+         "pnpm-workspace.yaml": true,
+         "README.md": true,
+         "workspace-slim.code-workspace": true,
+
+         //格式化相关
+         ".prettierrc.json": true,
+         ".prettierignore": true,
+         ".eslint.config.mjs": true,
+         ".editorconfig": true,
+         ".stylelintignore": true,
+         "stylelint.config.mjs": true,
+
+         //ts和vite相关
+         "tsconfig.json": true,
+         "tsconfig.app.json": true,
+         "tsconfig.base.json": true,
+         "tsconfig.node.json": true,
+         "tsconfig.preload.json": true,
+         "vite.renderer.config.ts": true,
+         "vite.common.config.ts": true,
+         "vite.main.config.ts": true,
+         "vite.preload.config.ts": true,
+      },
+      "explorer.fileNesting.enabled": true,
+   },
+}
