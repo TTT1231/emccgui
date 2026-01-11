@@ -44,6 +44,12 @@ const menuList: MenuConfig[] = [
             action: () => window.electronApi.InternalElectron.checkUpdate(),
          },
          { label: '关于', action: () => window.electronApi.InternalElectron.showVersionInfo() },
+         { label: '关于', action: () => window.electronApi.InternalElectron.showVersionInfo() },
+         { label: '关于', action: () => window.electronApi.InternalElectron.showVersionInfo() },
+         { label: '关于', action: () => window.electronApi.InternalElectron.showVersionInfo() },
+         { label: '关于', action: () => window.electronApi.InternalElectron.showVersionInfo() },
+         { label: '关于', action: () => window.electronApi.InternalElectron.showVersionInfo() },
+         { label: '关于', action: () => window.electronApi.InternalElectron.showVersionInfo() },
       ],
    },
 ];
