@@ -125,11 +125,11 @@ export function registerIpcHandlers() {
       autoUpdater.autoDownload = false; // 不自动下载，让用户决定
       autoUpdater.autoInstallOnAppQuit = true;
 
-      // 设置 GitHub 仓库作为更新源
+      // 使用 generic provider，手动指定更新文件的 URL
+      // 注意：electron-forge 不会自动生成 latest.yml，需要手动创建或使用其他方式
       autoUpdater.setFeedURL({
-         provider: 'github',
-         owner: 'TTT1231',
-         repo: 'emccgui',
+         provider: 'generic',
+         url: 'https://github.com/TTT1231/emccgui/releases/latest/download',
       });
 
       try {

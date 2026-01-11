@@ -62,13 +62,17 @@ async function main() {
    const env = loadEnv();
    validateEnv(env);
 
-   // 在 Windows cmd 中，需要先设置环境变量，然后执行命令
+   await spawnAsync('electron-forge make', [], { shell: true });
+
+   console.log('📝 步骤 2: 生成 latest.yml...');
+   await spawnAsync('node scripts/generate-update-yml.mjs', [], { shell: true });
+
+   // publish 会重新 make，但会使用已有的 latest.yml
    const command = `set GITHUB_TOKEN=${env.GITHUB_TOKEN} && electron-forge publish`;
 
-   // 执行命令
    await spawnAsync(command, [], { shell: true });
 
-   console.log('✅ Publish completed successfully');
+   console.log('✅ 发布完成！');
 }
 
 main().catch(err => {

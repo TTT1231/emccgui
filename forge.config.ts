@@ -32,7 +32,11 @@ const config: ForgeConfig = {
             name: 'emccgui',
          },
          prerelease: false,
-         draft: false, // 改为 false 直接发布
+         draft: false,
+         // 添加 octokitOptions 来生成 release notes
+         octokitOptions: {
+            userAgent: 'emccgui-publisher',
+         },
       }),
    ],
    plugins: [
