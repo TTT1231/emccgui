@@ -5,9 +5,9 @@ import os from 'node:os';
 
 import { shell } from 'electron';
 import { app, BrowserWindow, dialog } from 'electron/main';
+import { autoUpdater } from 'electron-updater';
 
 import { createIpcMain } from './utils/ipcFactoryMainTypeUtil';
-
 const execAsync = promisify(exec);
 
 export function registerIpcHandlers() {
@@ -100,8 +100,8 @@ export function registerIpcHandlers() {
       return { filePath, fileName };
    });
 
-   //========================================== InternalShow ==========================================//
-   ipcMain.on('IElectronApi-InternalShow-showVersionInfo', () => {
+   //========================================== InternalElectron ==========================================//
+   ipcMain.on('IElectronApi-InternalElectron-showVersionInfo', () => {
       const versionInfo = [
          `应用版本: ${app.getVersion()}`,
          `Electron 版本: ${process.versions.electron}`,
@@ -119,5 +119,96 @@ export function registerIpcHandlers() {
          buttons: ['确定'],
          noLink: true,
       });
+   });
+   ipcMain.on('IElectronApi-InternalElectron-checkUpdate', async () => {
+      // 配置 autoUpdater
+      autoUpdater.autoDownload = false; // 不自动下载，让用户决定
+      autoUpdater.autoInstallOnAppQuit = true;
+
+      // 设置 GitHub 仓库作为更新源
+      autoUpdater.setFeedURL({
+         provider: 'github',
+         owner: 'TTT1231',
+         repo: 'emccgui',
+      });
+
+      try {
+         const result = await autoUpdater.checkForUpdates();
+
+         if (!result || !result.updateInfo) {
+            dialog.showMessageBox({
+               type: 'info',
+               title: app.name,
+               message: '当前没有可用的更新。',
+            });
+            return;
+         }
+
+         const { version } = result.updateInfo;
+         const currentVersion = app.getVersion();
+
+         // 比较版本号
+         if (version === currentVersion) {
+            dialog.showMessageBox({
+               type: 'info',
+               title: app.name,
+               message: '当前已是最新版本！',
+            });
+            return;
+         }
+
+         // 发现新版本，询问用户是否更新
+         const response = await dialog.showMessageBox({
+            type: 'question',
+            title: app.name,
+            message: `发现新版本 ${version}，是否立即下载更新？`,
+            buttons: ['立即更新', '稍后再说'],
+            defaultId: 0,
+            cancelId: 1,
+         });
+
+         if (response.response === 0) {
+            // 用户选择更新，开始下载
+            dialog.showMessageBox({
+               type: 'info',
+               title: app.name,
+               message: '正在后台下载更新，完成后会通知您...',
+            });
+
+            autoUpdater.on('download-progress', (progress: { percent: number }) => {
+               console.log(`下载进度: ${progress.percent.toFixed(1)}%`);
+            });
+
+            autoUpdater.on('update-downloaded', async () => {
+               const installResponse = await dialog.showMessageBox({
+                  type: 'info',
+                  title: app.name,
+                  message: '更新下载完成，是否立即重启应用？',
+                  buttons: ['立即重启', '稍后重启'],
+                  defaultId: 0,
+               });
+
+               if (installResponse.response === 0) {
+                  autoUpdater.quitAndInstall();
+               }
+            });
+
+            autoUpdater.on('error', error => {
+               dialog.showMessageBox({
+                  type: 'error',
+                  title: app.name,
+                  message: `下载更新时出错: ${error.message}`,
+               });
+            });
+
+            await autoUpdater.downloadUpdate();
+         }
+      } catch (error) {
+         dialog.showMessageBox({
+            type: 'error',
+            title: app.name,
+            message: `检查更新失败: ${error instanceof Error ? error.message : '未知错误'}`,
+         });
+      }
    });
 }

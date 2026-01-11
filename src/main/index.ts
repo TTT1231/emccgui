@@ -3,7 +3,6 @@ import path from 'node:path';
 import { app, BrowserWindow, Menu } from 'electron/main';
 import started from 'electron-squirrel-startup';
 import { nativeImage } from 'electron';
-import { updateElectronApp } from 'update-electron-app';
 
 import { ResourceManager } from '@shared/resource-manager';
 
@@ -53,7 +52,6 @@ const createWindow = () => {
 app.on('ready', async () => {
    createWindow();
    registerIpcHandlers();
-   updateElectronApp();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

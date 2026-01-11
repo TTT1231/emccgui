@@ -22,8 +22,9 @@ declare interface EmccControl {
    selectFile: () => Promise<{ filePath: string; fileName: string } | null>;
 }
 
-declare interface InternalShow {
+declare interface InternalElectron {
    showVersionInfo: () => void;
+   checkUpdate: () => void;
 }
 
 declare interface IElectronApi {
@@ -31,5 +32,5 @@ declare interface IElectronApi {
    BrowserControl: BrowserControl;
    EmccControl: EmccControl;
    //electron内部
-   InternalShow: InternalShow;
+   InternalElectron: InternalElectron;
 }
