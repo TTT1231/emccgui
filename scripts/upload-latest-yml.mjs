@@ -7,7 +7,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const env = loadEnv();
+const GITHUB_TOKEN = env.GITHUB_TOKEN;
 const OWNER = 'TTT1231';
 const REPO = 'emccgui';
 
@@ -15,6 +16,30 @@ const REPO = 'emccgui';
 const packageJson = JSON.parse(readFileSync(join(rootDir, 'package.json'), 'utf-8'));
 const version = packageJson.version;
 
+function loadEnv() {
+   try {
+      const envPath = join(rootDir, '.env');
+      const envContent = readFileSync(envPath, 'utf-8');
+      const env = {};
+
+      envContent.split('\n').forEach(line => {
+         const match = line.match(/^\s*([^#][^=]*?)\s*=\s*(.*)$/);
+         if (match) {
+            const key = match[1].trim();
+            const value = match[2].trim();
+            // 只加载 GITHUB_TOKEN
+            if (key === 'GITHUB_TOKEN') {
+               env[key] = value;
+            }
+         }
+      });
+
+      return env;
+   } catch (err) {
+      console.error(`❌ Error: Failed to load .env file: ${err.message}`);
+      return {};
+   }
+}
 function httpsRequest(options, body = null) {
    return new Promise((resolve, reject) => {
       const req = https.request(options, res => {
@@ -46,6 +71,27 @@ async function getReleaseByTag(tag) {
       },
    });
    return res.status === 200 ? res.data : null;
+}
+
+async function deleteAsset(assetId) {
+   const res = await httpsRequest({
+      hostname: 'api.github.com',
+      path: `/repos/${OWNER}/${REPO}/releases/assets/${assetId}`,
+      method: 'DELETE',
+      headers: {
+         'User-Agent': 'emccgui-publisher',
+         Authorization: `token ${GITHUB_TOKEN}`,
+         Accept: 'application/vnd.github.v3+json',
+      },
+   });
+   return res.status === 204;
+}
+
+async function findAssetByName(release, fileName) {
+   if (!release.assets || release.assets.length === 0) {
+      return null;
+   }
+   return release.assets.find(asset => asset.name === fileName);
 }
 
 async function uploadAsset(uploadUrl, filePath, fileName) {
@@ -86,6 +132,20 @@ async function main() {
    }
 
    console.log(`✅ 找到 Release: ${release.name}`);
+
+   // 检查是否已存在 latest.yml
+   const existingAsset = await findAssetByName(release, 'latest.yml');
+   if (existingAsset) {
+      console.log(`🔍 检测到已存在的 latest.yml (ID: ${existingAsset.id})，正在删除...`);
+      const deleted = await deleteAsset(existingAsset.id);
+      if (deleted) {
+         console.log('✅ 已删除旧的 latest.yml');
+      } else {
+         console.error('⚠️ 删除旧文件失败，但将继续尝试上传');
+      }
+   } else {
+      console.log('ℹ️ 未发现已存在的 latest.yml，这是首次上传');
+   }
 
    const ymlPath = join(rootDir, 'out', 'make', 'squirrel.windows', 'x64', 'latest.yml');
    console.log(`📤 上传 latest.yml...`);
