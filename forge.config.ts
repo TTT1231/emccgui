@@ -20,6 +20,10 @@ const config: ForgeConfig = {
          setupIcon: 'resources/shared/logo.ico',
          iconUrl:
             'https://raw.githubusercontent.com/TTT1231/emccgui/main/resources/shared/logo.ico',
+         // 使用不带空格的文件名，避免 URL 编码问题
+         setupExe: 'emccgui-setup.exe',
+         // 配置 nupkg 文件名，去掉版本号中的空格
+         name: 'emccgui',
       }),
       new MakerZIP({}, ['darwin']),
       new MakerRpm({}),

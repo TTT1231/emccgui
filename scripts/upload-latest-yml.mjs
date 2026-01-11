@@ -123,7 +123,6 @@ async function main() {
    }
 
    const tag = `v${version}`;
-   console.log(`🔍 查找 Release: ${tag}`);
 
    const release = await getReleaseByTag(tag);
    if (!release) {
@@ -131,35 +130,26 @@ async function main() {
       process.exit(1);
    }
 
-   console.log(`✅ 找到 Release: ${release.name}`);
-
    // 检查是否已存在 latest.yml
    const existingAsset = await findAssetByName(release, 'latest.yml');
    if (existingAsset) {
-      console.log(`🔍 检测到已存在的 latest.yml (ID: ${existingAsset.id})，正在删除...`);
       const deleted = await deleteAsset(existingAsset.id);
       if (deleted) {
-         console.log('✅ 已删除旧的 latest.yml');
+         //已删除旧的 latest.yml
       } else {
-         console.error('⚠️ 删除旧文件失败，但将继续尝试上传');
+         //删除旧文件失败，但将继续尝试上传
       }
-   } else {
-      console.log('ℹ️ 未发现已存在的 latest.yml，这是首次上传');
    }
 
    const ymlPath = join(rootDir, 'out', 'make', 'squirrel.windows', 'x64', 'latest.yml');
-   console.log(`📤 上传 latest.yml...`);
 
    const success = await uploadAsset(release.upload_url, ymlPath, 'latest.yml');
-   if (success) {
-      console.log('✅ latest.yml 上传成功！');
-   } else {
-      console.error('❌ latest.yml 上传失败');
-      process.exit(1);
+   if (!success) {
+      throw new Error('❌ 上传 latest.yml 失败');
    }
 }
 
 main().catch(err => {
-   console.error('❌ 上传失败:', err.message);
+   console.error('❌ latest.yml上传失败:', err.message);
    process.exit(1);
 });

@@ -20,11 +20,13 @@ function findInstaller() {
       const squirrelDir = join(makeDir, 'squirrel.windows', 'x64');
       const files = readdirSync(squirrelDir);
 
-      // 查找 Setup.exe 安装包
-      const installer = files.find(f => f.endsWith('.exe') && f.includes('Setup'));
+      // 查找安装包：优先找 emccgui-setup.exe，否则找包含 Setup 的 exe
+      const installer =
+         files.find(f => f === 'emccgui-setup.exe') ||
+         files.find(f => f.endsWith('.exe') && f.toLowerCase().includes('setup'));
 
       if (!installer) {
-         throw new Error('找不到安装包文件');
+         throw new Error('❌ 找不到安装包文件');
       }
 
       const installerPath = join(squirrelDir, installer);
@@ -40,7 +42,7 @@ function findInstaller() {
          sha512: hash,
       };
    } catch (error) {
-      console.error('查找安装包失败:', error.message);
+      console.error('❌ 查找安装包失败:', error.message);
       return null;
    }
 }
@@ -53,12 +55,15 @@ function generateYml() {
       process.exit(1);
    }
 
+   // URL 编码文件名，处理空格等特殊字符
+   const encodedName = encodeURIComponent(installer.name);
+
    const yml = `version: ${version}
 files:
-  - url: ${installer.name}
+  - url: ${encodedName}
     sha512: ${installer.sha512}
     size: ${installer.size}
-path: ${installer.name}
+path: ${encodedName}
 sha512: ${installer.sha512}
 releaseDate: ${new Date().toISOString()}
 `;
@@ -66,10 +71,6 @@ releaseDate: ${new Date().toISOString()}
    // 保存到 out/make/squirrel.windows/x64 目录
    const outputPath = join(makeDir, 'squirrel.windows', 'x64', 'latest.yml');
    writeFileSync(outputPath, yml, 'utf-8');
-
-   console.log('✅ latest.yml 生成成功:', outputPath);
-   console.log('\n内容:');
-   console.log(yml);
 }
 
 generateYml();
