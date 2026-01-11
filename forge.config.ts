@@ -11,7 +11,7 @@ import { PublisherGithub } from '@electron-forge/publisher-github';
 const config: ForgeConfig = {
    packagerConfig: {
       asar: true,
-      extraResource: ['resources/shared'],
+      extraResource: ['resources/shared', 'resources/app-update.yml'],
       icon: 'resources/shared/logo.ico',
    },
    rebuildConfig: {},
@@ -33,6 +33,10 @@ const config: ForgeConfig = {
          },
          prerelease: false,
          draft: false, // 改为 false 直接发布
+         // 添加 octokitOptions 来生成 release notes
+         octokitOptions: {
+            userAgent: 'emccgui-publisher',
+         },
       }),
    ],
    plugins: [

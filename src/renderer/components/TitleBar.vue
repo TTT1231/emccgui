@@ -38,7 +38,10 @@ const menuList: MenuConfig[] = [
    },
    {
       label: '帮助',
-      items: [{ label: '关于', action: () => window.electronApi.InternalShow.showVersionInfo() }],
+      items: [
+         { label: '关于', action: () => window.electronApi.InternalControl.showVersionInfo() },
+         { label: '检查更新', action: () => window.electronApi.InternalControl.checkUpdate() },
+      ],
    },
 ];
 

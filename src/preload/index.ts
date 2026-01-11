@@ -21,8 +21,9 @@ const electronApi: ExposedApiStructure<IElectronApi> = {
          ipcRenderer.invoke('IElectronApi-EmccControl-executeCommand', command, workDir),
       selectFile: () => ipcRenderer.invoke('IElectronApi-EmccControl-selectFile'),
    },
-   InternalShow: {
-      showVersionInfo: () => ipcRenderer.send('IElectronApi-InternalShow-showVersionInfo'),
+   InternalControl: {
+      showVersionInfo: () => ipcRenderer.send('IElectronApi-InternalControl-showVersionInfo'),
+      checkUpdate: () => ipcRenderer.send('IElectronApi-InternalControl-checkUpdate'),
    },
 };
 
