@@ -280,24 +280,6 @@ export const runtimeMethodOptions: RuntimeMethodOption[] = [
       enabled: false,
       hint: '向 WASM 内存中写入值到指定地址',
    },
-   {
-      key: 'UTF8ToString',
-      name: 'UTF8ToString',
-      enabled: false,
-      hint: '将 WASM 内存中的 UTF-8 字符串转换为 JavaScript 字符串',
-   },
-   {
-      key: 'stringToUTF8',
-      name: 'stringToUTF8',
-      enabled: false,
-      hint: '将 JavaScript 字符串写入 WASM 内存(UTF-8 编码)',
-   },
-   {
-      key: 'allocate',
-      name: 'allocate',
-      enabled: false,
-      hint: '在 WASM 内存中分配空间',
-   },
 ];
 
 // 命令行生成相关类型

@@ -22,7 +22,8 @@
       "fexceptions",
       "pthread",
       "ccall",
-      "cwrap"
+      "cwrap",
+      "Embind"
    ],
    // 从cspell的配置文件为当前目录，file patterns为匹配
    "ignorePaths": [
