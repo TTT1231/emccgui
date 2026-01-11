@@ -62,17 +62,21 @@ async function main() {
    const env = loadEnv();
    validateEnv(env);
 
-   await spawnAsync('electron-forge make', [], { shell: true });
+   console.log('📦 步骤 1: 构建并发布到 GitHub...');
+   const command = `set GITHUB_TOKEN=${env.GITHUB_TOKEN} && electron-forge publish`;
+   await spawnAsync(command, [], { shell: true });
 
    console.log('📝 步骤 2: 生成 latest.yml...');
    await spawnAsync('node scripts/generate-update-yml.mjs', [], { shell: true });
 
-   // publish 会重新 make，但会使用已有的 latest.yml
-   const command = `set GITHUB_TOKEN=${env.GITHUB_TOKEN} && electron-forge publish`;
+   console.log('🚀 步骤 3: 上传 latest.yml 到 GitHub Release...');
+   await spawnAsync(
+      `set GITHUB_TOKEN=${env.GITHUB_TOKEN} && node scripts/upload-latest-yml.mjs`,
+      [],
+      { shell: true },
+   );
 
-   await spawnAsync(command, [], { shell: true });
-
-   console.log('✅ 发布完成！');
+   console.log('✅ 发布完成！自动更新已配置');
 }
 
 main().catch(err => {
