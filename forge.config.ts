@@ -16,7 +16,11 @@ const config: ForgeConfig = {
    },
    rebuildConfig: {},
    makers: [
-      new MakerSquirrel({}),
+      new MakerSquirrel({
+         setupIcon: 'resources/shared/logo.ico',
+         iconUrl:
+            'https://raw.githubusercontent.com/TTT1231/emccgui/main/resources/shared/logo.ico',
+      }),
       new MakerZIP({}, ['darwin']),
       new MakerRpm({}),
       new MakerDeb({}),
