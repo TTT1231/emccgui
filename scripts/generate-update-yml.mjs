@@ -20,8 +20,8 @@ function findInstaller() {
       const squirrelDir = join(makeDir, 'squirrel.windows', 'x64');
       const files = readdirSync(squirrelDir);
 
-      // 查找 .exe 安装包（不是 Setup.exe）
-      const installer = files.find(f => f.endsWith('.exe') && !f.includes('Setup'));
+      // 查找 Setup.exe 安装包
+      const installer = files.find(f => f.endsWith('.exe') && f.includes('Setup'));
 
       if (!installer) {
          throw new Error('找不到安装包文件');
