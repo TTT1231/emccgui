@@ -68,6 +68,9 @@ export default {
                'use',
                'forward',
                'return',
+               'theme', // Tailwind CSS 4.x @theme 规则
+               'layer', // CSS @layer 规则
+               'keyframes', // CSS @keyframes 规则
             ], //禁止使用未知的@规则，同时配置scss语法@规则支持
          },
       ],
@@ -136,6 +139,9 @@ export default {
                'use',
                'forward',
                'return',
+               'theme', // Tailwind CSS 4.x @theme 规则
+               'layer', // CSS @layer 规则
+               'keyframes', // CSS @keyframes 规则
             ], //忽略scss语法@规则
          },
       ],
