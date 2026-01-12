@@ -8,3 +8,9 @@ src/main
 src/preload
 src/shared
 
+eslint.config.mjs
+pnpm-lock.yaml
+pnpm-workspace.yaml
+stylelint.config.mjs
+scripts
+workspace-slim.code-workspace
