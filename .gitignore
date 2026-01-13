@@ -96,3 +96,7 @@ dist/
 
 # auto import unplugin
 components.d.ts
+
+# claude temp file
+tempclaude*
+tempclaude
