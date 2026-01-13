@@ -1,6 +1,6 @@
 /** @type {import("stylelint").Config} */
 export default {
-   extends: ['stylelint-config-standard'],
+   extends: ['stylelint-config-standard', 'stylelint-config-recess-order'],
    ignoreFiles: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.json', '**/*.md'],
    reportDescriptionlessDisables: true, //禁用规则必须有描述
    reportInvalidScopeDisables: true, //禁用规则必须在有效范围内

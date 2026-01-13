@@ -52,6 +52,7 @@
       "prettier": "^3.7.4",
       "sass": "^1.97.2",
       "stylelint": "^16.26.1",
+      "stylelint-config-recess-order": "^7.4.0",
       "stylelint-config-recommended-scss": "^16.0.2",
       "stylelint-config-recommended-vue": "^1.6.1",
       "stylelint-config-standard": "^39.0.1",
