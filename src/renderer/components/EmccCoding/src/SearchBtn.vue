@@ -262,7 +262,9 @@ const handleFocus = () => {
                            <div class="suggestion-desc">{{ option.descri }}</div>
                         </div>
                         <div class="suggestion-right">
-                           <span class="default-value">{{ option.defaultValDescri }}</span>
+                           <span class="default-value">{{
+                              option.defaultValDescri === '-' ? '无' : option.defaultValDescri
+                           }}</span>
                         </div>
                      </div>
                   </div>

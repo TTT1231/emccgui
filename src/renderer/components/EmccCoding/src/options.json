@@ -2,7 +2,8 @@
    {
       "option": "-sENVIRONMENT",
       "descri": "运行环境(会增加体积)",
-      "defaultVal": "web,worker"
+      "defaultVal": "web,worker",
+      "defaultValDescri": "web、worker"
    },
    {
       "option": "-sASSERTIONS",
@@ -56,7 +57,7 @@
       "option": "-sFilesystem",
       "descri": "启用文件系统支持",
       "defaultVal": "-",
-      "defaultValDescri": "自动按需启用，有文件操作时开启"
+      "defaultValDescri": "自动按需启用"
    },
    {
       "option": "-sNO_FILESYSTEM",
