@@ -13,10 +13,10 @@ import TitleBar from '../components/TitleBar.vue';
 
 <style lang="scss" scoped>
 .app-container {
-   width: 100%;
-   height: 100vh;
    display: flex;
    flex-direction: column;
+   width: 100%;
+   height: 100vh;
    overflow: hidden;
 }
 </style>

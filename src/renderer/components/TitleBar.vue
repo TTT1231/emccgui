@@ -196,30 +196,30 @@ $control-btn-list: 'minimize', 'maximize', 'close', 'theme';
 
 @mixin titleBarBtnBaseStyle {
    position: relative;
-   width: 40px;
-   -webkit-app-region: no-drag;
-   app-region: no-drag;
-   cursor: pointer;
    display: flex;
    align-items: center;
    justify-content: center;
+   width: 40px;
    height: 100%;
+   cursor: pointer;
    transition: background-color 0.15s;
+   -webkit-app-region: no-drag;
+   app-region: no-drag;
 }
 
 @mixin titleBarBtnAfterHoverStyle {
    position: absolute;
    top: 100%;
    right: 0;
-   margin-top: 4px;
+   z-index: 1000;
    padding: 4px 8px;
+   margin-top: 4px;
    font-size: 12px;
    white-space: nowrap;
-   border: 2px solid var(--border-color);
    background-color: var(--bg-secondary);
+   border: 2px solid var(--border-color);
    border-radius: 4px;
    box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
-   z-index: 1000;
 }
 
 @each $btn-name in $control-btn-list {
@@ -299,15 +299,15 @@ $control-btn-list: 'minimize', 'maximize', 'close', 'theme';
 
 .title-bar-menu {
    position: absolute;
-   min-width: 200px;
    top: calc(100% + 4px);
    left: 0;
-   border-radius: 0.375rem;
+   z-index: 1000;
+   min-width: 200px;
+   padding: 4px 0;
    background-color: var(--bg-secondary);
    border: 1px solid var(--border-color);
+   border-radius: 0.375rem;
    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
-   padding: 4px 0;
-   z-index: 1000;
 }
 
 .menu-item {
@@ -317,11 +317,11 @@ $control-btn-list: 'minimize', 'maximize', 'close', 'theme';
    padding: 6px 12px;
    margin: 0 4px;
    font-size: 13px;
-   cursor: pointer;
    color: var(--text-primary);
-   transition: background-color 0.1s;
-   border-radius: 4px;
    white-space: nowrap;
+   cursor: pointer;
+   border-radius: 4px;
+   transition: background-color 0.1s;
 
    &:hover:not(.divider) {
       background-color: var(--bg-button-hover);
@@ -331,8 +331,8 @@ $control-btn-list: 'minimize', 'maximize', 'close', 'theme';
       height: 1px;
       padding: 0;
       margin: 4px 8px;
-      background-color: var(--border-color);
       cursor: default;
+      background-color: var(--border-color);
    }
 }
 
@@ -362,49 +362,49 @@ $control-btn-list: 'minimize', 'maximize', 'close', 'theme';
 }
 
 .title-bar {
-   height: 44px;
-   background-color: var(--bg-secondary);
-   border-bottom: 1px solid var(--border-color);
-   box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
+   box-sizing: border-box;
    display: flex;
    align-items: center;
    justify-content: space-between;
+   width: 100%;
+   height: 44px;
    padding: 0;
-
-   /* 关键：允许拖拽窗口 */
-   -webkit-app-region: drag;
 
    /* 防止文本被选中 */
    user-select: none;
-   width: 100%;
-   box-sizing: border-box;
+   background-color: var(--bg-secondary);
+   border-bottom: 1px solid var(--border-color);
+   box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
+
+   /* 关键：允许拖拽窗口 */
+   -webkit-app-region: drag;
 }
 
 .title-bar-left {
    display: flex;
    flex-flow: row nowrap;
+   gap: 8px;
    align-items: center;
    height: 100%;
-   gap: 8px;
    font-size: 12px;
 }
 
 .title-bar-center {
    flex: 1;
-   text-align: center;
    font-size: 12px;
+   text-align: center;
 }
 
 .title-bar-right {
    display: flex;
-   align-items: center;
    gap: 0;
+   align-items: center;
    height: 100%;
 
    img {
+      display: block;
       width: 16px;
       height: 16px;
-      display: block;
    }
 }
 </style>

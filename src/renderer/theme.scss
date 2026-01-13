@@ -58,30 +58,30 @@ $dark-theme: (
 // 基础排版
 :root {
    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-   line-height: 1.6;
    font-weight: 400;
    font-synthesis: none;
+   line-height: 1.6;
    text-rendering: optimizelegibility;
    -webkit-font-smoothing: antialiased;
    -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-   margin: 0;
    min-width: 320px;
    min-height: 100vh;
-   background-color: var(--bg-primary);
+   margin: 0;
    color: var(--text-primary);
+   background-color: var(--bg-primary);
    transition:
       background-color 0.2s ease,
       color 0.2s ease;
 }
 
 #app {
+   box-sizing: border-box;
+   width: 100%;
    height: 100vh;
    overflow: hidden;
-   width: 100%;
-   box-sizing: border-box;
 }
 
 a {
@@ -106,15 +106,15 @@ p {
 }
 
 button {
-   border-radius: 8px;
-   border: 1px solid transparent;
    padding: 0.6em 1.2em;
+   font-family: inherit;
    font-size: 1em;
    font-weight: 500;
-   font-family: inherit;
-   background-color: var(--bg-button);
    color: var(--text-primary);
    cursor: pointer;
+   background-color: var(--bg-button);
+   border: 1px solid transparent;
+   border-radius: 8px;
    transition:
       border-color 0.2s,
       background-color 0.2s,
@@ -136,23 +136,23 @@ button {
 }
 
 input {
+   padding: 0.6em;
+   font-size: 1em;
+   color: var(--text-primary);
    background-color: var(--bg-input);
    border: 1px solid var(--border-color);
-   color: var(--text-primary);
-   padding: 0.6em;
    border-radius: 4px;
-   font-size: 1em;
 
    &:focus {
-      border-color: var(--color-primary);
       outline: none;
+      border-color: var(--color-primary);
    }
 }
 
 .card {
    padding: 2em;
+   margin-top: 1rem;
    background-color: var(--bg-secondary);
    border-radius: 12px;
    box-shadow: 0 4px 6px var(--shadow-color);
-   margin-top: 1rem;
 }

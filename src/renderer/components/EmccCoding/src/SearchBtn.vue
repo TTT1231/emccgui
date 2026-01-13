@@ -284,21 +284,21 @@ const handleFocus = () => {
 
 <style lang="scss" scoped>
 .search-btn-container {
+   position: relative;
    display: flex;
    gap: 10px;
    align-items: stretch;
-   position: relative;
 }
 
 .input-wrapper {
-   flex: 1;
    position: relative;
    display: flex;
+   flex: 1;
    align-items: center;
+   overflow: visible;
    background: var(--bg-input);
    border: 1px solid var(--border-color);
    border-radius: 8px;
-   overflow: visible;
    transition: all 0.2s ease;
 
    &:focus-within {
@@ -310,20 +310,20 @@ const handleFocus = () => {
 .input-icon {
    padding: 0 12px;
    font-size: 1em;
-   opacity: 0.5;
-   user-select: none;
    pointer-events: none;
+   user-select: none;
+   opacity: 0.5;
 }
 
 .search-input {
    flex: 1;
-   border: none;
-   background: transparent;
    padding: 10px 12px 10px 0;
+   font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
    font-size: 0.9em;
    color: var(--text-primary);
    outline: none;
-   font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+   background: transparent;
+   border: none;
 
    &::placeholder {
       color: var(--text-secondary);
@@ -339,19 +339,19 @@ const handleFocus = () => {
 // 建议下拉列表
 .suggestions-dropdown {
    position: absolute;
-   left: 0;
    right: 0;
+   left: 0;
+   z-index: 1000;
+   display: flex;
+   flex-direction: column;
+   max-height: 320px;
+   overflow: hidden;
    background: var(--bg-primary);
    border: 1px solid var(--border-color);
    border-radius: 8px;
    box-shadow:
       0 4px 12px var(--shadow-color),
       0 8px 24px color-mix(in srgb, var(--shadow-color) 50%, transparent);
-   max-height: 320px;
-   display: flex;
-   flex-direction: column;
-   z-index: 1000;
-   overflow: hidden;
 
    // 向下显示（默认）
    &.dropdown-down {
@@ -368,29 +368,29 @@ const handleFocus = () => {
 
 .suggestions-header {
    display: flex;
-   justify-content: space-between;
    align-items: center;
+   justify-content: space-between;
    padding: 8px 12px;
+   font-size: 0.75em;
    background: var(--bg-secondary);
    border-bottom: 1px solid var(--border-color);
-   font-size: 0.75em;
 }
 
 .suggestions-count {
-   color: var(--text-primary);
    font-weight: 600;
+   color: var(--text-primary);
 }
 
 .suggestions-hint {
-   color: var(--text-secondary);
    font-size: 0.9em;
+   color: var(--text-secondary);
    opacity: 0.8;
 }
 
 .suggestions-list {
-   overflow-y: auto;
    max-height: 280px;
    padding: 4px;
+   overflow-y: auto;
 
    // 自定义滚动条
    &::-webkit-scrollbar {
@@ -413,10 +413,10 @@ const handleFocus = () => {
 
 .suggestion-item {
    padding: 10px 12px;
-   border-radius: 6px;
-   cursor: pointer;
-   transition: all 0.15s ease;
    margin-bottom: 2px;
+   cursor: pointer;
+   border-radius: 6px;
+   transition: all 0.15s ease;
 
    &:hover {
       background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-primary));
@@ -432,10 +432,10 @@ const handleFocus = () => {
       }
 
       .default-value {
+         font-weight: 600;
          color: var(--color-primary);
          background: white;
          border-color: white;
-         font-weight: 600;
          opacity: 1;
       }
    }
@@ -443,9 +443,9 @@ const handleFocus = () => {
 
 .suggestion-content {
    display: flex;
-   justify-content: space-between;
-   align-items: flex-start;
    gap: 12px;
+   align-items: flex-start;
+   justify-content: space-between;
 }
 
 .suggestion-left {
@@ -454,15 +454,15 @@ const handleFocus = () => {
 }
 
 .suggestion-right {
-   flex-shrink: 0;
    display: flex;
+   flex-shrink: 0;
    align-items: center;
 }
 
 .suggestion-option {
    display: flex;
-   align-items: center;
    gap: 8px;
+   align-items: center;
    margin-bottom: 4px;
 }
 
@@ -476,45 +476,45 @@ const handleFocus = () => {
 
 .suggestion-desc {
    font-size: 0.8em;
-   color: var(--text-secondary);
    line-height: 1.4;
+   color: var(--text-secondary);
    opacity: 0.9;
 }
 
 .default-value {
+   padding: 2px 8px;
    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
    font-size: 0.75em;
    color: var(--text-secondary);
-   background: var(--bg-secondary);
-   padding: 2px 8px;
-   border-radius: 4px;
-   border: 1px solid var(--border-color);
    white-space: nowrap;
+   background: var(--bg-secondary);
+   border: 1px solid var(--border-color);
+   border-radius: 4px;
    opacity: 0.8;
    transition: all 0.15s ease;
 }
 
 .add-btn {
    display: flex;
+   gap: 6px;
    align-items: center;
    justify-content: center;
-   gap: 6px;
    padding: 10px 16px;
-   background: var(--color-primary);
-   color: white;
-   border: none;
-   border-radius: 8px;
    font-size: 0.9em;
    font-weight: 600;
-   cursor: pointer;
-   transition: all 0.2s ease;
+   color: white;
    white-space: nowrap;
+   cursor: pointer;
+   background: var(--color-primary);
+   border: none;
+   border-radius: 8px;
    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 30%, transparent);
+   transition: all 0.2s ease;
 
    &:hover:not(:disabled) {
       background: var(--color-primary-hover);
-      transform: translateY(-1px);
       box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 40%, transparent);
+      transform: translateY(-1px);
    }
 
    &:active:not(:disabled) {
@@ -522,9 +522,9 @@ const handleFocus = () => {
    }
 
    &:disabled {
-      opacity: 0.5;
       cursor: not-allowed;
       box-shadow: none;
+      opacity: 0.5;
    }
 
    .btn-icon {
@@ -542,12 +542,12 @@ const handleFocus = () => {
    align-items: center;
    justify-content: center;
    padding: 10px 12px;
-   background: var(--bg-button);
+   font-size: 0.9em;
    color: var(--text-primary);
+   cursor: pointer;
+   background: var(--bg-button);
    border: 1px solid var(--border-color);
    border-radius: 8px;
-   font-size: 0.9em;
-   cursor: pointer;
    transition: all 0.2s ease;
 
    &:hover {

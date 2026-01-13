@@ -1,4 +1,3 @@
-c
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
 import { message } from 'ant-design-vue';
@@ -517,19 +516,19 @@ const openBrowser = () => {
 
 <style lang="scss" scoped>
 .emcc-container {
-   height: 100%;
-   padding: 20px;
    box-sizing: border-box;
-   overflow-y: auto;
    display: flex;
    flex-direction: column;
+   height: 100%;
+   padding: 20px;
+   overflow-y: auto;
 }
 
 .main-content {
    display: grid;
+   flex: 1;
    grid-template-columns: 1fr 1fr;
    gap: 20px;
-   flex: 1;
    min-height: 0;
 
    @media (max-width: 900px) {
@@ -553,24 +552,24 @@ const openBrowser = () => {
 }
 
 .section {
-   background: var(--bg-secondary);
-   border-radius: 12px;
    padding: 16px;
+   background: var(--bg-secondary);
    border: 1px solid var(--border-color);
+   border-radius: 12px;
 }
 
 .section-header {
    display: flex;
-   justify-content: space-between;
    align-items: center;
+   justify-content: space-between;
    margin-bottom: 12px;
 }
 
 .section-title {
    margin: 0 0 12px;
    font-size: 1em;
-   color: var(--text-primary);
    font-weight: 600;
+   color: var(--text-primary);
 
    .section-header & {
       margin-bottom: 0;
@@ -579,32 +578,32 @@ const openBrowser = () => {
 
 // 文件拖拽区域
 .drop-zone {
-   border: 2px dashed var(--border-color);
-   border-radius: 10px;
+   position: relative;
    padding: 24px;
    text-align: center;
-   transition: all 0.3s ease;
-   background: var(--bg-primary);
-   position: relative;
    cursor: pointer;
+   background: var(--bg-primary);
+   border: 2px dashed var(--border-color);
+   border-radius: 10px;
+   transition: all 0.3s ease;
 
    &:hover,
    &.drag-over {
-      border-color: var(--color-primary);
       background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-primary));
+      border-color: var(--color-primary);
    }
 
    &.has-file {
-      border-style: solid;
       border-color: var(--color-primary);
+      border-style: solid;
    }
 }
 
 .drop-content {
    display: flex;
    flex-direction: column;
-   align-items: center;
    gap: 6px;
+   align-items: center;
 }
 
 .drop-icon {
@@ -614,8 +613,8 @@ const openBrowser = () => {
 
 .drop-text {
    font-size: 1em;
-   color: var(--text-primary);
    font-weight: 500;
+   color: var(--text-primary);
 }
 
 .drop-hint {
@@ -629,27 +628,27 @@ const openBrowser = () => {
 
 .file-name {
    font-size: 1em;
-   color: var(--color-primary);
    font-weight: 600;
+   color: var(--color-primary);
 }
 
 .remove-btn {
    position: absolute;
    top: 8px;
    right: 8px;
-   width: 24px;
-   height: 24px;
-   border-radius: 50%;
-   padding: 0;
-   font-size: 12px;
+   z-index: 10;
    display: flex;
    align-items: center;
    justify-content: center;
-   z-index: 10;
+   width: 24px;
+   height: 24px;
+   padding: 0;
+   font-size: 12px;
+   border-radius: 50%;
 
    &:hover {
-      background: var(--bg-button-hover-danger);
       color: white;
+      background: var(--bg-button-hover-danger);
    }
 }
 
@@ -660,19 +659,19 @@ const openBrowser = () => {
 }
 
 .format-option {
-   flex: 1;
    display: flex;
+   flex: 1;
+   gap: 6px;
    align-items: center;
    justify-content: center;
-   gap: 6px;
    padding: 8px 12px;
-   border-radius: 6px;
-   background: var(--bg-primary);
-   border: 1px solid var(--border-color);
-   cursor: pointer;
-   transition: all 0.2s;
    font-size: 0.85em;
    font-weight: 500;
+   cursor: pointer;
+   background: var(--bg-primary);
+   border: 1px solid var(--border-color);
+   border-radius: 6px;
+   transition: all 0.2s;
 
    input {
       display: none;
@@ -683,9 +682,9 @@ const openBrowser = () => {
    }
 
    &.active {
-      border-color: var(--color-primary);
-      background: var(--color-primary);
       color: white;
+      background: var(--color-primary);
+      border-color: var(--color-primary);
    }
 }
 
@@ -693,10 +692,10 @@ const openBrowser = () => {
 .output-input-wrapper {
    display: flex;
    align-items: center;
+   overflow: hidden;
    background: var(--bg-input);
    border: 1px solid var(--border-color);
    border-radius: 8px;
-   overflow: hidden;
 
    &:focus-within {
       border-color: var(--color-primary);
@@ -704,9 +703,9 @@ const openBrowser = () => {
    }
 
    .text-input {
+      flex: 1;
       border: none;
       border-radius: 0;
-      flex: 1;
 
       &:focus {
          box-shadow: none;
@@ -716,10 +715,10 @@ const openBrowser = () => {
 
 .output-ext {
    padding: 10px 14px;
-   background: var(--bg-button);
-   color: var(--text-secondary);
    font-family: 'SF Mono', 'Fira Code', monospace;
    font-size: 0.9em;
+   color: var(--text-secondary);
+   background: var(--bg-button);
    border-left: 1px solid var(--border-color);
 }
 
@@ -732,28 +731,28 @@ const openBrowser = () => {
    display: block;
    margin-bottom: 6px;
    font-size: 0.85em;
-   color: var(--text-secondary);
    font-weight: 500;
+   color: var(--text-secondary);
 }
 
 .text-input,
 .select-input {
+   box-sizing: border-box;
    width: 100%;
    padding: 10px 14px;
+   font-size: 0.9em;
+   color: var(--text-primary);
+   background: var(--bg-input);
    border: 1px solid var(--border-color);
    border-radius: 8px;
-   font-size: 0.9em;
-   background: var(--bg-input);
-   color: var(--text-primary);
-   box-sizing: border-box;
    transition:
       border-color 0.2s,
       box-shadow 0.2s;
 
    &:focus {
+      outline: none;
       border-color: var(--color-primary);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
-      outline: none;
    }
 }
 
@@ -770,17 +769,17 @@ const openBrowser = () => {
 
 // 开关选项
 .toggle-option {
-   display: flex;
-   align-items: center;
-   gap: 8px;
-   cursor: pointer;
-   padding: 6px 10px;
-   border-radius: 6px;
-   background: var(--bg-primary);
-   border: 1px solid var(--border-color);
-   transition: all 0.2s;
    position: relative;
    z-index: 1; // 默认层级
+   display: flex;
+   gap: 8px;
+   align-items: center;
+   padding: 6px 10px;
+   cursor: pointer;
+   background: var(--bg-primary);
+   border: 1px solid var(--border-color);
+   border-radius: 6px;
+   transition: all 0.2s;
 
    // hover 时提升层级，确保 tooltip 不被遮挡
    &:hover {
@@ -792,8 +791,8 @@ const openBrowser = () => {
    }
 
    &.disabled {
-      opacity: 0.5;
       cursor: not-allowed;
+      opacity: 0.5;
 
       .toggle-slider {
          background: var(--border-color) !important;
@@ -810,23 +809,23 @@ const openBrowser = () => {
 }
 
 .toggle-slider {
+   position: relative;
+   flex-shrink: 0;
    width: 32px;
    height: 18px;
    background: var(--border-color);
    border-radius: 9px;
-   position: relative;
    transition: background 0.3s;
-   flex-shrink: 0;
 
    &::after {
-      content: '';
       position: absolute;
-      width: 12px;
-      height: 12px;
-      background: white;
-      border-radius: 50%;
       top: 3px;
       left: 3px;
+      width: 12px;
+      height: 12px;
+      content: '';
+      background: white;
+      border-radius: 50%;
       transition: transform 0.3s;
    }
 
@@ -840,10 +839,10 @@ const openBrowser = () => {
 }
 
 .toggle-label {
+   font-family: 'SF Mono', 'Fira Code', monospace;
+   font-size: 0.8em;
    font-weight: 500;
    color: var(--text-primary);
-   font-size: 0.8em;
-   font-family: 'SF Mono', 'Fira Code', monospace;
    white-space: nowrap;
    user-select: none;
 }
@@ -861,9 +860,9 @@ const openBrowser = () => {
       .tooltip-arrow {
          top: -6px;
          left: 20px;
-         border-left: 6px solid transparent;
          border-right: 6px solid transparent;
          border-bottom: 6px solid #fff;
+         border-left: 6px solid transparent;
 
          [theme='dark'] & {
             border-bottom-color: #2d3748;
@@ -877,9 +876,9 @@ const openBrowser = () => {
       .tooltip-arrow {
          bottom: -6px;
          left: 20px;
-         border-left: 6px solid transparent;
-         border-right: 6px solid transparent;
          border-top: 6px solid #fff;
+         border-right: 6px solid transparent;
+         border-left: 6px solid transparent;
 
          [theme='dark'] & {
             border-top-color: #2d3748;
@@ -889,22 +888,22 @@ const openBrowser = () => {
 }
 
 .tooltip-content {
-   background: #fff;
-   color: #333;
    padding: 8px 12px;
-   border-radius: 8px;
    font-size: 0.8em;
    line-height: 1.5;
+   color: #333;
    white-space: nowrap;
+   background: #fff;
+   border: 1px solid #e8e8e8;
+   border-radius: 8px;
    box-shadow:
       0 3px 6px -4px rgb(0 0 0 / 12%),
       0 6px 16px 0 rgb(0 0 0 / 8%),
       0 9px 28px 8px rgb(0 0 0 / 5%);
-   border: 1px solid #e8e8e8;
 
    [theme='dark'] & {
-      background: #2d3748;
       color: #fff;
+      background: #2d3748;
       border-color: #4a5568;
       box-shadow:
          0 4px 8px rgb(0 0 0 / 40%),
@@ -941,8 +940,8 @@ const openBrowser = () => {
 
 // 运行时方法
 .methods-section {
-   padding: 12px;
    flex-shrink: 0; // 不收缩，保持固定高度
+   padding: 12px;
 }
 
 .methods-grid {
@@ -952,16 +951,16 @@ const openBrowser = () => {
 }
 
 .method-chip {
+   position: relative;
    display: inline-flex;
    align-items: center;
    padding: 5px 10px;
-   border-radius: 14px;
+   font-family: 'SF Mono', 'Fira Code', monospace;
+   font-size: 0.75em;
+   cursor: pointer;
    background: var(--bg-primary);
    border: 1px solid var(--border-color);
-   cursor: pointer;
-   font-size: 0.75em;
-   font-family: 'SF Mono', 'Fira Code', monospace;
-   position: relative;
+   border-radius: 14px;
    transition: all 0.2s;
 
    input {
@@ -973,22 +972,22 @@ const openBrowser = () => {
    }
 
    &.active {
+      color: white;
       background: var(--color-primary);
       border-color: var(--color-primary);
-      color: white;
    }
 }
 
 // 代码块风格
 .code-block {
-   border-radius: 8px;
+   display: flex;
+   flex: 1; // 填满剩余空间
+   flex-direction: column;
+   min-height: 150px; // 最小高度
    overflow: hidden;
    background: #1e1e1e;
    border: 1px solid #333;
-   display: flex;
-   flex-direction: column;
-   flex: 1; // 填满剩余空间
-   min-height: 150px; // 最小高度
+   border-radius: 8px;
 
    [theme='light'] & {
       background: #f6f8fa;
@@ -998,8 +997,8 @@ const openBrowser = () => {
 
 .code-block-header {
    display: flex;
-   justify-content: space-between;
    align-items: center;
+   justify-content: space-between;
    padding: 6px 12px;
    background: rgb(255 255 255 / 5%);
    border-bottom: 1px solid #333;
@@ -1025,36 +1024,36 @@ const openBrowser = () => {
 .copy-btn {
    padding: 4px 8px;
    font-size: 0.75em;
+   cursor: pointer;
    background: transparent;
    border: none;
-   cursor: pointer;
    opacity: 0.6;
    transition: opacity 0.2s;
 
    &:hover {
-      opacity: 1;
       background: transparent;
+      opacity: 1;
    }
 }
 
 .code-block-content {
+   flex: 1;
+   min-height: 0; // 确保 flex 子元素可以收缩
    padding: 12px;
+   overflow: hidden auto; // 垂直滚动
    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
    font-size: 0.85em;
    line-height: 1.5;
-   overflow: hidden auto; // 垂直滚动
-   flex: 1;
-   min-height: 0; // 确保 flex 子元素可以收缩
 }
 
 .command-line {
    display: flex;
    flex-wrap: wrap;
    padding: 3px 8px;
-   border-radius: 3px;
    margin-bottom: 2px;
-   border-left: 3px solid transparent;
    white-space: nowrap;
+   border-left: 3px solid transparent;
+   border-radius: 3px;
 
    // 运行时方法行允许换行
    &.line-runtime-methods {
@@ -1097,8 +1096,8 @@ const openBrowser = () => {
       border-left-color: #ff79c6 !important;
 
       .line-name {
-         color: #ff79c6;
          font-weight: 700;
+         color: #ff79c6;
 
          [theme='light'] & {
             color: #d63384;
@@ -1116,8 +1115,8 @@ const openBrowser = () => {
 
    // 输出行
    &.line-type-output {
-      border-left-color: #50fa7b !important;
       padding-left: 20px;
+      border-left-color: #50fa7b !important;
 
       .line-name {
          color: #50fa7b;
@@ -1151,8 +1150,8 @@ const openBrowser = () => {
 
    // 用户手动添加的自定义命令
    &.line-custom {
-      border-left-color: #f59e0b !important;
       background: rgb(245 158 11 / 8%);
+      border-left-color: #f59e0b !important;
 
       [theme='light'] & {
          background: rgb(245 158 11 / 6%);
@@ -1177,8 +1176,8 @@ const openBrowser = () => {
 }
 
 .line-name {
-   color: #bd93f9;
    font-weight: 500;
+   color: #bd93f9;
 
    [theme='light'] & {
       color: #6610f2;
@@ -1192,8 +1191,8 @@ const openBrowser = () => {
 }
 
 .line-value {
-   color: #f38ba8;
    font-weight: 500;
+   color: #f38ba8;
 
    [theme='light'] & {
       color: #c2185b;
@@ -1210,8 +1209,8 @@ const openBrowser = () => {
       overflow-wrap: break-word;
 
       .method-item {
-         color: #50fa7b;
          font-weight: 600;
+         color: #50fa7b;
 
          [theme='light'] & {
             color: #198754;
@@ -1222,26 +1221,26 @@ const openBrowser = () => {
 
 // 执行按钮
 .execute-btn {
+   display: flex;
+   flex-shrink: 0; // 不收缩，保持固定高度
+   gap: 8px;
+   align-items: center;
+   justify-content: center;
    width: 100%;
    padding: 14px 20px;
    font-size: 1em;
    font-weight: 600;
-   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
    color: white;
+   cursor: pointer;
+   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
    border: none;
    border-radius: 10px;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   gap: 8px;
-   cursor: pointer;
-   transition: all 0.3s;
    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 35%, transparent);
-   flex-shrink: 0; // 不收缩，保持固定高度
+   transition: all 0.3s;
 
    &:hover:not(:disabled) {
-      transform: translateY(-2px);
       box-shadow: 0 6px 16px color-mix(in srgb, var(--color-primary) 45%, transparent);
+      transform: translateY(-2px);
    }
 
    &:active:not(:disabled) {
@@ -1249,8 +1248,8 @@ const openBrowser = () => {
    }
 
    &:disabled {
-      opacity: 0.5;
       cursor: not-allowed;
+      opacity: 0.5;
    }
 
    .btn-icon {
@@ -1260,13 +1259,13 @@ const openBrowser = () => {
 
 .link-span {
    color: var(--color-primary);
+   text-decoration: underline;
+   text-decoration-thickness: 1px;
+   text-decoration-color: var(--color-primary);
+   text-underline-offset: 2px;
    cursor: pointer;
    user-select: none;
    transition: color 0.2s ease;
-   text-decoration: underline;
-   text-decoration-color: var(--color-primary);
-   text-underline-offset: 2px;
-   text-decoration-thickness: 1px;
 
    &:hover {
       color: var(--color-primary-hover);
