@@ -155,6 +155,17 @@ export const compileOptionOptions: CompileOption[] = [
       inputPlaceholder: 'module.d.ts',
       hint: '生成类型定义文件 (.d.ts)',
    },
+   {
+      key: 'SIDE_MODULE',
+      name: 'SIDE_MODULE',
+      enabled: false,
+      cmdPrefix: '-s',
+      cmdName: 'SIDE_MODULE',
+      valueType: 'boolean',
+      defaultValue: 1,
+      formatType: 'flag',
+      hint: '编译纯wasm模块没有main函数',
+   },
 
    // === 导出函数 ===
    {

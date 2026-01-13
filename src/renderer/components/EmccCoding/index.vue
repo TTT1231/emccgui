@@ -336,6 +336,7 @@ const openBrowser = () => {
                   <label
                      v-for="opt in compileOptionsOpt"
                      :key="opt.key"
+                     v-show="opt.key !== 'SIDE_MODULE' || outputFormat === 'wasm-only'"
                      class="toggle-option"
                      :class="{ disabled: opt.dependsOn && !getOptionByKey(opt.dependsOn)?.enabled }"
                      @mouseenter="showTooltip(opt.name, $event)"
