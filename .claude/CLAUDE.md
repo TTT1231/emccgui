@@ -132,31 +132,34 @@ EmccCoding 组件包含完整的 emcc 选项配置，位于 [`src/renderer/compo
 ```
 
 **必填部分：**
+
 - `type`: 提交类型
 - `subject`: 简短描述（不超过 50 字符，中文，动词开头，首字母小写，结尾无标点）
 
 **可选部分：**
+
 - `scope`: 影响范围
 
 ### Type 类型
 
-| Type | 说明 | 示例 |
-|------|------|------|
-| `feat` | 新功能 | feat: 添加 WASM 输出格式选择 |
-| `fix` | 修复 Bug | fix: 修复 emcc 编译路径错误 |
-| `docs` | 文档变更 | docs: 更新 README 安装说明 |
-| `style` | 代码格式调整（不影响功能） | style: 格式化 TypeScript 代码 |
-| `refactor` | 重构（既不是新功能也不是修复） | refactor: 优化 IPC 通信模块 |
-| `perf` | 性能优化 | perf: 优化 Vite 构建速度 |
-| `test` | 测试相关 | test: 添加 IPC 单元测试 |
-| `build` | 构建系统或外部依赖变更 | build: 升级 Electron 到 39.0.0 |
-| `ci` | CI 配置文件和脚本变更 | ci: 添加 GitHub Actions 工作流 |
-| `chore` | 其他不修改 src 或测试文件的变更 | chore: 更新 .gitignore |
-| `revert` | 回滚之前的提交 | revert: feat: 添加自定义标题栏 |
+| Type       | 说明                            | 示例                           |
+| ---------- | ------------------------------- | ------------------------------ |
+| `feat`     | 新功能                          | feat: 添加 WASM 输出格式选择   |
+| `fix`      | 修复 Bug                        | fix: 修复 emcc 编译路径错误    |
+| `docs`     | 文档变更                        | docs: 更新 README 安装说明     |
+| `style`    | 代码格式调整（不影响功能）      | style: 格式化 TypeScript 代码  |
+| `refactor` | 重构（既不是新功能也不是修复）  | refactor: 优化 IPC 通信模块    |
+| `perf`     | 性能优化                        | perf: 优化 Vite 构建速度       |
+| `test`     | 测试相关                        | test: 添加 IPC 单元测试        |
+| `build`    | 构建系统或外部依赖变更          | build: 升级 Electron 到 39.0.0 |
+| `ci`       | CI 配置文件和脚本变更           | ci: 添加 GitHub Actions 工作流 |
+| `chore`    | 其他不修改 src 或测试文件的变更 | chore: 更新 .gitignore         |
+| `revert`   | 回滚之前的提交                  | revert: feat: 添加自定义标题栏 |
 
 ### Scope（影响范围）
 
 常用的 scope 包括：
+
 - `main`: 主进程
 - `renderer`: 渲染进程
 - `preload`: 预加载脚本
@@ -168,12 +171,14 @@ EmccCoding 组件包含完整的 emcc 选项配置，位于 [`src/renderer/compo
 ### 提交示例
 
 **简单提交：**
+
 ```bash
 feat: 添加深色主题切换功能
 fix(renderer): 修复编译按钮状态未正确更新的问题
 ```
 
 **带详细说明（多行）：**
+
 ```bash
 refactor(ipc): 优化 IPC 通信错误处理机制
 
@@ -186,6 +191,7 @@ refactor(ipc): 优化 IPC 通信错误处理机制
 ```
 
 **带 Breaking Change：**
+
 ```bash
 feat(main): 实现自动更新功能
 
@@ -205,6 +211,7 @@ BREAKING CHANGE: 应用程序现在需要访问 GitHub Releases 才能检查更�
 ### 协作提交
 
 当 Claude Code 协助提交代码时，会自动添加：
+
 ```
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 ```

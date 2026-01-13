@@ -280,6 +280,18 @@ export const runtimeMethodOptions: RuntimeMethodOption[] = [
       enabled: false,
       hint: '向 WASM 内存中写入值到指定地址',
    },
+   {
+      key: 'UTF8ToString',
+      name: 'UTF8ToString',
+      enabled: false,
+      hint: 'C字符串指针转JS字符串',
+   },
+   {
+      key: 'stringToUTF8',
+      name: 'stringToUTF8',
+      enabled: false,
+      hint: 'JS字符串转C字符串指针',
+   },
 ];
 
 // 命令行生成相关类型
@@ -289,6 +301,7 @@ export interface CommandLine {
    type: 'command' | 'output' | 'flag';
    isRuntimeMethods?: boolean;
    methods?: string[];
+   customMethods?: string[]; // 自定义运行时方法
    isCustom?: boolean; // 用户手动添加的自定义命令
 }
 

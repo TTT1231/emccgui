@@ -57,10 +57,35 @@ export function registerIpcHandlers() {
       'IElectronApi-EmccControl-executeCommand',
       async (_, command: string, workDir?: string) => {
          try {
-            const options = workDir
-               ? { cwd: workDir, maxBuffer: 10 * 1024 * 1024 }
-               : { maxBuffer: 10 * 1024 * 1024 };
-            const { stdout, stderr } = await execAsync(command, options);
+            // 根据平台选择最佳执行方式
+            const platform = process.platform;
+            let finalCommand = command;
+
+            if (platform === 'win32') {
+               // Windows: 使用 cmd.exe /c 来获取完整的用户环境变量
+               finalCommand = `cmd.exe /c "${command}"`;
+            }
+            // Linux/macOS: 直接执行，shell: true 会自动使用 /bin/sh
+
+            const options: Record<string, unknown> = workDir
+               ? {
+                    cwd: workDir,
+                    maxBuffer: 10 * 1024 * 1024,
+                    shell: platform !== 'win32' ? '/bin/sh' : undefined,
+                 }
+               : {
+                    maxBuffer: 10 * 1024 * 1024,
+                    shell: platform !== 'win32' ? '/bin/sh' : undefined,
+                 };
+
+            const { stdout, stderr } = await execAsync(
+               finalCommand,
+               options as {
+                  cwd?: string;
+                  maxBuffer: number;
+                  shell?: string;
+               },
+            );
             return {
                success: true,
                stdout: stdout || '',
