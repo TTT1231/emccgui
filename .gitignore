@@ -100,3 +100,4 @@ components.d.ts
 # claude temp file
 tempclaude*
 tempclaude
+.claude/settings.local.json
