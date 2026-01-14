@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, watch, nextTick } from 'vue';
+import { message } from 'ant-design-vue';
 
 import optionsData from './options.json';
 
@@ -9,6 +10,11 @@ interface Option {
    defaultVal: string;
    defaultValDescri: string;
 }
+
+// 接收已存在的自定义命令列表
+const props = defineProps<{
+   existingCommands?: string[];
+}>();
 
 const emit = defineEmits({
    handleAdd: value => typeof value === 'string',
@@ -27,6 +33,27 @@ const dropdownDirection = ref<'up' | 'down'>('down');
 
 // 从 options.json 加载选项数据
 const allOptions = ref<Option[]>(optionsData as Option[]);
+
+// 提取命令名称（去除等号及后面的值）
+const extractCommandName = (command: string): string => {
+   const eqIndex = command.indexOf('=');
+   return eqIndex > 0 ? command.substring(0, eqIndex) : command;
+};
+
+// 检查命令是否已存在
+const isCommandDuplicate = (newCommand: string): boolean => {
+   if (!props.existingCommands || props.existingCommands.length === 0) {
+      return false;
+   }
+
+   const newCommandName = extractCommandName(newCommand);
+
+   // 检查是否与已存在的命令重复
+   return props.existingCommands.some(existingCmd => {
+      const existingCommandName = extractCommandName(existingCmd);
+      return existingCommandName === newCommandName;
+   });
+};
 
 // 过滤匹配的选项（基于当前输入的触发字符后的内容）
 const filteredOptions = computed(() => {
@@ -86,7 +113,17 @@ const handleAdd = () => {
    if (!searchValue.value.trim()) {
       return;
    }
-   emit('handleAdd', searchValue.value.trim());
+
+   const commandToAdd = searchValue.value.trim();
+
+   // 检查是否重复
+   if (isCommandDuplicate(commandToAdd)) {
+      const commandName = extractCommandName(commandToAdd);
+      message.warning(`命令 "${commandName}" 已存在，请勿重复添加`);
+      return;
+   }
+
+   emit('handleAdd', commandToAdd);
    searchValue.value = ''; // 清空输入框
    showSuggestions.value = false;
 };

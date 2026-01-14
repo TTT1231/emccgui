@@ -8,6 +8,8 @@ import {
    runtimeMethodOptions,
    optimizationLevels,
    formatCommandLine,
+   getConflictedOptions,
+   getConflictReason,
    type OptimizationLevelsType,
    type CompileOption,
    type RuntimeMethodOption,
@@ -78,6 +80,26 @@ const optionsWithSelect = computed(() => {
       opt => opt.valueType === 'select' && opt.selectOptions && opt.enabled,
    );
 });
+
+// 计算当前有冲突的选项 keys
+const conflictedKeys = computed(() => {
+   return getConflictedOptions(outputFormat.value, compileOptionsOpt.value);
+});
+
+// 计算当前有冲突的选项对象（用于显示警告）
+const conflictedOptions = computed(() => {
+   return compileOptionsOpt.value.filter(opt => conflictedKeys.value.has(opt.key));
+});
+
+// 检查单个选项是否有冲突
+const hasConflict = (optionKey: string): boolean => {
+   return conflictedKeys.value.has(optionKey);
+};
+
+// 获取单个选项的冲突原因
+const getConflictMessage = (optionKey: string): string | null => {
+   return getConflictReason(optionKey, outputFormat.value, compileOptionsOpt.value);
+};
 
 // 生成命令行数组（用于高亮显示）
 const commandLines = computed(() => {
@@ -263,6 +285,79 @@ const executeCommand = async () => {
    }
 };
 const addOptionsStack = ref<string[]>([]);
+
+// 提取命令名称（去除等号及后面的值）
+const extractCommandName = (command: string): string => {
+   const eqIndex = command.indexOf('=');
+   return eqIndex > 0 ? command.substring(0, eqIndex) : command;
+};
+
+// 获取所有已存在的编译选项命令名称（包括 UI 配置和手动添加的）
+const getAllExistingCommandNames = computed(() => {
+   const commandNames: string[] = [];
+   const isJsWasm = outputFormat.value === 'js-wasm';
+
+   // 1. 从 UI 配置的编译选项中提取命令名称
+   for (const option of compileOptionsOpt.value) {
+      // 检查是否启用
+      if (!isOptionEnabled(option)) continue;
+
+      // 检查 js-wasm 限制
+      if (option.jsWasmOnly && !isJsWasm) continue;
+
+      // 处理 select 类型
+      if (option.valueType === 'select') {
+         const selectValue = option.currentValue || option.defaultValue;
+         if (option.formatType === 'arg') {
+            // 如 -g, -g3, -g4 直接作为参数
+            commandNames.push(`-${selectValue}`);
+         } else {
+            // 如 -sASSERTIONS=1, -sASSERTIONS=2
+            const cmdName = `${option.cmdPrefix}${option.cmdName}`;
+            commandNames.push(cmdName);
+         }
+         continue;
+      }
+
+      // 根据选项格式生成命令名
+      const cmdName =
+         option.cmdPrefix === '-s'
+            ? `${option.cmdPrefix}${option.cmdName}`
+            : `${option.cmdPrefix}${option.cmdName}`;
+
+      switch (option.formatType) {
+         case 'arg':
+            commandNames.push(cmdName);
+            break;
+         case 'setting':
+         case 'flag':
+            commandNames.push(cmdName);
+            break;
+      }
+   }
+
+   // 2. 优化级别
+   commandNames.push(`-${options.value.optimizationLevel}`);
+
+   // 3. 如果是纯 WASM 模式，添加 STANDALONE_WASM
+   if (!isJsWasm) {
+      commandNames.push('-sSTANDALONE_WASM');
+   }
+
+   // 4. 运行时方法（如果在 JS+WASM 模式下有启用的话）
+   const enabledMethods = runtimeMethodsOpt.value.filter(m => m.enabled).map(m => m.name);
+   if (enabledMethods.length > 0 && isJsWasm) {
+      commandNames.push('-sEXPORTED_RUNTIME_METHODS');
+   }
+
+   // 5. 手动添加的自定义命令
+   for (const customCmd of addOptionsStack.value) {
+      commandNames.push(extractCommandName(customCmd));
+   }
+
+   return commandNames;
+});
+
 //手动添加编译选项命令
 const handleAddCompileOptions = (value: string) => {
    addOptionsStack.value.push(value);
@@ -332,13 +427,38 @@ const openBrowser = () => {
             <section class="section">
                <h3 class="section-title">🔧 编译选项</h3>
 
+               <!-- 冲突警告提示 -->
+               <Transition name="warning">
+                  <div v-if="conflictedOptions.length > 0" class="conflict-warning">
+                     <span class="warning-icon">⚠️</span>
+                     <div class="warning-content">
+                        <div class="warning-title">
+                           检测到 {{ conflictedOptions.length }} 个冲突选项
+                        </div>
+                        <div class="warning-list">
+                           <div
+                              v-for="opt in conflictedOptions"
+                              :key="opt.key"
+                              class="warning-item"
+                           >
+                              <span class="warning-opt-name">{{ opt.name }}</span>
+                              <span class="warning-reason">{{ getConflictMessage(opt.key) }}</span>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </Transition>
+
                <div class="options-grid">
                   <label
                      v-for="opt in compileOptionsOpt"
                      :key="opt.key"
                      v-show="opt.key !== 'SIDE_MODULE' || outputFormat === 'wasm-only'"
                      class="toggle-option"
-                     :class="{ disabled: opt.dependsOn && !getOptionByKey(opt.dependsOn)?.enabled }"
+                     :class="{
+                        disabled: opt.dependsOn && !getOptionByKey(opt.dependsOn)?.enabled,
+                        conflicted: hasConflict(opt.key),
+                     }"
                      @mouseenter="showTooltip(opt.name, $event)"
                      @mouseleave="hideTooltip"
                   >
@@ -468,22 +588,47 @@ const openBrowser = () => {
                </div>
             </div>
             <SearchBtn
+               :existing-commands="getAllExistingCommandNames"
                @handle-add="handleAddCompileOptions"
                @handle-revoke="handleRevokeCompileOptions"
             />
             <!-- 运行时方法 -->
             <section class="section methods-section">
                <h3 class="section-title">📦 导出运行时方法</h3>
+
+               <!-- 运行时方法冲突警告 -->
+               <Transition name="warning">
+                  <div
+                     v-if="outputFormat === 'wasm-only' && runtimeMethodsOpt.some(m => m.enabled)"
+                     class="runtime-methods-warning"
+                  >
+                     <span class="warning-icon">ℹ️</span>
+                     <div class="warning-content">
+                        <div class="warning-title">运行时方法仅在 JS + WASM 模式下有效</div>
+                        <div class="warning-reason">
+                           纯 WASM 模式不生成 JS glue 代码，无法使用这些运行时方法
+                        </div>
+                     </div>
+                  </div>
+               </Transition>
+
                <div class="methods-grid">
                   <label
                      v-for="method in runtimeMethodsOpt"
                      :key="method.key"
                      class="method-chip"
-                     :class="{ active: method.enabled }"
+                     :class="{
+                        active: method.enabled,
+                        conflicted: outputFormat === 'wasm-only',
+                     }"
                      @mouseenter="showTooltip(method.name, $event)"
                      @mouseleave="hideTooltip"
                   >
-                     <input type="checkbox" v-model="method.enabled" />
+                     <input
+                        type="checkbox"
+                        v-model="method.enabled"
+                        :disabled="outputFormat === 'wasm-only'"
+                     />
                      <span class="select-none">{{ method.name }}</span>
 
                      <!-- Tooltip -->
@@ -848,6 +993,109 @@ const openBrowser = () => {
    user-select: none;
 }
 
+// 冲突状态样式
+.toggle-option.conflicted {
+   border-color: #f59e0b;
+   background: color-mix(in srgb, #f59e0b 10%, var(--bg-primary));
+
+   .toggle-slider {
+      background: #f59e0b !important;
+   }
+
+   .toggle-label {
+      color: #d97706;
+   }
+
+   // 添加冲突图标
+   &::after {
+      content: '⚠️';
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.7em;
+   }
+}
+
+// 冲突警告框样式
+.conflict-warning {
+   display: flex;
+   gap: 10px;
+   padding: 12px;
+   margin-bottom: 12px;
+   background: color-mix(in srgb, #f59e0b 15%, var(--bg-secondary));
+   border: 1px solid #f59e0b;
+   border-radius: 8px;
+
+   [theme='light'] & {
+      background: color-mix(in srgb, #f59e0b 10%, #fff);
+   }
+}
+
+.warning-icon {
+   font-size: 1.2em;
+   flex-shrink: 0;
+}
+
+.warning-content {
+   flex: 1;
+   min-width: 0;
+}
+
+.warning-title {
+   font-size: 0.9em;
+   font-weight: 600;
+   color: #d97706;
+   margin-bottom: 6px;
+
+   [theme='light'] & {
+      color: #b45309;
+   }
+}
+
+.warning-list {
+   display: flex;
+   flex-direction: column;
+   gap: 4px;
+}
+
+.warning-item {
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+   padding: 4px 8px;
+   background: color-mix(in srgb, #f59e0b 10%, transparent);
+   border-radius: 4px;
+}
+
+.warning-opt-name {
+   font-family: 'SF Mono', 'Fira Code', monospace;
+   font-size: 0.8em;
+   font-weight: 600;
+   color: #d97706;
+
+   [theme='light'] & {
+      color: #b45309;
+   }
+}
+
+.warning-reason {
+   font-size: 0.75em;
+   color: var(--text-secondary);
+}
+
+// 警告过渡动画
+.warning-enter-active,
+.warning-leave-active {
+   transition: all 0.3s ease;
+}
+
+.warning-enter-from,
+.warning-leave-to {
+   opacity: 0;
+   transform: translateY(-10px);
+}
+
 // Tooltip 样式
 .tooltip {
    position: absolute;
@@ -976,6 +1224,34 @@ const openBrowser = () => {
       color: white;
       background: var(--color-primary);
       border-color: var(--color-primary);
+   }
+
+   // 冲突状态（纯 WASM 模式下）
+   &.conflicted {
+      cursor: not-allowed;
+      opacity: 0.5;
+      border-color: var(--border-color);
+
+      &.active {
+         color: var(--text-secondary);
+         background: var(--bg-button);
+         border-color: var(--border-color);
+      }
+   }
+}
+
+// 运行时方法警告样式
+.runtime-methods-warning {
+   display: flex;
+   gap: 10px;
+   padding: 10px 12px;
+   margin-bottom: 12px;
+   background: color-mix(in srgb, #3b82f6 10%, var(--bg-secondary));
+   border: 1px solid #3b82f6;
+   border-radius: 8px;
+
+   [theme='light'] & {
+      background: color-mix(in srgb, #3b82f6 8%, #fff);
    }
 }
 

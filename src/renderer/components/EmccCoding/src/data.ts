@@ -4,6 +4,21 @@ type CompileOptionValueType = 'boolean' | 'string' | 'number' | 'select';
 // 编译选项格式类型
 type CommandFormatType = 'flag' | 'setting' | 'arg';
 
+// 选项冲突类型
+type ConflictType = 'wasm-only' | 'side-module';
+
+// 选项冲突规则
+export interface OptionConflict {
+   // 触发冲突的选项 key
+   triggerKey: string;
+   // 冲突类型
+   type: ConflictType;
+   // 与触发选项冲突的选项 keys
+   conflictsWith: string[];
+   // 冲突描述（用于提示用户）
+   reason: string;
+}
+
 //配置参考地址
 export const optionsReferenceURL =
    'https://ttt1231.github.io/Turw-docs/WebAssembly.html#%E9%85%8D%E7%BD%AE%E9%80%9F%E6%9F%A5';
@@ -178,11 +193,10 @@ export const compileOptionOptions: CompileOption[] = [
       defaultValue: "['_main']",
       currentValue: "['_main']",
       formatType: 'flag',
-      jsWasmOnly: true,
       hasInput: true,
       inputLabel: '导出函数列表',
       inputPlaceholder: "['_main','_myFunc']",
-      hint: '指定要导出的 C/C++ 函数，函数名需加下划线前缀',
+      hint: '指定要导出的 C/C++ 函数，函数名需加下划线前缀（纯 WASM 模式下也有效）',
    },
 
    // === bind相关 ===
@@ -370,3 +384,79 @@ export const optimizationLevels = [
    { value: 'Oz', label: '-Oz (极限体积优化)' },
 ];
 export type OptimizationLevelsType = (typeof optimizationLevels)[number]['value'];
+
+// 选项冲突规则配置
+export const optionConflicts: OptionConflict[] = [
+   // SIDE_MODULE 模式下的冲突选项
+   {
+      triggerKey: 'SIDE_MODULE',
+      type: 'side-module',
+      conflictsWith: [
+         'emitTsd', // TypeScript 定义需要 JS glue
+         'exportES6', // ES6 模块需要 JS glue
+         'modularize', // 工厂函数需要 JS glue
+         'exportName', // 导出名需要 JS glue
+         'singleFile', // 单文件需要 JS glue
+         'bind', // Embind 需要 JS glue
+      ],
+      reason: 'SIDE_MODULE 模式只生成纯 WASM 文件，不包含 JavaScript glue 代码',
+   },
+];
+
+// 根据输出格式和当前选项状态获取应禁用的选项 keys
+export function getConflictedOptions(
+   outputFormat: 'js-wasm' | 'wasm-only',
+   options: CompileOption[],
+): Set<string> {
+   const conflictedKeys = new Set<string>();
+
+   // 1. 纯 WASM 输出模式下，所有 jsWasmOnly 选项都无效
+   if (outputFormat === 'wasm-only') {
+      for (const opt of options) {
+         if (opt.jsWasmOnly && opt.enabled) {
+            conflictedKeys.add(opt.key);
+         }
+      }
+   }
+
+   // 2. 检查启用的选项是否触发冲突规则
+   for (const conflict of optionConflicts) {
+      const triggerOpt = options.find(opt => opt.key === conflict.triggerKey);
+      if (triggerOpt?.enabled) {
+         // 如果触发选项已启用，则所有冲突选项应该被禁用
+         for (const conflictKey of conflict.conflictsWith) {
+            const conflictOpt = options.find(opt => opt.key === conflictKey);
+            if (conflictOpt?.enabled) {
+               conflictedKeys.add(conflictKey);
+            }
+         }
+      }
+   }
+
+   return conflictedKeys;
+}
+
+// 获取冲突描述信息
+export function getConflictReason(
+   optionKey: string,
+   outputFormat: 'js-wasm' | 'wasm-only',
+   options: CompileOption[],
+): string | null {
+   // 检查纯 WASM 模式冲突
+   if (outputFormat === 'wasm-only') {
+      const opt = options.find(o => o.key === optionKey);
+      if (opt?.jsWasmOnly) {
+         return '此选项需要 JavaScript glue 代码，纯 WASM 模式下不生成 JS 文件';
+      }
+   }
+
+   // 检查选项间冲突规则
+   for (const conflict of optionConflicts) {
+      const triggerOpt = options.find(opt => opt.key === conflict.triggerKey);
+      if (triggerOpt?.enabled && conflict.conflictsWith.includes(optionKey)) {
+         return conflict.reason;
+      }
+   }
+
+   return null;
+}
