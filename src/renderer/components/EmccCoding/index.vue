@@ -995,8 +995,8 @@ const openBrowser = () => {
 
 // 冲突状态样式
 .toggle-option.conflicted {
-   border-color: #f59e0b;
    background: color-mix(in srgb, #f59e0b 10%, var(--bg-primary));
+   border-color: #f59e0b;
 
    .toggle-slider {
       background: #f59e0b !important;
@@ -1008,12 +1008,12 @@ const openBrowser = () => {
 
    // 添加冲突图标
    &::after {
-      content: '⚠️';
       position: absolute;
-      right: 4px;
       top: 50%;
-      transform: translateY(-50%);
+      right: 4px;
       font-size: 0.7em;
+      content: '⚠️';
+      transform: translateY(-50%);
    }
 }
 
@@ -1033,8 +1033,8 @@ const openBrowser = () => {
 }
 
 .warning-icon {
-   font-size: 1.2em;
    flex-shrink: 0;
+   font-size: 1.2em;
 }
 
 .warning-content {
@@ -1043,10 +1043,10 @@ const openBrowser = () => {
 }
 
 .warning-title {
+   margin-bottom: 6px;
    font-size: 0.9em;
    font-weight: 600;
    color: #d97706;
-   margin-bottom: 6px;
 
    [theme='light'] & {
       color: #b45309;
@@ -1229,8 +1229,8 @@ const openBrowser = () => {
    // 冲突状态（纯 WASM 模式下）
    &.conflicted {
       cursor: not-allowed;
-      opacity: 0.5;
       border-color: var(--border-color);
+      opacity: 0.5;
 
       &.active {
          color: var(--text-secondary);
