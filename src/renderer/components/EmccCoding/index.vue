@@ -114,11 +114,6 @@ const commandLines = computed(() => {
    const outputExt = isJsWasm ? '.js' : '.wasm';
    lines.push({ name: '-o', value: `${outputFileName.value}${outputExt}`, type: 'output' });
 
-   // 如果只输出 wasm，添加 STANDALONE_WASM
-   if (!isJsWasm) {
-      lines.push({ name: '-sSTANDALONE_WASM', value: '1', type: 'flag' });
-   }
-
    // 遍历所有编译选项，自动生成命令行
    for (const option of compileOptionsOpt.value) {
       // 检查是否启用
@@ -339,18 +334,13 @@ const getAllExistingCommandNames = computed(() => {
    // 2. 优化级别
    commandNames.push(`-${options.value.optimizationLevel}`);
 
-   // 3. 如果是纯 WASM 模式，添加 STANDALONE_WASM
-   if (!isJsWasm) {
-      commandNames.push('-sSTANDALONE_WASM');
-   }
-
-   // 4. 运行时方法（如果在 JS+WASM 模式下有启用的话）
+   // 3. 运行时方法（如果在 JS+WASM 模式下有启用的话）
    const enabledMethods = runtimeMethodsOpt.value.filter(m => m.enabled).map(m => m.name);
    if (enabledMethods.length > 0 && isJsWasm) {
       commandNames.push('-sEXPORTED_RUNTIME_METHODS');
    }
 
-   // 5. 手动添加的自定义命令
+   // 4. 手动添加的自定义命令
    for (const customCmd of addOptionsStack.value) {
       commandNames.push(extractCommandName(customCmd));
    }

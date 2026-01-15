@@ -7,6 +7,21 @@ type CommandFormatType = 'flag' | 'setting' | 'arg';
 // 选项冲突类型
 type ConflictType = 'wasm-only' | 'side-module';
 
+// 辅助函数：根据 key 获取编译选项
+function getOptionByKey(options: CompileOption[], key: string): CompileOption | undefined {
+   return options.find(opt => opt.key === key);
+}
+
+// 辅助函数：检查选项是否真正启用（包括依赖检查）
+export function isOptionReallyEnabled(option: CompileOption, allOptions: CompileOption[]): boolean {
+   if (!option.enabled) return false;
+   if (option.dependsOn) {
+      const dep = getOptionByKey(allOptions, option.dependsOn);
+      if (!dep?.enabled) return false;
+   }
+   return true;
+}
+
 // 选项冲突规则
 export interface OptionConflict {
    // 触发冲突的选项 key
@@ -151,6 +166,18 @@ export const compileOptionOptions: CompileOption[] = [
       defaultValue: 1,
       formatType: 'flag',
       hint: '导出所有符号（函数和全局变量）',
+   },
+   {
+      key: 'standaloneWasm',
+      name: 'STANDALONE_WASM',
+      enabled: false,
+      cmdPrefix: '-s',
+      cmdName: 'STANDALONE_WASM',
+      valueType: 'boolean',
+      defaultValue: 1,
+      formatType: 'flag',
+      jsWasmOnly: true,
+      hint: '生成一个尽量独立的 WASM，减少对外部依赖（与 wasm-only 冲突）',
    },
 
    // === 类型定义 ===
@@ -413,7 +440,8 @@ export function getConflictedOptions(
    // 1. 纯 WASM 输出模式下，所有 jsWasmOnly 选项都无效
    if (outputFormat === 'wasm-only') {
       for (const opt of options) {
-         if (opt.jsWasmOnly && opt.enabled) {
+         // 使用 isOptionReallyEnabled 来检查选项是否真正启用（包括依赖检查）
+         if (opt.jsWasmOnly && isOptionReallyEnabled(opt, options)) {
             conflictedKeys.add(opt.key);
          }
       }
@@ -426,7 +454,8 @@ export function getConflictedOptions(
          // 如果触发选项已启用，则所有冲突选项应该被禁用
          for (const conflictKey of conflict.conflictsWith) {
             const conflictOpt = options.find(opt => opt.key === conflictKey);
-            if (conflictOpt?.enabled) {
+            // 使用 isOptionReallyEnabled 来检查选项是否真正启用
+            if (conflictOpt && isOptionReallyEnabled(conflictOpt, options)) {
                conflictedKeys.add(conflictKey);
             }
          }
@@ -442,10 +471,12 @@ export function getConflictReason(
    outputFormat: 'js-wasm' | 'wasm-only',
    options: CompileOption[],
 ): string | null {
+   const opt = options.find(o => o.key === optionKey);
+   if (!opt) return null;
+
    // 检查纯 WASM 模式冲突
    if (outputFormat === 'wasm-only') {
-      const opt = options.find(o => o.key === optionKey);
-      if (opt?.jsWasmOnly) {
+      if (opt?.jsWasmOnly && isOptionReallyEnabled(opt, options)) {
          return '此选项需要 JavaScript glue 代码，纯 WASM 模式下不生成 JS 文件';
       }
    }
