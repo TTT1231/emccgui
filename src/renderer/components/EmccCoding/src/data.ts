@@ -1,80 +1,8 @@
-// 编译选项值类型
-type CompileOptionValueType = 'boolean' | 'string' | 'number' | 'select';
-
-// 编译选项格式类型
-type CommandFormatType = 'flag' | 'setting' | 'arg';
-
-// 选项冲突类型
-type ConflictType = 'wasm-only' | 'side-module';
-
-// 辅助函数：根据 key 获取编译选项
-function getOptionByKey(options: CompileOption[], key: string): CompileOption | undefined {
-   return options.find(opt => opt.key === key);
-}
-
-// 辅助函数：检查选项是否真正启用（包括依赖检查）
-export function isOptionReallyEnabled(option: CompileOption, allOptions: CompileOption[]): boolean {
-   if (!option.enabled) return false;
-   if (option.dependsOn) {
-      const dep = getOptionByKey(allOptions, option.dependsOn);
-      if (!dep?.enabled) return false;
-   }
-   return true;
-}
-
-// 选项冲突规则
-export interface OptionConflict {
-   // 触发冲突的选项 key
-   triggerKey: string;
-   // 冲突类型
-   type: ConflictType;
-   // 与触发选项冲突的选项 keys
-   conflictsWith: string[];
-   // 冲突描述（用于提示用户）
-   reason: string;
-}
+import type { CompileOption, RuntimeMethodOption, OptionConflict } from './type';
 
 //配置参考地址
 export const optionsReferenceURL =
    'https://ttt1231.github.io/Turw-docs/WebAssembly.html#%E9%85%8D%E7%BD%AE%E9%80%9F%E6%9F%A5';
-// 下拉选项类型
-export interface SelectOption {
-   value: string;
-   label: string;
-}
-
-export interface CompileOption {
-   key: string; // 唯一标识符
-   name: string; // 显示名称
-   enabled: boolean; // 是否启用
-   // 命令行相关
-   cmdPrefix: string; // 命令行前缀，如 '-s', '--', '-'
-   cmdName: string; // 命令行名称，如 'EXPORT_ES6', 'emit-tsd'
-   // 值相关
-   valueType: CompileOptionValueType; // 值类型
-   defaultValue?: string | number | boolean; // 默认值
-   currentValue?: string; // 当前值（用于可编辑的选项）
-   selectOptions?: SelectOption[]; // 下拉选项（用于 select 类型）
-   // 格式相关
-   formatType: CommandFormatType; // 格式类型: flag(=连接), setting(空格连接), arg(无值)
-   // 条件限制
-   jsWasmOnly?: boolean; // 是否仅在 js-wasm 输出模式下可用
-   dependsOn?: string; // 依赖的其他选项 key
-   // UI 相关
-   hasInput?: boolean; // 是否需要用户输入
-   inputPlaceholder?: string; // 输入框占位符
-   inputLabel?: string; // 输入框标签
-   // 提示信息
-   hint: string;
-}
-
-// 运行时方法选项
-export interface RuntimeMethodOption {
-   key: string;
-   name: string;
-   enabled: boolean;
-   hint: string;
-}
 
 // 编译选项配置 - 集中管理所有选项
 export const compileOptionOptions: CompileOption[] = [
@@ -154,7 +82,7 @@ export const compileOptionOptions: CompileOption[] = [
       valueType: 'boolean',
       defaultValue: 1,
       formatType: 'flag',
-      hint: '允许 WASM 内存在运行时动态增长',
+      hint: '(默认16MB)允许 WASM 内存在运行时动态增长扩容',
    },
    {
       key: 'exportAll',
@@ -346,72 +274,6 @@ export const runtimeMethodOptions: RuntimeMethodOption[] = [
    },
 ];
 
-// 命令行生成相关类型
-export interface CommandLine {
-   name: string;
-   value?: string;
-   type: 'command' | 'output' | 'flag';
-   isRuntimeMethods?: boolean;
-   methods?: string[];
-   customMethods?: string[]; // 自定义运行时方法
-   isCustom?: boolean; // 用户手动添加的自定义命令
-}
-
-// 根据编译选项生成命令行参数
-export function generateCommandFromOption(option: CompileOption): CommandLine | null {
-   if (!option.enabled) return null;
-
-   // 如果有依赖项，需要外部检查依赖是否启用
-   const cmdName =
-      option.cmdPrefix === '-s'
-         ? `${option.cmdPrefix}${option.cmdName}`
-         : `${option.cmdPrefix}${option.cmdName}`;
-
-   switch (option.formatType) {
-      case 'arg':
-         // 无值参数，如 -g, -pthread
-         return { name: cmdName, type: 'flag' };
-      case 'setting':
-         // 空格连接，如 --emit-tsd module.d.ts
-         return {
-            name: cmdName,
-            value: String(option.defaultValue),
-            type: 'flag',
-         };
-      case 'flag':
-         // 等号连接，如 -sEXPORT_ES6=1
-         return {
-            name: cmdName,
-            value: String(option.defaultValue),
-            type: 'flag',
-         };
-      default:
-         return null;
-   }
-}
-
-// 生成完整命令字符串辅助函数
-export function formatCommandLine(line: CommandLine): string {
-   if (!line.value) return line.name;
-   // -o 和 emcc 后面用空格
-   if (line.type === 'command' || line.type === 'output') {
-      return `${line.name} ${line.value}`;
-   }
-   // 所有 flag 类型都用等号连接
-   return `${line.name}=${line.value}`;
-}
-
-// 优化级别选项
-export const optimizationLevels = [
-   { value: 'O0', label: '-O0 (默认值，无优化)' },
-   { value: 'O1', label: '-O1 (基础优化)' },
-   { value: 'O2', label: '-O2 (标准优化)' },
-   { value: 'O3', label: '-O3 (最大优化)' },
-   { value: 'Os', label: '-Os (体积优化)' },
-   { value: 'Oz', label: '-Oz (极限体积优化)' },
-];
-export type OptimizationLevelsType = (typeof optimizationLevels)[number]['value'];
-
 // 选项冲突规则配置
 export const optionConflicts: OptionConflict[] = [
    // SIDE_MODULE 模式下的冲突选项
@@ -430,64 +292,12 @@ export const optionConflicts: OptionConflict[] = [
    },
 ];
 
-// 根据输出格式和当前选项状态获取应禁用的选项 keys
-export function getConflictedOptions(
-   outputFormat: 'js-wasm' | 'wasm-only',
-   options: CompileOption[],
-): Set<string> {
-   const conflictedKeys = new Set<string>();
-
-   // 1. 纯 WASM 输出模式下，所有 jsWasmOnly 选项都无效
-   if (outputFormat === 'wasm-only') {
-      for (const opt of options) {
-         // 使用 isOptionReallyEnabled 来检查选项是否真正启用（包括依赖检查）
-         if (opt.jsWasmOnly && isOptionReallyEnabled(opt, options)) {
-            conflictedKeys.add(opt.key);
-         }
-      }
-   }
-
-   // 2. 检查启用的选项是否触发冲突规则
-   for (const conflict of optionConflicts) {
-      const triggerOpt = options.find(opt => opt.key === conflict.triggerKey);
-      if (triggerOpt?.enabled) {
-         // 如果触发选项已启用，则所有冲突选项应该被禁用
-         for (const conflictKey of conflict.conflictsWith) {
-            const conflictOpt = options.find(opt => opt.key === conflictKey);
-            // 使用 isOptionReallyEnabled 来检查选项是否真正启用
-            if (conflictOpt && isOptionReallyEnabled(conflictOpt, options)) {
-               conflictedKeys.add(conflictKey);
-            }
-         }
-      }
-   }
-
-   return conflictedKeys;
-}
-
-// 获取冲突描述信息
-export function getConflictReason(
-   optionKey: string,
-   outputFormat: 'js-wasm' | 'wasm-only',
-   options: CompileOption[],
-): string | null {
-   const opt = options.find(o => o.key === optionKey);
-   if (!opt) return null;
-
-   // 检查纯 WASM 模式冲突
-   if (outputFormat === 'wasm-only') {
-      if (opt?.jsWasmOnly && isOptionReallyEnabled(opt, options)) {
-         return '此选项需要 JavaScript glue 代码，纯 WASM 模式下不生成 JS 文件';
-      }
-   }
-
-   // 检查选项间冲突规则
-   for (const conflict of optionConflicts) {
-      const triggerOpt = options.find(opt => opt.key === conflict.triggerKey);
-      if (triggerOpt?.enabled && conflict.conflictsWith.includes(optionKey)) {
-         return conflict.reason;
-      }
-   }
-
-   return null;
-}
+// 优化级别选项
+export const optimizationLevels = [
+   { value: 'O0', label: '-O0 (默认值，无优化)' },
+   { value: 'O1', label: '-O1 (基础优化)' },
+   { value: 'O2', label: '-O2 (标准优化)' },
+   { value: 'O3', label: '-O3 (最大优化)' },
+   { value: 'Os', label: '-Os (体积优化)' },
+   { value: 'Oz', label: '-Oz (极限体积优化)' },
+];

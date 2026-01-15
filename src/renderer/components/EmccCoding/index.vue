@@ -2,20 +2,24 @@
 import { ref, computed } from 'vue';
 import { message } from 'ant-design-vue';
 
+import type {
+   OptimizationLevelsType,
+   CompileOption,
+   RuntimeMethodOption,
+   CommandLine,
+} from './src/type';
 import {
    optionsReferenceURL,
    compileOptionOptions,
    runtimeMethodOptions,
    optimizationLevels,
-   formatCommandLine,
-   getConflictedOptions,
-   getConflictReason,
-   type OptimizationLevelsType,
-   type CompileOption,
-   type RuntimeMethodOption,
-   type CommandLine,
 } from './src/data';
+import { formatCommandLine, getConflictedOptions, getConflictReason } from './src/utils';
 import SearchBtn from './src/SearchBtn.vue';
+
+// ------------ Imports & Component Registration ------------
+// ------------ State ------------
+
 // 文件相关
 const selectedFile = ref<{ path: string; name: string } | null>(null);
 const outputFileName = ref('hello');
@@ -32,74 +36,46 @@ const runtimeMethodsOpt = ref<RuntimeMethodOption[]>(
    JSON.parse(JSON.stringify(runtimeMethodOptions)),
 );
 
-// Tooltip 状态
-const activeTooltip = ref<string | null>(null);
-const tooltipDirection = ref<'up' | 'down'>('down');
-
-// 显示 tooltip
-const showTooltip = (name: string, event: MouseEvent) => {
-   const target = event.currentTarget as HTMLElement;
-   const rect = target.getBoundingClientRect();
-   const spaceBelow = window.innerHeight - rect.bottom;
-   // 如果下方空间不足 80px，则向上显示
-   tooltipDirection.value = spaceBelow < 80 ? 'up' : 'down';
-   activeTooltip.value = name;
-};
-
-// 隐藏 tooltip
-const hideTooltip = () => {
-   activeTooltip.value = null;
-};
-
-// EMCC 选项配置（保留优化级别等独立配置）
+// 优化级别配置
 const options = ref({
    optimizationLevel: 'O3' as OptimizationLevelsType,
 });
 
-// 辅助函数：根据 key 获取编译选项
-const getOptionByKey = (key: string) => compileOptionsOpt.value.find(opt => opt.key === key);
+// 手动添加的编译选项
+const addOptionsStack = ref<string[]>([]);
 
-// 辅助函数：检查选项是否启用（包括依赖检查）
-const isOptionEnabled = (option: CompileOption): boolean => {
-   if (!option.enabled) return false;
-   if (option.dependsOn) {
-      const dep = getOptionByKey(option.dependsOn);
-      if (!dep?.enabled) return false;
-   }
-   return true;
-};
+// 执行状态
+const isExecuting = ref(false);
 
-// 辅助函数：获取需要输入框的已启用选项
-const optionsWithInput = computed(() => {
-   return compileOptionsOpt.value.filter(opt => opt.hasInput && isOptionEnabled(opt));
-});
+// Tooltip 状态
+const activeTooltip = ref<string | null>(null);
+const tooltipDirection = ref<'up' | 'down'>('down');
+const tooltipPosition = ref({ left: '0px', top: '0px' });
+let hideTooltipTimer: ReturnType<typeof setTimeout> | null = null;
 
-// 辅助函数：获取有下拉选项的已启用选项
-const optionsWithSelect = computed(() => {
-   return compileOptionsOpt.value.filter(
+// ------------ Computed ------------
+
+// 需要输入框的已启用选项
+const optionsWithInput = computed(() =>
+   compileOptionsOpt.value.filter(opt => opt.hasInput && isOptionEnabled(opt)),
+);
+
+// 有下拉选项的已启用选项
+const optionsWithSelect = computed(() =>
+   compileOptionsOpt.value.filter(
       opt => opt.valueType === 'select' && opt.selectOptions && opt.enabled,
-   );
-});
+   ),
+);
 
-// 计算当前有冲突的选项 keys
-const conflictedKeys = computed(() => {
-   return getConflictedOptions(outputFormat.value, compileOptionsOpt.value);
-});
+// 当前有冲突的选项 keys
+const conflictedKeys = computed(() =>
+   getConflictedOptions(outputFormat.value, compileOptionsOpt.value),
+);
 
-// 计算当前有冲突的选项对象（用于显示警告）
-const conflictedOptions = computed(() => {
-   return compileOptionsOpt.value.filter(opt => conflictedKeys.value.has(opt.key));
-});
-
-// 检查单个选项是否有冲突
-const hasConflict = (optionKey: string): boolean => {
-   return conflictedKeys.value.has(optionKey);
-};
-
-// 获取单个选项的冲突原因
-const getConflictMessage = (optionKey: string): string | null => {
-   return getConflictReason(optionKey, outputFormat.value, compileOptionsOpt.value);
-};
+// 当前有冲突的选项对象（用于显示警告）
+const conflictedOptions = computed(() =>
+   compileOptionsOpt.value.filter(opt => conflictedKeys.value.has(opt.key)),
+);
 
 // 生成命令行数组（用于高亮显示）
 const commandLines = computed(() => {
@@ -116,20 +92,15 @@ const commandLines = computed(() => {
 
    // 遍历所有编译选项，自动生成命令行
    for (const option of compileOptionsOpt.value) {
-      // 检查是否启用
       if (!isOptionEnabled(option)) continue;
-
-      // 检查 js-wasm 限制
       if (option.jsWasmOnly && !isJsWasm) continue;
 
       // 处理 select 类型
       if (option.valueType === 'select') {
          const selectValue = option.currentValue || option.defaultValue;
          if (option.formatType === 'arg') {
-            // 如 -g, -g3, -g4 直接作为参数
             lines.push({ name: `-${selectValue}`, type: 'flag' });
          } else {
-            // 如 -sASSERTIONS=1, -sASSERTIONS=2
             const cmdName = `${option.cmdPrefix}${option.cmdName}`;
             lines.push({ name: cmdName, value: String(selectValue), type: 'flag' });
          }
@@ -148,7 +119,6 @@ const commandLines = computed(() => {
             break;
          case 'setting':
          case 'flag':
-            // 优先使用 currentValue，否则使用 defaultValue
             lines.push({
                name: cmdName,
                value: String(option.currentValue ?? option.defaultValue),
@@ -161,9 +131,8 @@ const commandLines = computed(() => {
    // 优化级别
    lines.push({ name: `-${options.value.optimizationLevel}`, type: 'flag' });
 
-   // 手动添加的编译选项（添加到优化级别之后、运行时方法之前）
+   // 手动添加的编译选项
    for (const customCmd of addOptionsStack.value) {
-      // 解析命令：支持 -sXXX=YYY 或 --xxx=yyy 或 -O3 等格式
       const eqIndex = customCmd.indexOf('=');
       if (eqIndex > 0) {
          const name = customCmd.substring(0, eqIndex);
@@ -176,7 +145,6 @@ const commandLines = computed(() => {
 
    // 导出的运行时方法
    const enabledMethods = runtimeMethodsOpt.value.filter(m => m.enabled).map(m => m.name);
-
    if (enabledMethods.length > 0 && isJsWasm) {
       lines.push({
          name: '-sEXPORTED_RUNTIME_METHODS',
@@ -191,34 +159,130 @@ const commandLines = computed(() => {
 });
 
 // 生成完整命令字符串
-const fullCommand = computed(() => {
-   return commandLines.value.map(line => formatCommandLine(line)).join(' ');
+const fullCommand = computed(() =>
+   commandLines.value.map(line => formatCommandLine(line)).join(' '),
+);
+
+// 获取所有已存在的编译选项命令名称（用于 SearchBtn 检测重复）
+const getAllExistingCommandNames = computed(() => {
+   const commandNames: string[] = [];
+   const isJsWasm = outputFormat.value === 'js-wasm';
+
+   for (const option of compileOptionsOpt.value) {
+      if (!isOptionEnabled(option)) continue;
+      if (option.jsWasmOnly && !isJsWasm) continue;
+
+      if (option.valueType === 'select') {
+         const selectValue = option.currentValue || option.defaultValue;
+         if (option.formatType === 'arg') {
+            commandNames.push(`-${selectValue}`);
+         } else {
+            commandNames.push(`${option.cmdPrefix}${option.cmdName}`);
+         }
+         continue;
+      }
+
+      const cmdName =
+         option.cmdPrefix === '-s'
+            ? `${option.cmdPrefix}${option.cmdName}`
+            : `${option.cmdPrefix}${option.cmdName}`;
+
+      switch (option.formatType) {
+         case 'arg':
+         case 'setting':
+         case 'flag':
+            commandNames.push(cmdName);
+            break;
+      }
+   }
+
+   commandNames.push(`-${options.value.optimizationLevel}`);
+
+   const enabledMethods = runtimeMethodsOpt.value.filter(m => m.enabled).map(m => m.name);
+   if (enabledMethods.length > 0 && isJsWasm) {
+      commandNames.push('-sEXPORTED_RUNTIME_METHODS');
+   }
+
+   for (const customCmd of addOptionsStack.value) {
+      const eqIndex = customCmd.indexOf('=');
+      commandNames.push(eqIndex > 0 ? customCmd.substring(0, eqIndex) : customCmd);
+   }
+
+   return commandNames;
 });
 
-// 文件处理
+// ------------ Helper Functions ------------
+
+// 根据 key 获取编译选项
+const getOptionByKey = (key: string) => compileOptionsOpt.value.find(opt => opt.key === key);
+
+// 检查选项是否启用（包括依赖检查）
+const isOptionEnabled = (option: CompileOption): boolean => {
+   if (!option.enabled) return false;
+   if (option.dependsOn) {
+      const dep = getOptionByKey(option.dependsOn);
+      if (!dep?.enabled) return false;
+   }
+   return true;
+};
+
+// 检查单个选项是否有冲突
+const hasConflict = (optionKey: string): boolean => conflictedKeys.value.has(optionKey);
+
+// 获取单个选项的冲突原因
+const getConflictMessage = (optionKey: string): string | null =>
+   getConflictReason(optionKey, outputFormat.value, compileOptionsOpt.value);
+
+// ------------ Tooltip ------------
+const showTooltip = (name: string, event: MouseEvent) => {
+   if (hideTooltipTimer) {
+      clearTimeout(hideTooltipTimer);
+      hideTooltipTimer = null;
+   }
+
+   if (activeTooltip.value === name) return;
+
+   const target = event.currentTarget as HTMLElement;
+   const rect = target.getBoundingClientRect();
+   const spaceBelow = window.innerHeight - rect.bottom;
+
+   tooltipDirection.value = spaceBelow < 80 ? 'up' : 'down';
+   tooltipPosition.value = {
+      left: `${rect.left}px`,
+      top: tooltipDirection.value === 'down' ? `${rect.bottom + 8}px` : `${rect.top - 8}px`,
+   };
+
+   activeTooltip.value = name;
+};
+
+const hideTooltip = () => {
+   if (hideTooltipTimer) {
+      clearTimeout(hideTooltipTimer);
+   }
+   hideTooltipTimer = setTimeout(() => {
+      activeTooltip.value = null;
+      hideTooltipTimer = null;
+   }, 100);
+};
+
+// ------------ File Handlers ------------
 const handleFileSelect = async () => {
    const result = await window.electronApi.EmccControl.selectFile();
    if (result) {
       selectedFile.value = { path: result.filePath, name: result.fileName };
-      // 自动设置输出文件名（不带扩展名）
       outputFileName.value = result.fileName.replace(/\.(cpp|c|cc)$/, '');
    }
 };
 
-// 拖放处理
 const handleDrop = async (e: DragEvent) => {
    isDragOver.value = false;
    const files = e.dataTransfer?.files;
    if (files && files.length > 0) {
       const file = files[0];
-      if (
-         file &&
-         (file.name.endsWith('.cpp') || file.name.endsWith('.c') || file.name.endsWith('.cc'))
-      ) {
-         // 使用 webUtils.getPathForFile 获取真实路径
+      const validExtensions = ['.cpp', '.c', '.cc'];
+      if (file && validExtensions.some(ext => file.name.endsWith(ext))) {
          const filePath = window.getPathForFile(file);
          selectedFile.value = { path: filePath, name: file.name };
-         // 自动设置输出文件名（不带扩展名）
          outputFileName.value = file.name.replace(/\.(cpp|c|cc)$/, '');
       }
    }
@@ -237,15 +301,12 @@ const removeFile = () => {
    selectedFile.value = null;
 };
 
-// 复制命令
+// ------------ Command Handlers ------------
+
 const copyCommand = async () => {
    await navigator.clipboard.writeText(fullCommand.value);
 };
 
-// 执行状态
-const isExecuting = ref(false);
-
-// 执行命令
 const executeCommand = async () => {
    if (!selectedFile.value) {
       message.warning('请先选择一个文件');
@@ -255,7 +316,6 @@ const executeCommand = async () => {
    isExecuting.value = true;
 
    try {
-      // 获取文件所在目录作为工作目录
       const filePath = selectedFile.value.path;
       const workDir = filePath.substring(
          0,
@@ -273,92 +333,23 @@ const executeCommand = async () => {
          message.error(`执行失败: ${result.error || ''}`, 2);
       }
    } catch (error: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      message.error((error as unknown as any).message, 2);
+      message.error((error as { message?: string }).message || '执行失败', 2);
    } finally {
       isExecuting.value = false;
    }
 };
-const addOptionsStack = ref<string[]>([]);
 
-// 提取命令名称（去除等号及后面的值）
-const extractCommandName = (command: string): string => {
-   const eqIndex = command.indexOf('=');
-   return eqIndex > 0 ? command.substring(0, eqIndex) : command;
-};
-
-// 获取所有已存在的编译选项命令名称（包括 UI 配置和手动添加的）
-const getAllExistingCommandNames = computed(() => {
-   const commandNames: string[] = [];
-   const isJsWasm = outputFormat.value === 'js-wasm';
-
-   // 1. 从 UI 配置的编译选项中提取命令名称
-   for (const option of compileOptionsOpt.value) {
-      // 检查是否启用
-      if (!isOptionEnabled(option)) continue;
-
-      // 检查 js-wasm 限制
-      if (option.jsWasmOnly && !isJsWasm) continue;
-
-      // 处理 select 类型
-      if (option.valueType === 'select') {
-         const selectValue = option.currentValue || option.defaultValue;
-         if (option.formatType === 'arg') {
-            // 如 -g, -g3, -g4 直接作为参数
-            commandNames.push(`-${selectValue}`);
-         } else {
-            // 如 -sASSERTIONS=1, -sASSERTIONS=2
-            const cmdName = `${option.cmdPrefix}${option.cmdName}`;
-            commandNames.push(cmdName);
-         }
-         continue;
-      }
-
-      // 根据选项格式生成命令名
-      const cmdName =
-         option.cmdPrefix === '-s'
-            ? `${option.cmdPrefix}${option.cmdName}`
-            : `${option.cmdPrefix}${option.cmdName}`;
-
-      switch (option.formatType) {
-         case 'arg':
-            commandNames.push(cmdName);
-            break;
-         case 'setting':
-         case 'flag':
-            commandNames.push(cmdName);
-            break;
-      }
-   }
-
-   // 2. 优化级别
-   commandNames.push(`-${options.value.optimizationLevel}`);
-
-   // 3. 运行时方法（如果在 JS+WASM 模式下有启用的话）
-   const enabledMethods = runtimeMethodsOpt.value.filter(m => m.enabled).map(m => m.name);
-   if (enabledMethods.length > 0 && isJsWasm) {
-      commandNames.push('-sEXPORTED_RUNTIME_METHODS');
-   }
-
-   // 4. 手动添加的自定义命令
-   for (const customCmd of addOptionsStack.value) {
-      commandNames.push(extractCommandName(customCmd));
-   }
-
-   return commandNames;
-});
-
-//手动添加编译选项命令
 const handleAddCompileOptions = (value: string) => {
    addOptionsStack.value.push(value);
 };
+
 const handleRevokeCompileOptions = () => {
-   const delVal = addOptionsStack.value.pop();
-   if (!delVal) return;
+   addOptionsStack.value.pop();
 };
 
+// ------------ Misc Handlers ------------
+
 const openBrowser = () => {
-   console.log('打开配置参考链接:', optionsReferenceURL);
    window.electronApi.BrowserControl.openBrowser(optionsReferenceURL);
 };
 </script>
@@ -466,6 +457,7 @@ const openBrowser = () => {
                            v-if="activeTooltip === opt.name"
                            class="tooltip"
                            :class="[`tooltip-${tooltipDirection}`]"
+                           :style="{ left: tooltipPosition.left, top: tooltipPosition.top }"
                         >
                            <div class="tooltip-content">
                               {{ opt.hint }}
@@ -485,6 +477,7 @@ const openBrowser = () => {
                         type="text"
                         class="text-input"
                         :placeholder="opt.inputPlaceholder"
+                        spellcheck="false"
                      />
                   </div>
                </template>
@@ -514,6 +507,7 @@ const openBrowser = () => {
                         type="text"
                         class="text-input"
                         placeholder="hello"
+                        spellcheck="false"
                      />
                      <span class="output-ext">{{
                         outputFormat === 'wasm-only' ? '.wasm' : '.js'
@@ -627,6 +621,7 @@ const openBrowser = () => {
                            v-if="activeTooltip === method.name"
                            class="tooltip"
                            :class="'tooltip-' + tooltipDirection"
+                           :style="{ left: tooltipPosition.left, top: tooltipPosition.top }"
                         >
                            <div class="tooltip-content">{{ method.hint }}</div>
                            <div class="tooltip-arrow"></div>
@@ -1088,20 +1083,20 @@ const openBrowser = () => {
 
 // Tooltip 样式
 .tooltip {
-   position: absolute;
-   left: 0;
+   position: fixed;
    z-index: 1000;
    pointer-events: none;
 
-   &.tooltip-down {
-      top: calc(100% + 8px);
+   .tooltip-arrow {
+      left: 20px;
+      border-right: 6px solid transparent;
+      border-left: 6px solid transparent;
+   }
 
+   &.tooltip-down {
       .tooltip-arrow {
          top: -6px;
-         left: 20px;
-         border-right: 6px solid transparent;
          border-bottom: 6px solid #fff;
-         border-left: 6px solid transparent;
 
          [theme='dark'] & {
             border-bottom-color: #2d3748;
@@ -1110,14 +1105,9 @@ const openBrowser = () => {
    }
 
    &.tooltip-up {
-      bottom: calc(100% + 8px);
-
       .tooltip-arrow {
          bottom: -6px;
-         left: 20px;
          border-top: 6px solid #fff;
-         border-right: 6px solid transparent;
-         border-left: 6px solid transparent;
 
          [theme='dark'] & {
             border-top-color: #2d3748;
@@ -1169,12 +1159,12 @@ const openBrowser = () => {
 
 .tooltip-down.tooltip-enter-from,
 .tooltip-down.tooltip-leave-to {
-   transform: translateX(-50%) translateY(-8px);
+   transform: translateY(-8px);
 }
 
 .tooltip-up.tooltip-enter-from,
 .tooltip-up.tooltip-leave-to {
-   transform: translateX(-50%) translateY(8px);
+   transform: translateY(8px);
 }
 
 // 运行时方法
