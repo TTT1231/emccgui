@@ -25,13 +25,30 @@ const selectedFile = ref<{ path: string; name: string } | null>(null);
 const outputFileName = ref('hello');
 const isDragOver = ref(false);
 
-// 输出格式选项
+const getEmitTsdOption = () => compileOptionsOpt.value.find(opt => opt.key === 'emitTsd');
 const outputFormat = ref<'js-wasm' | 'wasm-only'>('js-wasm');
 
 // 编译选项配置（响应式，从 data.ts 获取初始值）
 const compileOptionsOpt = ref<CompileOption[]>(JSON.parse(JSON.stringify(compileOptionOptions)));
 
-// 运行时方法配置（响应式）
+// .d.ts 文件名（不含后缀）
+const dtsFileName = ref('');
+
+// 初始化 dtsFileName 的默认值（需要在 compileOptionsOpt 初始化后调用）
+const initializeDtsFileName = () => {
+   const emitTsdOption = getEmitTsdOption();
+   if (emitTsdOption && emitTsdOption.enabled && emitTsdOption.defaultValue) {
+      // 如果 defaultValue 不含 .d.ts 后缀，直接使用
+      // 如果包含，则去掉后缀
+      const defaultVal = String(emitTsdOption.defaultValue);
+      dtsFileName.value = defaultVal.endsWith('.d.ts') ? defaultVal.slice(0, -5) : defaultVal;
+   }
+};
+
+// 初始化
+initializeDtsFileName();
+
+// 运行时方法配置
 const runtimeMethodsOpt = ref<RuntimeMethodOption[]>(
    JSON.parse(JSON.stringify(runtimeMethodOptions)),
 );
@@ -55,9 +72,10 @@ let hideTooltipTimer: ReturnType<typeof setTimeout> | null = null;
 
 // ------------ Computed ------------
 
-// 需要输入框的已启用选项
 const optionsWithInput = computed(() =>
-   compileOptionsOpt.value.filter(opt => opt.hasInput && isOptionEnabled(opt)),
+   compileOptionsOpt.value.filter(
+      opt => opt.hasInput && opt.key !== 'emitTsd' && isOptionEnabled(opt),
+   ),
 );
 
 // 有下拉选项的已启用选项
@@ -119,9 +137,21 @@ const commandLines = computed(() => {
             break;
          case 'setting':
          case 'flag':
+            // emitTsd 特殊处理：使用 dtsFileName 并自动添加 .d.ts 后缀
+            let value = String(option.currentValue ?? option.defaultValue);
+            if (option.key === 'emitTsd') {
+               // 如果 dtsFileName 有值，使用它并添加 .d.ts 后缀
+               // 否则使用 option 的 defaultValue/currentValue（如果有值）
+               if (dtsFileName.value) {
+                  value = `${dtsFileName.value}.d.ts`;
+               } else if (value) {
+                  // 确保 defaultValue/currentValue 也有 .d.ts 后缀
+                  value = value.endsWith('.d.ts') ? value : `${value}.d.ts`;
+               }
+            }
             lines.push({
                name: cmdName,
-               value: String(option.currentValue ?? option.defaultValue),
+               value: value,
                type: 'flag',
             });
             break;
@@ -271,6 +301,11 @@ const handleFileSelect = async () => {
    if (result) {
       selectedFile.value = { path: result.filePath, name: result.fileName };
       outputFileName.value = result.fileName.replace(/\.(cpp|c|cc)$/, '');
+
+      const emitTsdOption = getEmitTsdOption();
+      if (emitTsdOption && emitTsdOption.enabled) {
+         dtsFileName.value = outputFileName.value;
+      }
    }
 };
 
@@ -284,6 +319,11 @@ const handleDrop = async (e: DragEvent) => {
          const filePath = window.getPathForFile(file);
          selectedFile.value = { path: filePath, name: file.name };
          outputFileName.value = file.name.replace(/\.(cpp|c|cc)$/, '');
+
+         const emitTsdOption = getEmitTsdOption();
+         if (emitTsdOption && emitTsdOption.enabled) {
+            dtsFileName.value = outputFileName.value;
+         }
       }
    }
 };
@@ -299,6 +339,7 @@ const handleDragLeave = () => {
 
 const removeFile = () => {
    selectedFile.value = null;
+   dtsFileName.value = '';
 };
 
 // ------------ Command Handlers ------------
@@ -479,6 +520,23 @@ const openBrowser = () => {
                         :placeholder="opt.inputPlaceholder"
                         spellcheck="false"
                      />
+                  </div>
+               </template>
+
+               <!-- TypeScript 定义文件名 -->
+               <template v-if="getEmitTsdOption()?.enabled">
+                  <div class="input-group">
+                     <label class="input-label">{{ getEmitTsdOption()?.inputLabel }}</label>
+                     <div class="output-input-wrapper">
+                        <input
+                           v-model="dtsFileName"
+                           type="text"
+                           class="text-input"
+                           :placeholder="getEmitTsdOption()?.inputPlaceholder"
+                           spellcheck="false"
+                        />
+                        <span class="output-ext">.d.ts</span>
+                     </div>
                   </div>
                </template>
 

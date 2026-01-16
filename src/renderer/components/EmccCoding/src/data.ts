@@ -116,13 +116,12 @@ export const compileOptionOptions: CompileOption[] = [
       cmdPrefix: '--',
       cmdName: 'emit-tsd',
       valueType: 'string',
-      defaultValue: 'module.d.ts',
-      currentValue: 'module.d.ts',
+      defaultValue: 'test',
       formatType: 'flag', // 改为 flag 使用等号连接
       jsWasmOnly: true,
       hasInput: true,
       inputLabel: 'TypeScript 定义文件名',
-      inputPlaceholder: 'module.d.ts',
+      inputPlaceholder: '[文件名].d.ts',
       hint: '生成类型定义文件 (.d.ts)',
    },
    {

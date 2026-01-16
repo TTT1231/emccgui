@@ -1,7 +1,7 @@
 {
    "name": "emccgui",
    "productName": "emccgui",
-   "version": "1.0.4",
+   "version": "1.0.5",
    "description": "emcc for GUI",
    "main": ".vite/build/main.js",
    "scripts": {
