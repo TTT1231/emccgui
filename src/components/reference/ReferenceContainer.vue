@@ -129,39 +129,55 @@ function selectCategory(categoryName: string) {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: var(--ref-bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--ref-border);
 }
 
 .ref-category-chip {
-  padding: 6px 14px;
-  font-size: 12px;
+  padding: 8px 16px;
+  font-size: 13px;
   font-weight: 500;
-  background: var(--ref-bg-card);
-  border: 1px solid var(--ref-border);
-  border-radius: 999px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
   color: var(--ref-text-muted);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .ref-category-chip:hover {
-  border-color: var(--ref-primary);
-  color: var(--ref-primary);
+  background: var(--ref-primary-muted, rgba(96, 165, 250, 0.15));
+  color: var(--ref-text);
 }
 
 .ref-category-chip.active {
   background: var(--ref-primary);
-  border-color: var(--ref-primary);
-  color: white;
+  color: #0F172A;
+  font-weight: 600;
 }
 
 /* 已选导航项特殊样式 */
 .ref-selected-chip {
-  margin-left: 8px;
-  border-left: 3px solid var(--ref-primary);
-  padding-left: 11px;
+  margin-left: auto;
+  background: var(--ref-primary-muted, rgba(96, 165, 250, 0.1));
+  color: var(--ref-primary);
+  border-radius: 8px;
+  padding: 8px 16px;
+}
+
+.ref-selected-chip:hover {
+  background: var(--ref-primary-muted, rgba(96, 165, 250, 0.2));
+  color: var(--ref-primary);
+}
+
+.ref-selected-chip.active {
+  background: var(--ref-primary);
+  color: #0F172A;
 }
 
 /* 卡片容器 */
@@ -177,5 +193,6 @@ function selectCategory(categoryName: string) {
   color: var(--ref-text-muted);
   background: var(--ref-bg-card);
   border-radius: 12px;
+  border: 1px solid var(--ref-border);
 }
 </style>
