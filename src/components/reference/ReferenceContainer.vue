@@ -8,19 +8,8 @@ import type { RefCategory } from '@/types'
 
 const { state, setRefActiveCategory } = useAppState()
 
-// 分类列表
-const categories = computed(() => refConfigData.categories)
-
-// 统计信息
-const stats = computed(() => {
-  const totalCategories = refConfigData.categories.length
-  const totalOptions = refConfigData.categories.reduce(
-    (sum, cat) => sum + cat.options.length,
-    0
-  )
-  const selectedCount = Object.keys(state.refSelectedOptions).length
-  return { totalCategories, totalOptions, selectedCount }
-})
+// 已选数量
+const selectedCount = computed(() => Object.keys(state.refSelectedOptions).length)
 
 // 过滤后的分类
 const filteredCategories = computed(() => {
@@ -32,7 +21,6 @@ const filteredCategories = computed(() => {
     const selectedOptions = Object.keys(state.refSelectedOptions)
     if (selectedOptions.length === 0) return []
 
-    // 找出所有已选选项并按原分类分组
     return refConfigData.categories
       .map((category): RefCategory | null => {
         const filteredOptions = category.options.filter(
@@ -51,12 +39,10 @@ const filteredCategories = computed(() => {
   // 正常分类过滤
   return refConfigData.categories
     .map((category): RefCategory | null => {
-      // 分类过滤
       if (activeCategory !== 'all' && category.name !== activeCategory) {
         return null
       }
 
-      // 搜索过滤
       if (!query) return category
 
       const filteredOptions = category.options.filter(
@@ -67,10 +53,7 @@ const filteredCategories = computed(() => {
 
       if (filteredOptions.length === 0) return null
 
-      return {
-        ...category,
-        options: filteredOptions
-      }
+      return { ...category, options: filteredOptions }
     })
     .filter((cat): cat is RefCategory => cat !== null)
 })
@@ -99,7 +82,7 @@ function selectCategory(categoryName: string) {
         全部
       </button>
       <button
-        v-for="cat in categories"
+        v-for="cat in refConfigData.categories"
         :key="cat.name"
         class="ref-category-chip"
         :class="{ active: state.refActiveCategory === cat.name }"
@@ -114,7 +97,7 @@ function selectCategory(categoryName: string) {
         :class="{ active: state.refActiveCategory === '__selected__' }"
         @click="selectCategory('__selected__')"
       >
-        已选({{ stats.selectedCount }})
+        已选({{ selectedCount }})
       </button>
     </nav>
 
@@ -139,25 +122,6 @@ function selectCategory(categoryName: string) {
 .reference-container {
   font-family: var(--font-sans);
   max-width: 1200px;
-}
-
-/* Hero 区域 */
-.ref-hero {
-  text-align: center;
-  padding: 24px 0 32px;
-}
-
-.ref-hero-title {
-  font-family: var(--font-mono);
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--ref-text);
-}
-
-.ref-hero-subtitle {
-  font-size: 14px;
-  color: var(--ref-text-muted);
 }
 
 /* 分类导航 */
