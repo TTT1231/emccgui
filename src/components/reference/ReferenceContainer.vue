@@ -4,16 +4,23 @@ import { useAppState } from '@/stores'
 import { refConfigData } from '@/data'
 import ReferenceSearch from './ReferenceSearch.vue'
 import CategoryCard from './CategoryCard.vue'
-import type { RefCategory } from '@/types'
+import type { RefCategory, RefOption } from '@/types'
 
 const { state, setRefActiveCategory } = useAppState()
 
 // 已选数量
 const selectedCount = computed(() => Object.keys(state.refSelectedOptions).length)
 
+// 搜索匹配函数
+function matchesSearch(opt: RefOption, query: string): boolean {
+  if (!query) return true
+  const q = query.toLowerCase()
+  return opt.option.toLowerCase().includes(q) || opt.description.toLowerCase().includes(q)
+}
+
 // 过滤后的分类
 const filteredCategories = computed(() => {
-  const query = state.refSearchQuery.toLowerCase()
+  const query = state.refSearchQuery
   const activeCategory = state.refActiveCategory
 
   // 已选模式：只显示已选中的选项
@@ -24,11 +31,7 @@ const filteredCategories = computed(() => {
     return refConfigData.categories
       .map((category): RefCategory | null => {
         const filteredOptions = category.options.filter(
-          (opt) =>
-            selectedOptions.includes(opt.option) &&
-            (query === '' ||
-              opt.option.toLowerCase().includes(query) ||
-              opt.description.toLowerCase().includes(query))
+          (opt) => selectedOptions.includes(opt.option) && matchesSearch(opt, query)
         )
         if (filteredOptions.length === 0) return null
         return { ...category, options: filteredOptions }
@@ -45,11 +48,7 @@ const filteredCategories = computed(() => {
 
       if (!query) return category
 
-      const filteredOptions = category.options.filter(
-        (opt) =>
-          opt.option.toLowerCase().includes(query) ||
-          opt.description.toLowerCase().includes(query)
-      )
+      const filteredOptions = category.options.filter((opt) => matchesSearch(opt, query))
 
       if (filteredOptions.length === 0) return null
 
@@ -73,10 +72,12 @@ function selectCategory(categoryName: string) {
     <ReferenceSearch />
 
     <!-- 分类导航 -->
-    <nav class="ref-category-nav">
+    <nav class="ref-category-nav" role="tablist" aria-label="配置分类导航">
       <button
         class="ref-category-chip"
         :class="{ active: state.refActiveCategory === 'all' }"
+        role="tab"
+        :aria-selected="state.refActiveCategory === 'all'"
         @click="selectCategory('all')"
       >
         全部
@@ -86,6 +87,8 @@ function selectCategory(categoryName: string) {
         :key="cat.name"
         class="ref-category-chip"
         :class="{ active: state.refActiveCategory === cat.name }"
+        role="tab"
+        :aria-selected="state.refActiveCategory === cat.name"
         @click="selectCategory(cat.name)"
       >
         {{ cat.name }}
@@ -95,6 +98,8 @@ function selectCategory(categoryName: string) {
       <button
         class="ref-category-chip ref-selected-chip"
         :class="{ active: state.refActiveCategory === '__selected__' }"
+        role="tab"
+        :aria-selected="state.refActiveCategory === '__selected__'"
         @click="selectCategory('__selected__')"
       >
         已选({{ selectedCount }})
@@ -102,15 +107,15 @@ function selectCategory(categoryName: string) {
     </nav>
 
     <!-- 分类卡片 -->
-    <div class="ref-cards-container">
+    <div class="ref-cards-container" role="tabpanel">
       <template v-if="hasResults">
         <CategoryCard
-          v-for="(category, index) in filteredCategories"
-          :key="index"
+          v-for="category in filteredCategories"
+          :key="category.name"
           :category="category"
         />
       </template>
-  
+
       <div v-else class="ref-no-results">
         <p>没有找到匹配的选项</p>
       </div>
@@ -164,15 +169,13 @@ function selectCategory(categoryName: string) {
 /* 已选导航项特殊样式 */
 .ref-selected-chip {
   margin-left: auto;
-  background: var(--ref-primary-muted, rgba(96, 165, 250, 0.1));
+  background: var(--ref-primary-muted);
   color: var(--ref-primary);
-  border-radius: 8px;
-  padding: 8px 16px;
 }
 
 .ref-selected-chip:hover {
-  background: var(--ref-primary-muted, rgba(96, 165, 250, 0.2));
-  color: var(--ref-primary);
+  background: var(--ref-primary-muted);
+  filter: brightness(1.2);
 }
 
 .ref-selected-chip.active {
