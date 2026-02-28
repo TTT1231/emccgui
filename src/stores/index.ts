@@ -93,12 +93,15 @@ export function createAppState() {
   }
 
   function toggleRefOption(option: string, valueType: 'boolean' | 'string' | 'number', value?: string) {
+    // 如果已选中且没有提供新值，则取消选中
+    if (option in state.refSelectedOptions && value === undefined) {
+      delete state.refSelectedOptions[option]
+      return
+    }
+
+    // 否则设置选中状态
     if (valueType === 'boolean') {
-      if (state.refSelectedOptions[option]) {
-        delete state.refSelectedOptions[option]
-      } else {
-        state.refSelectedOptions[option] = true
-      }
+      state.refSelectedOptions[option] = true
     } else {
       state.refSelectedOptions[option] = value ?? true
     }

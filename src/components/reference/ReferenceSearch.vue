@@ -14,51 +14,73 @@ function clearSearch() {
 </script>
 
 <template>
-  <div class="search-container">
-    <input
-      type="text"
-      class="search-input"
-      :value="state.refSearchQuery"
-      placeholder="搜索选项..."
-      @input="handleInput"
-    />
-    <button
-      v-if="state.refSearchQuery"
-      class="clear-btn"
-      @click="clearSearch"
-    >
-      ✕
-    </button>
+  <div class="ref-search">
+    <div class="ref-search-wrapper">
+      <svg class="ref-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.35-4.35" />
+      </svg>
+      <input
+        type="text"
+        class="ref-search-input"
+        :value="state.refSearchQuery"
+        placeholder="搜索配置选项..."
+        @input="handleInput"
+      />
+      <button
+        v-if="state.refSearchQuery"
+        class="ref-search-clear"
+        @click="clearSearch"
+      >
+        ✕
+      </button>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.search-container {
-  position: relative;
+.ref-search {
   margin-bottom: 24px;
 }
 
-.search-input {
+.ref-search-wrapper {
+  position: relative;
+}
+
+.ref-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--ref-text-muted);
+  pointer-events: none;
+}
+
+.ref-search-input {
   width: 100%;
+  padding: 12px 40px 12px 44px;
+  font-family: var(--font-sans);
+  font-size: 14px;
   background: var(--ref-bg-card);
   border: 1px solid var(--ref-border);
-  border-radius: var(--radius-md);
-  padding: 12px 40px 12px 16px;
+  border-radius: var(--radius-lg, 16px);
   color: var(--ref-text);
-  font-size: 14px;
-  transition: border-color 0.2s;
+  transition: all 0.15s ease;
 }
 
-.search-input:focus {
+.ref-search-input:focus {
   outline: none;
   border-color: var(--ref-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-.search-input::placeholder {
+.ref-search-input::placeholder {
   color: var(--ref-text-muted);
 }
 
-.clear-btn {
+.ref-search-clear {
   position: absolute;
   right: 12px;
   top: 50%;
@@ -69,9 +91,10 @@ function clearSearch() {
   cursor: pointer;
   padding: 4px;
   font-size: 14px;
+  transition: color 0.15s ease;
 }
 
-.clear-btn:hover {
+.ref-search-clear:hover {
   color: var(--ref-text);
 }
 </style>
