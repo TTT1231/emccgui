@@ -21,8 +21,8 @@ export interface CompileOptionDef {
   cmdName: string
   valueType: OptionValueType
   defaultValue?: string | number | boolean
-  currentValue?: string
-  selectOptions?: SelectOption[]
+  currentValue?: string | boolean
+  selectOptions?: readonly SelectOption[]
   formatType: OptionFormatType
   jsWasmOnly?: boolean
   dependsOn?: string

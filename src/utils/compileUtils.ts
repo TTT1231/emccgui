@@ -3,7 +3,7 @@ import type { CompileOptionState, CommandLine, OptionConflict } from '@/types'
 // 根据输出格式和当前选项状态获取应禁用的选项 keys
 export function getConflictedOptions(
   outputFormat: 'js-wasm' | 'wasm-only',
-  options: CompileOptionState[],
+  options: readonly CompileOptionState[],
   optionConflicts: OptionConflict[]
 ): Set<string> {
   const conflictedKeys = new Set<string>()
@@ -37,7 +37,7 @@ export function getConflictedOptions(
 export function getConflictReason(
   optionKey: string,
   outputFormat: 'js-wasm' | 'wasm-only',
-  options: CompileOptionState[],
+  options: readonly CompileOptionState[],
   optionConflicts: OptionConflict[]
 ): string | null {
   const opt = options.find(o => o.key === optionKey)
@@ -73,12 +73,12 @@ export function formatCommandLine(line: CommandLine): string {
 }
 
 // 辅助函数：根据 key 获取编译选项
-function getOptionByKey(options: CompileOptionState[], key: string): CompileOptionState | undefined {
+function getOptionByKey(options: readonly CompileOptionState[], key: string): CompileOptionState | undefined {
   return options.find(opt => opt.key === key)
 }
 
 // 辅助函数：检查选项是否真正启用（包括依赖检查）
-export function isOptionReallyEnabled(option: CompileOptionState, allOptions: CompileOptionState[]): boolean {
+export function isOptionReallyEnabled(option: CompileOptionState, allOptions: readonly CompileOptionState[]): boolean {
   if (!option.enabled) return false
   if (option.dependsOn) {
     const dep = getOptionByKey(allOptions, option.dependsOn)

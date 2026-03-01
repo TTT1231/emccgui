@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 
 import { useAppState } from '@/stores'
-import { optionConflicts, optimizationLevels, optionsReferenceURL } from '@/data'
+import { optionConflicts, optimizationLevels } from '@/data'
 import { getConflictedOptions, getConflictReason, formatCommandLine } from '@/utils/compileUtils'
 import type { CommandLine } from '@/types'
 import SearchBtn from './SearchBtn.vue'
@@ -244,11 +244,6 @@ const handleAddCompileOptions = (value: string) => {
 
 const handleRevokeCompileOptions = () => {
   revokeCustomOption()
-}
-
-// 打开浏览器
-const openBrowser = () => {
-  window.open(optionsReferenceURL, '_blank')
 }
 
 // 自定义运行时方法
