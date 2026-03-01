@@ -959,8 +959,8 @@ onUnmounted(() => {
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 500;
-    color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 10%, var(--bg-tertiary));
+    color: var(--text-muted);
+    background: var(--bg-tertiary);
     border-left: 1px solid var(--border);
   }
 }

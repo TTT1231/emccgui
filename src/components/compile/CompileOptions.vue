@@ -860,8 +860,8 @@ const handleAddCustomMethod = () => {
   font-family: var(--font-mono);
   font-size: 0.85em;
   font-weight: 500;
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 10%, var(--bg-secondary));
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
   border-left: 1px solid var(--border);
 }
 
@@ -922,6 +922,11 @@ const handleAddCustomMethod = () => {
   opacity: 0;
   transform: rotate(45deg) scale(0.8);
   transition: all 0.2s ease;
+}
+
+.option-chip.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-primary));
 }
 
 .option-chip.active .chip-indicator {
@@ -1184,12 +1189,12 @@ const handleAddCustomMethod = () => {
 
 .custom-method-chip {
   cursor: default;
-  background: color-mix(in srgb, #8b5cf6 12%, var(--bg-primary));
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-primary));
 }
 
 .custom-method-chip:hover {
-  background: color-mix(in srgb, #8b5cf6 12%, var(--bg-primary));
-  border-color: #8b5cf6;
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-primary));
+  border-color: var(--accent);
 }
 
 .remove-method-btn {
@@ -1202,7 +1207,7 @@ const handleAddCustomMethod = () => {
   margin-left: 2px;
   font-size: 1em;
   line-height: 1;
-  color: #8b5cf6;
+  color: var(--accent);
   cursor: pointer;
   background: transparent;
   border: none;
@@ -1212,7 +1217,7 @@ const handleAddCustomMethod = () => {
 }
 
 .remove-method-btn:hover {
-  background: color-mix(in srgb, #8b5cf6 20%, transparent);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
   opacity: 1;
 }
 
@@ -1242,14 +1247,14 @@ const handleAddCustomMethod = () => {
   font-weight: 600;
   color: white;
   cursor: pointer;
-  background: #8b5cf6;
+  background: var(--accent);
   border: none;
   border-radius: 8px;
   transition: background 0.2s ease, transform 0.15s ease;
 }
 
 .add-method-btn:hover:not(:disabled) {
-  background: #7c3aed;
+  background: var(--accent-hover);
   transform: scale(1.05);
 }
 
@@ -1259,13 +1264,13 @@ const handleAddCustomMethod = () => {
 }
 
 .methods-card .card-header-icon.methods-icon {
-  color: #8b5cf6;
-  background: color-mix(in srgb, #8b5cf6 15%, transparent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
 .methods-card .options-count {
-  color: #8b5cf6;
-  background: color-mix(in srgb, #8b5cf6 15%, transparent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
 .methods-grid {
@@ -1290,8 +1295,8 @@ const handleAddCustomMethod = () => {
 
 .method-chip:hover {
   z-index: 100;
-  border-color: #8b5cf6;
-  background: color-mix(in srgb, #8b5cf6 5%, var(--bg-primary));
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg-primary));
 }
 
 .method-chip input {
@@ -1312,16 +1317,17 @@ const handleAddCustomMethod = () => {
 }
 
 .method-chip.active {
-  border-color: #8b5cf6;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-primary));
 }
 
 .method-chip.active .chip-indicator {
-  background: #8b5cf6;
-  border-color: #8b5cf6;
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .method-chip.active .chip-label {
-  color: #8b5cf6;
+  color: var(--accent);
 }
 
 .method-chip.conflicted {
