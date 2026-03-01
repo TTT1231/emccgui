@@ -359,30 +359,6 @@ onUnmounted(() => {
         <p class="drop-zone__hint">支持 C / C++ / Rust &nbsp;·&nbsp; .c &nbsp;.cpp &nbsp;.cc &nbsp;.cxx &nbsp;.h &nbsp;.hpp &nbsp;.rs</p>
       </div>
 
-      <!-- 输出文件名 + 使用说明（紧凑行内排列） -->
-      <div class="meta-card">
-        <div class="meta-row">
-          <span class="meta-label">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/>
-              <path d="M14 2v4a2 2 0 0 0 2 2h4"/>
-            </svg>
-            输出文件名
-          </span>
-          <div class="input-with-suffix" @click.stop>
-            <input
-              :value="state.outputFileName"
-              type="text"
-              class="field-input"
-              placeholder="hello"
-              spellcheck="false"
-              @input="setOutputFileName(($event.target as HTMLInputElement).value)"
-            />
-            <span class="input-suffix">{{ state.outputFormat === 'wasm-only' ? '.wasm' : '.js' }}</span>
-          </div>
-        </div>
-      </div>
-
       <!-- 使用说明 -->
       <div class="instructions-card">
         <h3 class="instructions-title">使用说明</h3>
