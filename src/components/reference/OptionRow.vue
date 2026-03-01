@@ -26,10 +26,24 @@ const displayValue = computed(() => {
   return props.option.default
 })
 
+// boolean 默认值统一用 0/1 展示（与 emcc -s 惯例保持一致）
+const displayDefault = computed(() => {
+  if (props.option.valueType === 'boolean') {
+    if (props.option.default === 'false' || props.option.default === '0') return '0'
+    if (props.option.default === 'true'  || props.option.default === '1')  return '1'
+  }
+  return props.option.default
+})
+
 function handleClick() {
   if (isEditing.value) return
-  // 点击选项行切换选中状态（不传自定义值）
-  toggleRefOption(props.option.option, props.option.valueType)
+  // 非 boolean 类型首次选中时，使用 initialValue（如有）或 default 作为初始值
+  if (!isSelected.value && props.option.valueType !== 'boolean') {
+    const initVal = props.option.initialValue ?? props.option.default
+    toggleRefOption(props.option.option, props.option.valueType, initVal, props.option.radioGroup)
+  } else {
+    toggleRefOption(props.option.option, props.option.valueType, undefined, props.option.radioGroup)
+  }
 }
 
 function handleBlur() {
@@ -80,7 +94,7 @@ function handleCurrentDblClick(event: MouseEvent) {
     <div class="option-type" :class="`type-${option.valueType}`">{{ option.valueType }}</div>
 
     <!-- 默认值 -->
-    <div class="option-default-val">{{ option.default }}</div>
+    <div class="option-default-val">{{ displayDefault }}</div>
 
     <!-- 当前值 -->
     <div

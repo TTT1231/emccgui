@@ -160,7 +160,8 @@ export const refConfigData: RefConfigData = {
           description: "保留调试信息（-g1 保留空白，-g2 保留函数名，-g3 保留 DWARF，-g4 包含源码）",
           valueType: "string",
           editable: true,
-          enabledValue: "-g{value}"
+          enabledValue: "-g{value}",
+          initialValue: "3"
         },
         {
           option: "-gsource-map",
@@ -184,7 +185,8 @@ export const refConfigData: RefConfigData = {
           description: "检测内存访问错误（1 启用，2 更详细，性能开销大）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sSAFE_HEAP={value}"
+          enabledValue: "-sSAFE_HEAP={value}",
+
         },
         {
           option: "-sSTACK_OVERFLOW_CHECK",
@@ -192,7 +194,8 @@ export const refConfigData: RefConfigData = {
           description: "栈溢出检测（1 启用，2 更严格，ASSERTIONS=1 时默认为 1）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sSTACK_OVERFLOW_CHECK={value}"
+          enabledValue: "-sSTACK_OVERFLOW_CHECK={value}",
+
         }
       ]
     },
@@ -211,7 +214,7 @@ export const refConfigData: RefConfigData = {
         {
           option: "-sMAXIMUM_MEMORY",
           default: "2147483648",
-          description: "最大内存限制（需配合 ALLOW_MEMORY_GROWTH）",
+          description: "最大内存限制（需配合 ALLOW_MEMORY_GROWTH），默认2GB，单位字节",
           valueType: "number",
           editable: true,
           enabledValue: "-sMAXIMUM_MEMORY={value}"
@@ -244,7 +247,7 @@ export const refConfigData: RefConfigData = {
           description: "文件系统支持（0 禁用，1 启用）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sFILESYSTEM={value}"
+          enabledValue: "-sFILESYSTEM={value}",
         },
         {
           option: "-sFORCE_FILESYSTEM",
@@ -252,19 +255,20 @@ export const refConfigData: RefConfigData = {
           description: "强制包含文件系统（0 关闭，1 强制包含）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sFORCE_FILESYSTEM={value}"
+          enabledValue: "-sFORCE_FILESYSTEM={value}",
+
         },
         {
-          option: "--preload-file <path>",
-          default: "<path>",
+          option: "--preload-file",
+          default: "''",
           description: "预加载文件到虚拟文件系统（生成 .data 文件）",
           valueType: "string",
           editable: true,
           enabledValue: "--preload-file {value}"
         },
         {
-          option: "--embed-file <path>",
-          default: "<path>",
+          option: "--embed-file",
+          default: "''",
           description: "嵌入文件到 JS/wasm 中（不生成额外文件）",
           valueType: "string",
           editable: true,
@@ -290,7 +294,8 @@ export const refConfigData: RefConfigData = {
           description: "支持 JS BigInt 与 i64 互操作（0 禁用，1 启用）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sWASM_BIGINT={value}"
+          enabledValue: "-sWASM_BIGINT={value}",
+
         }
       ]
     },
@@ -385,10 +390,11 @@ export const refConfigData: RefConfigData = {
         {
           option: "-sDISABLE_EXCEPTION_CATCHING",
           default: "1",
-          description: "异常捕获控制（0 启用 JS 模拟，1 禁用，默认 1）",
+          description: "禁用异常捕获控制（0 启用 JS 模拟，1 禁用，默认 1）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sDISABLE_EXCEPTION_CATCHING={value}"
+          enabledValue: "-sDISABLE_EXCEPTION_CATCHING={value}",
+          initialValue:"1"
         },
         {
           option: "-sEXCEPTION_STACK_TRACES",
@@ -414,7 +420,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "--closure-args",
-          default: "<args>",
+          default: "''",
           description: "传递参数给 Closure Compiler",
           valueType: "string",
           editable: true,
@@ -422,11 +428,12 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sIGNORE_MISSING_MAIN",
-          default: "true",
-          description: "无 main 函数时不报错",
-          valueType: "boolean",
-          editable: false,
-          enabledValue: "-sIGNORE_MISSING_MAIN"
+          default: "1",
+          description: "无 main 函数时不报错（默认 1，显式禁用传 0）",
+          valueType: "number",
+          editable: true,
+          enabledValue: "-sIGNORE_MISSING_MAIN={value}",
+          initialValue: "1"
         },
         {
           option: "-sMALLOC",
@@ -461,10 +468,11 @@ export const refConfigData: RefConfigData = {
         {
           option: "-O0",
           default: "true",
-          description: "无优化，编译最快，包含断言",
+          description: "无优化，编译最快，包含断言（默认启用）",
           valueType: "boolean",
           editable: false,
-          enabledValue: "-O0"
+          enabledValue: "-O0",
+          radioGroup: "optimization"
         },
         {
           option: "-O1",
@@ -472,7 +480,8 @@ export const refConfigData: RefConfigData = {
           description: "基础优化",
           valueType: "boolean",
           editable: false,
-          enabledValue: "-O1"
+          enabledValue: "-O1",
+          radioGroup: "optimization"
         },
         {
           option: "-O2",
@@ -480,7 +489,8 @@ export const refConfigData: RefConfigData = {
           description: "标准优化（推荐用于发布）",
           valueType: "boolean",
           editable: false,
-          enabledValue: "-O2"
+          enabledValue: "-O2",
+          radioGroup: "optimization"
         },
         {
           option: "-O3",
@@ -488,7 +498,8 @@ export const refConfigData: RefConfigData = {
           description: "激进优化（可能增加代码体积）",
           valueType: "boolean",
           editable: false,
-          enabledValue: "-O3"
+          enabledValue: "-O3",
+          radioGroup: "optimization"
         },
         {
           option: "-Os",
@@ -496,7 +507,8 @@ export const refConfigData: RefConfigData = {
           description: "优化代码体积",
           valueType: "boolean",
           editable: false,
-          enabledValue: "-Os"
+          enabledValue: "-Os",
+          radioGroup: "optimization"
         },
         {
           option: "-Oz",
@@ -504,7 +516,8 @@ export const refConfigData: RefConfigData = {
           description: "极限压缩代码体积",
           valueType: "boolean",
           editable: false,
-          enabledValue: "-Oz"
+          enabledValue: "-Oz",
+          radioGroup: "optimization"
         }
       ]
     },
@@ -548,7 +561,8 @@ export const refConfigData: RefConfigData = {
           description: "使用 SDL（2 表示 SDL2）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sUSE_SDL={value}"
+          enabledValue: "-sUSE_SDL={value}",
+          initialValue: "2"
         },
         {
           option: "-sUSE_ZLIB",

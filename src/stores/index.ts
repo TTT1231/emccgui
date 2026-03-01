@@ -8,7 +8,17 @@ import type {
   CompileOptionState,
   RuntimeMethodState
 } from '@/types'
-import { compileOptionsData, runtimeMethodsData } from '@/data'
+import { compileOptionsData, runtimeMethodsData, refConfigData } from '@/data'
+
+// 预建 option key → radioGroup 映射表（仅包含有 radioGroup 的选项）
+const radioGroupMap = new Map<string, string>()
+for (const category of refConfigData.categories) {
+  for (const opt of category.options) {
+    if (opt.radioGroup) {
+      radioGroupMap.set(opt.option, opt.radioGroup)
+    }
+  }
+}
 
 // 状态接口
 export interface AppState {
@@ -146,14 +156,29 @@ export function createAppState() {
     }
   }
 
-  function toggleRefOption(option: string, valueType: 'boolean' | 'string' | 'number', value?: string) {
-    // 如果已选中且没有提供新值，则取消选中
+  function toggleRefOption(
+    option: string,
+    valueType: 'boolean' | 'string' | 'number',
+    value?: string,
+    radioGroup?: string
+  ) {
+    // 如果已选中且没有提供新值，则取消选中（单选组不允许取消，直接返回）
     if (option in state.refSelectedOptions && value === undefined) {
+      if (radioGroup) return
       delete state.refSelectedOptions[option]
       return
     }
 
-    // 否则设置选中状态
+    // 单选组：先清除同组内其他已选中的选项
+    if (radioGroup) {
+      for (const key of Object.keys(state.refSelectedOptions)) {
+        if (key !== option && radioGroupMap.get(key) === radioGroup) {
+          delete state.refSelectedOptions[key]
+        }
+      }
+    }
+
+    // 设置选中状态
     if (valueType === 'boolean') {
       state.refSelectedOptions[option] = true
     } else {
