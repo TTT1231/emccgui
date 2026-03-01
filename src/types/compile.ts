@@ -1,8 +1,11 @@
 // 选项值类型
-export type OptionValueType = 'boolean' | 'string' | 'select'
+export type OptionValueType = 'boolean' | 'string' | 'number' | 'select'
 
 // 选项格式类型
-export type OptionFormatType = 'setting' | 'arg'
+export type OptionFormatType = 'flag' | 'setting' | 'arg'
+
+// 选项冲突类型
+export type ConflictType = 'wasm-only' | 'side-module'
 
 // 下拉选项
 export interface SelectOption {
@@ -17,14 +20,18 @@ export interface CompileOptionDef {
   cmdPrefix: string
   cmdName: string
   valueType: OptionValueType
-  defaultValue: boolean | string
+  defaultValue?: string | number | boolean
+  currentValue?: string
+  selectOptions?: SelectOption[]
   formatType: OptionFormatType
   jsWasmOnly?: boolean
-  hint: string
-  category: string
+  dependsOn?: string
   hasInput?: boolean
   inputPlaceholder?: string
-  selectOptions?: readonly SelectOption[]
+  inputLabel?: string
+  hint: string
+  category: string
+  defaultEnabled?: boolean // 是否默认启用
 }
 
 // 编译选项状态（运行时）
@@ -48,6 +55,31 @@ export interface RuntimeMethodState extends RuntimeMethodDef {
 // 选项冲突规则
 export interface OptionConflict {
   triggerKey: string
+  type: ConflictType
   conflictsWith: string[]
   reason: string
+}
+
+// 命令行类型
+export interface CommandLine {
+  name: string
+  value?: string
+  type: 'command' | 'output' | 'flag'
+  isRuntimeMethods?: boolean
+  methods?: string[]
+  isCustom?: boolean
+}
+
+// 搜索选项（用于 SearchBtn）
+export interface SearchOption {
+  option: string
+  descri: string
+  defaultVal: string
+  defaultValDescri: string
+}
+
+// 优化级别选项
+export interface OptimizationLevelOption {
+  value: 'O0' | 'O1' | 'O2' | 'O3' | 'Os' | 'Oz'
+  label: string
 }

@@ -22,6 +22,9 @@ export interface AppState {
   refSelectedOptions: Record<string, string | boolean>
   refSearchQuery: string
   refActiveCategory: string
+  outputFileName: string
+  dtsFileName: string
+  addOptionsStack: string[]
 }
 
 // Injection Key
@@ -35,18 +38,35 @@ export function createAppState() {
     optimizationLevel: 'O3',
     theme: 'dark',
     activeTab: 'file',
-    compileOptions: compileOptionsData.map((opt): CompileOptionState => ({
-      ...opt,
-      enabled: opt.valueType === 'boolean' && opt.defaultValue === true,
-      currentValue: opt.valueType === 'boolean' ? Boolean(opt.defaultValue) : String(opt.defaultValue || '')
-    })),
+    compileOptions: compileOptionsData.map((opt): CompileOptionState => {
+      const defaultValue = opt.defaultValue
+      const isBoolean = opt.valueType === 'boolean'
+
+      // 检查依赖项：如果有 dependsOn，则需要依赖项也默认启用
+      let shouldEnable = opt.defaultEnabled ?? false
+      if (shouldEnable && opt.dependsOn) {
+        const depOpt = compileOptionsData.find(o => o.key === opt.dependsOn)
+        shouldEnable = depOpt?.defaultEnabled ?? false
+      }
+
+      return {
+        ...opt,
+        enabled: shouldEnable,
+        currentValue: isBoolean
+          ? Boolean(defaultValue)
+          : (opt.currentValue ?? String(defaultValue ?? ''))
+      }
+    }),
     runtimeMethods: runtimeMethodsData.map((method): RuntimeMethodState => ({
       ...method,
       enabled: method.key === 'ccall' || method.key === 'cwrap'
     })),
     refSelectedOptions: {},
     refSearchQuery: '',
-    refActiveCategory: 'all'
+    refActiveCategory: 'all',
+    outputFileName: 'hello',
+    dtsFileName: '',
+    addOptionsStack: []
   })
 
   // Actions
@@ -69,6 +89,22 @@ export function createAppState() {
 
   function setActiveTab(tab: TabName) {
     state.activeTab = tab
+  }
+
+  function setOutputFileName(name: string) {
+    state.outputFileName = name || 'hello'
+  }
+
+  function setDtsFileName(name: string) {
+    state.dtsFileName = name
+  }
+
+  function addCustomOption(option: string) {
+    state.addOptionsStack.push(option)
+  }
+
+  function revokeCustomOption() {
+    state.addOptionsStack.pop()
   }
 
   function updateOption(key: string, enabled: boolean) {
@@ -136,6 +172,8 @@ export function createAppState() {
     state: readonly(state),
     setOutputFormat,
     setSelectedFile,
+    setOutputFileName,
+    setDtsFileName,
     setOptimizationLevel,
     toggleTheme,
     setActiveTab,
@@ -145,6 +183,8 @@ export function createAppState() {
     toggleRefOption,
     setRefSearchQuery,
     setRefActiveCategory,
+    addCustomOption,
+    revokeCustomOption,
     initTheme
   }
 }

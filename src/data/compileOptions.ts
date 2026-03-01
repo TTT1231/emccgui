@@ -1,291 +1,250 @@
-import type { CompileOptionDef } from '@/types'
+import type { CompileOptionDef, OptimizationLevelOption } from '@/types'
+
+// 配置参考地址
+export const optionsReferenceURL =
+  'https://ttt1231.github.io/Turw-docs/WebAssembly.html#%E9%85%8D%E7%BD%AE%E9%80%9F%E6%9F%A5'
 
 export const compileOptionsData: CompileOptionDef[] = [
-  // 模块化
+  // === 模块化相关 ===
   {
-    key: 'EXPORT_ES6',
-    name: 'Export ES6',
-    cmdPrefix: '-s ',
+    key: 'exportES6',
+    name: 'EXPORT_ES6',
+    cmdPrefix: '-s',
     cmdName: 'EXPORT_ES6',
     valueType: 'boolean',
-    defaultValue: false,
-    formatType: 'setting',
+    defaultValue: 1,
+    formatType: 'flag',
     jsWasmOnly: true,
-    hint: '生成 ES6 模块格式',
+    defaultEnabled: true,
+    hint: '生成 ES6 模块格式(需配合MODULARIZE)',
     category: '模块化'
   },
   {
-    key: 'MODULARIZE',
-    name: 'Modularize',
-    cmdPrefix: '-s ',
+    key: 'modularize',
+    name: 'MODULARIZE',
+    cmdPrefix: '-s',
     cmdName: 'MODULARIZE',
     valueType: 'boolean',
-    defaultValue: false,
-    formatType: 'setting',
+    defaultValue: 1,
+    formatType: 'flag',
     jsWasmOnly: true,
-    hint: '将输出包装为可调用函数',
+    defaultEnabled: true,
+    hint: '将 JS 代码转化工厂函数(转化为异步)',
     category: '模块化'
   },
   {
-    key: 'EXPORT_NAME',
-    name: 'Export Name',
-    cmdPrefix: '-s ',
+    key: 'exportName',
+    name: 'EXPORT_NAME',
+    cmdPrefix: '-s',
     cmdName: 'EXPORT_NAME',
     valueType: 'string',
-    defaultValue: 'Module',
-    formatType: 'setting',
+    defaultValue: 'createModule',
+    currentValue: 'createModule',
+    formatType: 'flag',
     jsWasmOnly: true,
+    dependsOn: 'modularize',
     hasInput: true,
-    inputPlaceholder: 'Module',
-    hint: '导出的模块名称',
+    inputLabel: 'EXPORT_NAME',
+    inputPlaceholder: 'createModule',
+    defaultEnabled: true,
+    hint: '指定导出的模块名称（工厂函数名）',
     category: '模块化'
   },
   {
-    key: 'SINGLE_FILE',
-    name: 'Single File',
-    cmdPrefix: '-s ',
+    key: 'singleFile',
+    name: 'SINGLE_FILE',
+    cmdPrefix: '-s',
     cmdName: 'SINGLE_FILE',
     valueType: 'boolean',
-    defaultValue: false,
-    formatType: 'setting',
+    defaultValue: 1,
+    formatType: 'flag',
     jsWasmOnly: true,
-    hint: '将 WASM 嵌入 JS 文件',
+    hint: '将 WASM 以 Base64 嵌入到 JS 文件中，生成单文件输出',
     category: '模块化'
   },
 
-  // WASM 基础
+  // === WASM 相关 ===
   {
-    key: 'WASM',
+    key: 'wasm',
     name: 'WASM',
-    cmdPrefix: '-s ',
+    cmdPrefix: '-s',
     cmdName: 'WASM',
     valueType: 'boolean',
-    defaultValue: true,
-    formatType: 'setting',
-    hint: '生成 WebAssembly 输出',
-    category: 'WASM基础'
+    defaultValue: 1,
+    formatType: 'flag',
+    defaultEnabled: true,
+    hint: '输出 WebAssembly',
+    category: 'WASM'
   },
   {
-    key: 'ALLOW_MEMORY_GROWTH',
-    name: 'Memory Growth',
-    cmdPrefix: '-s ',
+    key: 'allowMemoryGrowth',
+    name: 'ALLOW_MEMORY_GROWTH',
+    cmdPrefix: '-s',
     cmdName: 'ALLOW_MEMORY_GROWTH',
     valueType: 'boolean',
-    defaultValue: false,
-    formatType: 'setting',
-    hint: '允许运行时内存增长',
-    category: 'WASM基础'
+    defaultValue: 1,
+    formatType: 'flag',
+    defaultEnabled: true,
+    hint: '(默认16MB)允许 WASM 内存在运行时动态增长扩容',
+    category: 'WASM'
   },
   {
-    key: 'EXPORT_ALL',
-    name: 'Export All',
-    cmdPrefix: '-s ',
+    key: 'exportAll',
+    name: 'EXPORT_ALL',
+    cmdPrefix: '-s',
     cmdName: 'EXPORT_ALL',
     valueType: 'boolean',
-    defaultValue: false,
-    formatType: 'setting',
-    hint: '导出所有符号',
-    category: 'WASM基础'
+    defaultValue: 1,
+    formatType: 'flag',
+    hint: '导出所有符号（函数和全局变量）',
+    category: 'WASM'
   },
   {
-    key: 'STANDALONE_WASM',
-    name: 'Standalone WASM',
-    cmdPrefix: '-s ',
+    key: 'standaloneWasm',
+    name: 'STANDALONE_WASM',
+    cmdPrefix: '-s',
     cmdName: 'STANDALONE_WASM',
     valueType: 'boolean',
-    defaultValue: false,
-    formatType: 'setting',
-    hint: '生成独立的 WASM 文件（无 JS）',
-    category: 'WASM基础'
+    defaultValue: 1,
+    formatType: 'flag',
+    jsWasmOnly: true,
+    hint: '生成一个尽量独立的 WASM，减少对外部依赖（与 wasm-only 冲突）',
+    category: 'WASM'
   },
 
-  // 纯 WASM
+  // === 类型定义 ===
+  {
+    key: 'emitTsd',
+    name: 'emit-tsd',
+    cmdPrefix: '--',
+    cmdName: 'emit-tsd',
+    valueType: 'string',
+    defaultValue: 'test',
+    formatType: 'flag',
+    jsWasmOnly: true,
+    hasInput: true,
+    inputLabel: 'TypeScript 定义文件名',
+    inputPlaceholder: '[文件名].d.ts',
+    defaultEnabled: true,
+    hint: '生成类型定义文件 (.d.ts)',
+    category: '类型定义'
+  },
   {
     key: 'SIDE_MODULE',
-    name: 'Side Module',
-    cmdPrefix: '-s ',
+    name: 'SIDE_MODULE',
+    cmdPrefix: '-s',
     cmdName: 'SIDE_MODULE',
     valueType: 'boolean',
-    defaultValue: false,
-    formatType: 'setting',
-    hint: '生成可动态加载的侧模块',
-    category: '纯WASM'
+    defaultValue: 1,
+    formatType: 'flag',
+    // 注意：SIDE_MODULE 默认不启用，因为它会与其他选项冲突
+    hint: '编译纯wasm模块没有main函数',
+    category: '类型定义'
   },
 
-  // 导出
+  // === 导出函数 ===
   {
-    key: 'EXPORTED_FUNCTIONS',
-    name: 'Exported Functions',
-    cmdPrefix: '-s ',
+    key: 'exportedFunctions',
+    name: 'EXPORTED_FUNCTIONS',
+    cmdPrefix: '-s',
     cmdName: 'EXPORTED_FUNCTIONS',
     valueType: 'string',
-    defaultValue: '',
-    formatType: 'setting',
+    defaultValue: "['_main']",
+    currentValue: "['_main']",
+    formatType: 'flag',
     hasInput: true,
-    inputPlaceholder: '["_main","_myFunc"]',
-    hint: '指定导出的函数列表',
-    category: '导出'
-  },
-  {
-    key: 'EXPORTED_RUNTIME_METHODS',
-    name: 'Exported Runtime Methods',
-    cmdPrefix: '-s ',
-    cmdName: 'EXPORTED_RUNTIME_METHODS',
-    valueType: 'string',
-    defaultValue: '',
-    formatType: 'setting',
-    hasInput: true,
-    inputPlaceholder: '["ccall","cwrap"]',
-    hint: '指定导出的运行时方法',
+    inputLabel: '导出函数列表',
+    inputPlaceholder: "['_main','_myFunc']",
+    hint: '指定要导出的 C/C++ 函数，函数名需加下划线前缀（纯 WASM 模式下也有效）',
     category: '导出'
   },
 
-  // Embind
+  // === bind相关 ===
   {
-    key: 'BIND',
-    name: 'Embind (--bind)',
+    key: 'bind',
+    name: '--bind',
     cmdPrefix: '--',
     cmdName: 'bind',
     valueType: 'boolean',
-    defaultValue: false,
     formatType: 'arg',
-    jsWasmOnly: true,
-    hint: '启用 Embind 绑定支持',
-    category: 'Embind'
+    hint: '启用 Embind，用于 C++ 和 JavaScript 之间的绑定',
+    category: '绑定'
   },
 
-  // 调试
+  // === 调试相关 ===
   {
-    key: 'ASSERTIONS',
-    name: 'Assertions',
-    cmdPrefix: '-s ',
-    cmdName: 'ASSERTIONS',
-    valueType: 'boolean',
-    defaultValue: false,
-    formatType: 'setting',
-    jsWasmOnly: true,
-    hint: '启用运行时断言检查',
-    category: '调试'
-  },
-  {
-    key: 'SAFE_HEAP',
-    name: 'Safe Heap',
-    cmdPrefix: '-s ',
-    cmdName: 'SAFE_HEAP',
-    valueType: 'boolean',
-    defaultValue: false,
-    formatType: 'setting',
-    hint: '启用堆安全检查',
-    category: '调试'
-  },
-  {
-    key: 'STACK_OVERFLOW_CHECK',
-    name: 'Stack Overflow Check',
-    cmdPrefix: '-s ',
-    cmdName: 'STACK_OVERFLOW_CHECK',
+    key: 'debug',
+    name: '调试级别',
+    cmdPrefix: '-',
+    cmdName: 'g',
     valueType: 'select',
-    defaultValue: '0',
-    formatType: 'setting',
+    defaultValue: 'g',
+    currentValue: 'g',
+    formatType: 'arg',
     selectOptions: [
-      { value: '0', label: '禁用' },
-      { value: '1', label: '快速检查' },
-      { value: '2', label: '完整检查' }
+      { value: 'g', label: '-g (基础调试)' },
+      { value: 'g3', label: '-g3 (更详细)' },
+      { value: 'g4', label: '-g4 (包含源码)' }
     ],
-    hint: '栈溢出检测级别',
+    hint: '生成调试信息：-g 基础、-g3 更详细、-g4 包含源码',
     category: '调试'
   },
   {
-    key: 'G_SOURCE_MAP',
-    name: 'Source Map (-gsource-map)',
+    key: 'sourceMap',
+    name: '-gsource-map',
     cmdPrefix: '-',
     cmdName: 'gsource-map',
     valueType: 'boolean',
-    defaultValue: false,
     formatType: 'arg',
-    jsWasmOnly: true,
-    hint: '生成 Source Map 调试信息',
+    hint: '生成 Source Map 文件，便于浏览器调试',
+    category: '调试'
+  },
+  {
+    key: 'assertions',
+    name: 'ASSERTIONS',
+    cmdPrefix: '-s',
+    cmdName: 'ASSERTIONS',
+    valueType: 'select',
+    defaultValue: 1,
+    currentValue: '1',
+    formatType: 'flag',
+    selectOptions: [
+      { value: '1', label: '=1 (基础断言)' },
+      { value: '2', label: '=2 (详细断言)' }
+    ],
+    hint: '启用运行时断言检查：=1 基础、=2 详细（会增加体积）',
     category: '调试'
   },
 
-  // 高级
+  // === 高级特性 ===
   {
-    key: 'PTHREAD',
-    name: 'Pthread (-pthread)',
+    key: 'pthread',
+    name: '-pthread',
     cmdPrefix: '-',
     cmdName: 'pthread',
     valueType: 'boolean',
-    defaultValue: false,
     formatType: 'arg',
-    hint: '启用 pthread 线程支持',
+    hint: '启用多线程支持（需要 SharedArrayBuffer）',
     category: '高级'
   },
   {
-    key: 'EXCEPTIONS',
-    name: 'Exceptions (-fexceptions)',
-    cmdPrefix: '-f',
-    cmdName: 'exceptions',
+    key: 'fexceptions',
+    name: '-fexceptions',
+    cmdPrefix: '-',
+    cmdName: 'fexceptions',
     valueType: 'boolean',
-    defaultValue: false,
     formatType: 'arg',
-    hint: '启用 C++ 异常处理',
+    hint: '启用 C++ 异常处理支持',
     category: '高级'
-  },
-  {
-    key: 'INITIAL_MEMORY',
-    name: 'Initial Memory',
-    cmdPrefix: '-s ',
-    cmdName: 'INITIAL_MEMORY',
-    valueType: 'string',
-    defaultValue: '16777216',
-    formatType: 'setting',
-    hasInput: true,
-    inputPlaceholder: '16777216',
-    hint: '初始内存大小（字节）',
-    category: '高级'
-  },
-  {
-    key: 'MAXIMUM_MEMORY',
-    name: 'Maximum Memory',
-    cmdPrefix: '-s ',
-    cmdName: 'MAXIMUM_MEMORY',
-    valueType: 'string',
-    defaultValue: '2147483648',
-    formatType: 'setting',
-    hasInput: true,
-    inputPlaceholder: '2147483648',
-    hint: '最大内存大小（字节）',
-    category: '高级'
-  },
-  {
-    key: 'ENVIRONMENT',
-    name: 'Environment',
-    cmdPrefix: '-s ',
-    cmdName: 'ENVIRONMENT',
-    valueType: 'select',
-    defaultValue: '',
-    formatType: 'setting',
-    jsWasmOnly: true,
-    selectOptions: [
-      { value: '', label: '自动检测' },
-      { value: 'web', label: 'Web 浏览器' },
-      { value: 'node', label: 'Node.js' },
-      { value: 'worker', label: 'Web Worker' }
-    ],
-    hint: '目标运行环境',
-    category: '高级'
-  },
-
-  // 输出
-  {
-    key: 'EMIT_TSD',
-    name: 'Emit TSD',
-    cmdPrefix: '-s ',
-    cmdName: 'EMIT_TSD',
-    valueType: 'boolean',
-    defaultValue: false,
-    formatType: 'setting',
-    jsWasmOnly: true,
-    hint: '生成 TypeScript 声明文件',
-    category: '输出'
   }
+]
+
+// 优化级别选项
+export const optimizationLevels: OptimizationLevelOption[] = [
+  { value: 'O0', label: '-O0 (默认值，无优化)' },
+  { value: 'O1', label: '-O1 (基础优化)' },
+  { value: 'O2', label: '-O2 (标准优化)' },
+  { value: 'O3', label: '-O3 (最大优化)' },
+  { value: 'Os', label: '-Os (体积优化)' },
+  { value: 'Oz', label: '-Oz (极限体积优化)' }
 ]

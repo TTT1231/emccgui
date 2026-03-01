@@ -40,7 +40,8 @@ const currentTab = computed(() => appState.state.activeTab)
 .app-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-primary);
@@ -49,12 +50,14 @@ const currentTab = computed(() => appState.state.activeTab)
 .main-content {
   display: flex;
   flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
 .content-area {
   flex: 1;
   padding: 24px;
+  min-height: 0;
   overflow-y: auto;
   background: var(--bg-primary);
 }

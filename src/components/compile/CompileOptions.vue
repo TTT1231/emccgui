@@ -1,112 +1,1488 @@
-<script setup lang="ts">
-import { computed } from 'vue'
+<script lang="ts" setup>
+import { ref, computed } from 'vue'
+
 import { useAppState } from '@/stores'
-import { optionConflicts } from '@/data'
-import OptimizationLevel from './OptimizationLevel.vue'
-import OptionItem from './OptionItem.vue'
-import RuntimeMethodSelector from './RuntimeMethodSelector.vue'
-import ConflictWarning from './ConflictWarning.vue'
-import CommandOutput from './CommandOutput.vue'
-const { state } = useAppState()
+import { optionConflicts, optimizationLevels, optionsReferenceURL } from '@/data'
+import { getConflictedOptions, getConflictReason, formatCommandLine, isOptionReallyEnabled } from '@/utils/compileUtils'
+import type { CommandLine } from '@/types'
+import SearchBtn from './SearchBtn.vue'
 
-// Get conflicted options
-const conflictedKeys = computed(() => {
-  const keys = new Set<string>()
+const { state, setDtsFileName, setOptimizationLevel, updateOption, updateOptionValue, toggleRuntimeMethod, addCustomOption, revokeCustomOption } = useAppState()
 
-  // Pure WASM mode conflicts
-  if (state.outputFormat === 'wasm-only') {
-    for (const opt of state.compileOptions) {
-      if (opt.jsWasmOnly && opt.enabled) {
-        keys.add(opt.key)
-      }
-    }
+// Tooltip 状态
+const activeTooltip = ref<string | null>(null)
+const tooltipDirection = ref<'up' | 'down'>('down')
+const tooltipPosition = ref({ left: '0px', top: '0px' })
+let hideTooltipTimer: ReturnType<typeof setTimeout> | null = null
+
+// 获取 emitTsd 选项
+const getEmitTsdOption = () => state.compileOptions.find(opt => opt.key === 'emitTsd')
+
+// 有输入框的已启用选项
+const optionsWithInput = computed(() =>
+  state.compileOptions.filter(
+    opt => opt.hasInput && opt.key !== 'emitTsd' && isOptionEnabled(opt)
+  )
+)
+
+// 有下拉选项的已启用选项
+const optionsWithSelect = computed(() =>
+  state.compileOptions.filter(
+    opt => opt.valueType === 'select' && opt.selectOptions && opt.enabled
+  )
+)
+
+// 当前有冲突的选项 keys
+const conflictedKeys = computed(() =>
+  getConflictedOptions(state.outputFormat, state.compileOptions, optionConflicts)
+)
+
+// 当前有冲突的选项对象（用于显示警告）
+const conflictedOptions = computed(() =>
+  state.compileOptions.filter(opt => conflictedKeys.value.has(opt.key))
+)
+
+// 检查选项是否启用（包括依赖检查）
+const isOptionEnabled = (option: typeof state.compileOptions[number]): boolean => {
+  if (!option.enabled) return false
+  if (option.dependsOn) {
+    const dep = state.compileOptions.find(o => o.key === option.dependsOn)
+    if (!dep?.enabled) return false
   }
+  return true
+}
 
-  // Option-to-option conflicts
-  for (const conflict of optionConflicts) {
-    const trigger = state.compileOptions.find(o => o.key === conflict.triggerKey)
-    if (trigger?.enabled) {
-      for (const key of conflict.conflictsWith) {
-        const opt = state.compileOptions.find(o => o.key === key)
-        if (opt?.enabled) {
-          keys.add(key)
+// 检查单个选项是否有冲突
+const hasConflict = (optionKey: string): boolean => conflictedKeys.value.has(optionKey)
+
+// 获取单个选项的冲突原因
+const getConflictMessage = (optionKey: string): string | null =>
+  getConflictReason(optionKey, state.outputFormat, state.compileOptions, optionConflicts)
+
+// 根据 key 获取编译选项
+const getOptionByKey = (key: string) => state.compileOptions.find(opt => opt.key === key)
+
+// 生成命令行数组
+const commandLines = computed(() => {
+  const lines: CommandLine[] = []
+  const isJsWasm = state.outputFormat === 'js-wasm'
+
+  // emcc 命令 + 输入文件
+  const inputFile = state.selectedFile?.name || 'input.cpp'
+  lines.push({ name: 'emcc', value: inputFile, type: 'command' })
+
+  // 输出文件
+  const outputExt = isJsWasm ? '.js' : '.wasm'
+  lines.push({ name: '-o', value: `${state.outputFileName}${outputExt}`, type: 'output' })
+
+  // 遍历所有编译选项
+  for (const option of state.compileOptions) {
+    if (!isOptionEnabled(option)) continue
+    if (option.jsWasmOnly && !isJsWasm) continue
+
+    // 处理 select 类型
+    if (option.valueType === 'select') {
+      const selectValue = option.currentValue || option.defaultValue
+      if (option.formatType === 'arg') {
+        lines.push({ name: `-${selectValue}`, type: 'flag' })
+      } else {
+        const cmdName = `${option.cmdPrefix}${option.cmdName}`
+        lines.push({ name: cmdName, value: String(selectValue), type: 'flag' })
+      }
+      continue
+    }
+
+    const cmdName = `${option.cmdPrefix}${option.cmdName}`
+
+    switch (option.formatType) {
+      case 'arg':
+        lines.push({ name: cmdName, type: 'flag' })
+        break
+      case 'setting':
+      case 'flag':
+        let value = String(option.currentValue ?? option.defaultValue)
+        if (option.key === 'emitTsd') {
+          if (state.dtsFileName) {
+            value = `${state.dtsFileName}.d.ts`
+          } else if (value) {
+            value = value.endsWith('.d.ts') ? value : `${value}.d.ts`
+          }
         }
+        lines.push({
+          name: cmdName,
+          value: value,
+          type: 'flag',
+        })
+        break
+    }
+  }
+
+  // 优化级别
+  lines.push({ name: `-${state.optimizationLevel}`, type: 'flag' })
+
+  // 手动添加的编译选项
+  for (const customCmd of state.addOptionsStack) {
+    const eqIndex = customCmd.indexOf('=')
+    if (eqIndex > 0) {
+      const name = customCmd.substring(0, eqIndex)
+      const value = customCmd.substring(eqIndex + 1)
+      lines.push({ name, value, type: 'flag', isCustom: true })
+    } else {
+      lines.push({ name: customCmd, type: 'flag', isCustom: true })
+    }
+  }
+
+  // 导出的运行时方法
+  const enabledMethods = state.runtimeMethods.filter(m => m.enabled).map(m => m.name)
+  if (enabledMethods.length > 0 && isJsWasm) {
+    lines.push({
+      name: '-sEXPORTED_RUNTIME_METHODS',
+      value: enabledMethods.join(','),
+      type: 'flag',
+      isRuntimeMethods: true,
+      methods: enabledMethods,
+    })
+  }
+
+  return lines
+})
+
+// 生成完整命令字符串
+const fullCommand = computed(() =>
+  commandLines.value.map(line => formatCommandLine(line)).join(' ')
+)
+
+// 获取所有已存在的编译选项命令名称
+const getAllExistingCommandNames = computed(() => {
+  const commandNames: string[] = []
+  const isJsWasm = state.outputFormat === 'js-wasm'
+
+  for (const option of state.compileOptions) {
+    if (!isOptionEnabled(option)) continue
+    if (option.jsWasmOnly && !isJsWasm) continue
+
+    if (option.valueType === 'select') {
+      const selectValue = option.currentValue || option.defaultValue
+      if (option.formatType === 'arg') {
+        commandNames.push(`-${selectValue}`)
+      } else {
+        commandNames.push(`${option.cmdPrefix}${option.cmdName}`)
       }
+      continue
     }
+
+    const cmdName = `${option.cmdPrefix}${option.cmdName}`
+    commandNames.push(cmdName)
   }
 
-  return keys
-})
+  commandNames.push(`-${state.optimizationLevel}`)
 
-// Group options by category
-const groupedOptions = computed(() => {
-  const categories: Record<string, typeof state.compileOptions[number][]> = {}
-  const isWasmOnly = state.outputFormat === 'wasm-only'
-
-  for (const opt of state.compileOptions) {
-    if (isWasmOnly && opt.jsWasmOnly) continue
-    const cat = opt.category
-    if (!categories[cat]) {
-      categories[cat] = []
-    }
-    categories[cat]!.push(opt)
+  const enabledMethods = state.runtimeMethods.filter(m => m.enabled).map(m => m.name)
+  if (enabledMethods.length > 0 && isJsWasm) {
+    commandNames.push('-sEXPORTED_RUNTIME_METHODS')
   }
 
-  return categories
+  for (const customCmd of state.addOptionsStack) {
+    const eqIndex = customCmd.indexOf('=')
+    commandNames.push(eqIndex > 0 ? customCmd.substring(0, eqIndex) : customCmd)
+  }
+
+  return commandNames
 })
+
+// Tooltip
+const showTooltip = (name: string, event: MouseEvent) => {
+  if (hideTooltipTimer) {
+    clearTimeout(hideTooltipTimer)
+    hideTooltipTimer = null
+  }
+
+  if (activeTooltip.value === name) return
+
+  const target = event.currentTarget as HTMLElement
+  const rect = target.getBoundingClientRect()
+  const spaceBelow = window.innerHeight - rect.bottom
+
+  tooltipDirection.value = spaceBelow < 80 ? 'up' : 'down'
+  tooltipPosition.value = {
+    left: `${rect.left}px`,
+    top: tooltipDirection.value === 'down' ? `${rect.bottom + 8}px` : `${rect.top - 8}px`,
+  }
+
+  activeTooltip.value = name
+}
+
+const hideTooltip = () => {
+  if (hideTooltipTimer) {
+    clearTimeout(hideTooltipTimer)
+  }
+  hideTooltipTimer = setTimeout(() => {
+    activeTooltip.value = null
+    hideTooltipTimer = null
+  }, 100)
+}
+
+// 命令处理
+const copyCommand = async () => {
+  await navigator.clipboard.writeText(fullCommand.value)
+}
+
+const executeCommand = () => {
+  // TODO: 实现编译执行功能
+  console.log('Execute compile:', fullCommand.value)
+}
+
+const handleAddCompileOptions = (value: string) => {
+  addCustomOption(value)
+}
+
+const handleRevokeCompileOptions = () => {
+  revokeCustomOption()
+}
+
+// 打开浏览器
+const openBrowser = () => {
+  window.open(optionsReferenceURL, '_blank')
+}
 </script>
 
 <template>
-  <div class="compile-tab">
-    <ConflictWarning :conflicted-keys="conflictedKeys" />
+  <div class="emcc-container">
+    <div class="main-content">
+      <!-- 左侧：配置区域 -->
+      <div class="config-panel">
+        <!-- 编译选项卡片 -->
+        <section class="config-card compile-options-card">
+          <div class="card-header">
+            <div class="card-header-icon compile-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m16 3 4 5-4 5"/>
+                <path d="M20 8H4"/>
+                <path d="m8 21-4-5 4-5"/>
+                <path d="M4 16h16"/>
+              </svg>
+            </div>
+            <h3 class="card-title">编译选项</h3>
+            <span class="options-count">{{ state.compileOptions.filter(o => o.enabled).length }}/{{ state.compileOptions.length }}</span>
+          </div>
 
-    <OptimizationLevel />
+          <div class="card-content">
+            <!-- 冲突警告提示 -->
+            <Transition name="warning">
+              <div v-if="conflictedOptions.length > 0" class="conflict-alert">
+                <div class="alert-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+                    <line x1="12" x2="12" y1="9" y2="13"/>
+                    <line x1="12" x2="12.01" y1="17" y2="17"/>
+                  </svg>
+                </div>
+                <div class="alert-content">
+                  <div class="alert-title">
+                    检测到 {{ conflictedOptions.length }} 个冲突选项
+                  </div>
+                  <div class="alert-list">
+                    <div
+                      v-for="opt in conflictedOptions"
+                      :key="opt.key"
+                      class="alert-item"
+                    >
+                      <span class="alert-opt-name">{{ opt.name }}</span>
+                      <span class="alert-reason">{{ getConflictMessage(opt.key) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
 
-    <div class="compile-options">
-      <div
-        v-for="(options, category) in groupedOptions"
-        :key="category"
-        class="option-group"
-      >
-        <h3 class="option-group-title">{{ category }}</h3>
-        <OptionItem
-          v-for="opt in options"
-          :key="opt.key"
-          :option="opt"
-          :is-conflicted="conflictedKeys.has(opt.key)"
+            <!-- 选项网格 -->
+            <div class="options-grid">
+              <label
+                v-for="opt in state.compileOptions"
+                :key="opt.key"
+                v-show="opt.key !== 'SIDE_MODULE' || state.outputFormat === 'wasm-only'"
+                class="option-chip"
+                :class="{
+                  disabled: opt.dependsOn && !getOptionByKey(opt.dependsOn)?.enabled,
+                  conflicted: hasConflict(opt.key),
+                  active: opt.enabled,
+                }"
+                @mouseenter="showTooltip(opt.name, $event)"
+                @mouseleave="hideTooltip"
+              >
+                <input
+                  type="checkbox"
+                  :checked="opt.enabled"
+                  :disabled="!!(opt.dependsOn && !getOptionByKey(opt.dependsOn)?.enabled)"
+                  @change="updateOption(opt.key, ($event.target as HTMLInputElement).checked)"
+                />
+                <span class="chip-indicator"></span>
+                <span class="chip-label">{{ opt.name }}</span>
+
+                <!-- Tooltip -->
+                <Transition name="tooltip">
+                  <div
+                    v-if="activeTooltip === opt.name"
+                    class="tooltip"
+                    :class="[`tooltip-${tooltipDirection}`]"
+                    :style="{ left: tooltipPosition.left, top: tooltipPosition.top }"
+                  >
+                    <div class="tooltip-content">
+                      {{ opt.hint }}
+                    </div>
+                    <div class="tooltip-arrow"></div>
+                  </div>
+                </Transition>
+              </label>
+            </div>
+
+            <!-- 优化级别 - 下拉选择 -->
+            <div class="dynamic-fields">
+              <div class="form-field form-field-compact">
+                <label class="field-label">优化级别</label>
+                <select :value="state.optimizationLevel" class="field-select" @change="setOptimizationLevel(($event.target as HTMLSelectElement).value as any)">
+                  <option
+                    v-for="level in optimizationLevels"
+                    :key="level.value"
+                    :value="level.value"
+                  >
+                    {{ level.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 动态输入框 -->
+            <div v-if="optionsWithInput.length > 0" class="dynamic-fields">
+              <template v-for="opt in optionsWithInput" :key="opt.key + '-input'">
+                <div class="form-field form-field-compact">
+                  <label class="field-label">{{ opt.inputLabel || opt.name }}</label>
+                  <input
+                    :value="opt.currentValue"
+                    type="text"
+                    class="field-input"
+                    :placeholder="opt.inputPlaceholder"
+                    spellcheck="false"
+                    @input="updateOptionValue(opt.key, ($event.target as HTMLInputElement).value)"
+                  />
+                </div>
+              </template>
+            </div>
+
+            <!-- TypeScript 定义文件名 -->
+            <div v-if="getEmitTsdOption()?.enabled" class="dynamic-fields">
+              <div class="form-field form-field-compact">
+                <label class="field-label">{{ getEmitTsdOption()?.inputLabel }}</label>
+                <div class="input-with-suffix">
+                  <input
+                    :value="state.dtsFileName"
+                    type="text"
+                    class="field-input"
+                    :placeholder="getEmitTsdOption()?.inputPlaceholder"
+                    spellcheck="false"
+                    @input="setDtsFileName(($event.target as HTMLInputElement).value)"
+                  />
+                  <span class="input-suffix">.d.ts</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 动态下拉选择 -->
+            <div v-if="optionsWithSelect.length > 0" class="dynamic-fields">
+              <template v-for="opt in optionsWithSelect" :key="opt.key + '-select'">
+                <div class="form-field form-field-compact">
+                  <label class="field-label">{{ opt.name }}</label>
+                  <select :value="opt.currentValue" class="field-select" @change="updateOptionValue(opt.key, ($event.target as HTMLSelectElement).value)">
+                    <option
+                      v-for="selectOpt in opt.selectOptions"
+                      :key="selectOpt.value"
+                      :value="selectOpt.value"
+                    >
+                      {{ selectOpt.label }}
+                    </option>
+                  </select>
+                </div>
+              </template>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 右侧：命令预览 -->
+      <div class="preview-panel">
+        <!-- 命令高亮显示 - 代码块风格 -->
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">emcc</span>
+            <button class="copy-btn" @click="copyCommand" title="复制命令">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+              </svg>
+            </button>
+          </div>
+          <div class="code-block-content">
+            <div
+              v-for="(line, index) in commandLines"
+              :key="index"
+              class="command-line"
+              :class="[
+                `line-${index % 2 === 0 ? 'even' : 'odd'}`,
+                `line-type-${line.type}`,
+                { 'line-runtime-methods': line.isRuntimeMethods },
+                { 'line-custom': line.isCustom },
+              ]"
+            >
+              <span class="line-name">{{ line.name }}</span>
+              <template v-if="line.value">
+                <span v-if="line.type === 'flag'" class="line-eq">=</span>
+                <span v-else class="line-space">&nbsp;</span>
+                <!-- 运行时方法特殊显示 -->
+                <template v-if="line.isRuntimeMethods && line.methods">
+                  <span class="line-value methods-value"
+                    ><template v-for="(method, idx) in line.methods" :key="method"
+                      ><span class="method-item">{{ method }}</span
+                      ><template v-if="idx < line.methods.length - 1"
+                        >,</template
+                      ></template
+                    ></span
+                  >
+                </template>
+                <span v-else class="line-value">{{ line.value }}</span>
+              </template>
+            </div>
+          </div>
+        </div>
+        <SearchBtn
+          :existing-commands="getAllExistingCommandNames"
+          @handle-add="handleAddCompileOptions"
+          @handle-revoke="handleRevokeCompileOptions"
         />
+        <!-- 运行时方法 -->
+        <section class="config-card methods-card">
+          <div class="card-header">
+            <div class="card-header-icon methods-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.29,7 12,12 20.71,7"/>
+                <line x1="12" x2="12" y1="22" y2="12"/>
+              </svg>
+            </div>
+            <h3 class="card-title">导出运行时方法</h3>
+            <span class="options-count">{{ state.runtimeMethods.filter(m => m.enabled).length }}/{{ state.runtimeMethods.length }}</span>
+          </div>
+
+          <div class="card-content">
+            <!-- 运行时方法冲突警告 -->
+            <Transition name="warning">
+              <div
+                v-if="state.outputFormat === 'wasm-only' && state.runtimeMethods.some(m => m.enabled)"
+                class="info-alert"
+              >
+                <div class="alert-icon info-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 16v-4"/>
+                    <path d="M12 8h.01"/>
+                  </svg>
+                </div>
+                <div class="alert-content">
+                  <div class="alert-title">运行时方法仅在 JS + WASM 模式下有效</div>
+                  <div class="alert-reason">
+                    纯 WASM 模式不生成 JS glue 代码，无法使用这些运行时方法
+                  </div>
+                </div>
+              </div>
+            </Transition>
+
+            <div class="methods-grid">
+              <label
+                v-for="method in state.runtimeMethods"
+                :key="method.key"
+                class="method-chip"
+                :class="{
+                  active: method.enabled,
+                  conflicted: state.outputFormat === 'wasm-only',
+                }"
+                @mouseenter="showTooltip(method.name, $event)"
+                @mouseleave="hideTooltip"
+              >
+                <input
+                  type="checkbox"
+                  :checked="method.enabled"
+                  :disabled="state.outputFormat === 'wasm-only'"
+                  @change="toggleRuntimeMethod(method.key)"
+                />
+                <span class="chip-indicator"></span>
+                <span class="chip-label">{{ method.name }}</span>
+
+                <!-- Tooltip -->
+                <Transition name="tooltip">
+                  <div
+                    v-if="activeTooltip === method.name"
+                    class="tooltip"
+                    :class="'tooltip-' + tooltipDirection"
+                    :style="{ left: tooltipPosition.left, top: tooltipPosition.top }"
+                  >
+                    <div class="tooltip-content">{{ method.hint }}</div>
+                    <div class="tooltip-arrow"></div>
+                  </div>
+                </Transition>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- 执行按钮 -->
+        <button
+          class="execute-btn"
+          @click="executeCommand"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="6 3 20 12 6 21 6 3"/>
+          </svg>
+          <span class="btn-text">执行编译</span>
+        </button>
       </div>
     </div>
-
-    <RuntimeMethodSelector />
-
-    <CommandOutput />
   </div>
 </template>
 
 <style scoped>
-.compile-tab {
-  max-width: 900px;
-}
-
-.compile-options {
-  display: grid;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.option-group {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
+.emcc-container {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
   padding: 20px;
+  overflow: hidden;
 }
 
-.option-group-title {
-  font-size: 14px;
+.main-content {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  gap: 20px;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    flex-direction: column;
+  }
+}
+
+.config-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.preview-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ===== Config Cards ===== */
+.config-card {
+  padding: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.config-card:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--border-color));
+}
+
+.card-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary));
+  border-bottom: 1px solid var(--border-color);
+}
+
+.card-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border-radius: 8px;
+}
+
+.card-header-icon.compile-icon {
+  color: #22c55e;
+  background: color-mix(in srgb, #22c55e 15%, transparent);
+}
+
+.card-title {
+  flex: 1;
+  margin: 0;
+  font-size: 0.95em;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-primary);
+}
+
+.options-count {
+  padding: 4px 10px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border-radius: 20px;
+}
+
+.card-content {
+  padding: 16px;
+}
+
+/* ===== Form Fields ===== */
+.form-field {
   margin-bottom: 16px;
+}
+
+.form-field:last-child {
+  margin-bottom: 0;
+}
+
+.form-field-compact {
+  margin-bottom: 12px;
+}
+
+.field-label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.field-label:hover {
+  color: var(--text-primary);
+}
+
+.field-input,
+.field-select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 14px;
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-size: 0.9em;
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.field-input:focus,
+.field-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.field-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.field-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 40px;
+}
+
+/* ===== Input with Suffix ===== */
+.input-with-suffix {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.input-with-suffix:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.input-with-suffix .field-input {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.input-with-suffix .field-input:focus {
+  box-shadow: none;
+}
+
+.input-suffix {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-button));
+  border-left: 1px solid var(--border-color);
+}
+
+/* ===== Options Grid ===== */
+.options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* ===== Option Chips ===== */
+.option-chip {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.option-chip:hover {
+  z-index: 100;
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-primary));
+}
+
+.option-chip input {
+  display: none;
+}
+
+.chip-indicator {
+  position: relative;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  transition: all 0.25s ease;
+}
+
+.chip-indicator::after {
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  content: '';
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  border-radius: 1px;
+  opacity: 0;
+  transform: rotate(45deg) scale(0.8);
+  transition: all 0.2s ease;
+}
+
+.option-chip.active .chip-indicator {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.option-chip.active .chip-indicator::after {
+  opacity: 1;
+  transform: rotate(45deg) scale(1);
+}
+
+.chip-label {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.8em;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.option-chip.active .chip-label {
+  color: var(--color-primary);
+}
+
+/* Disabled State */
+.option-chip.disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.option-chip.disabled:hover {
+  border-color: var(--border-color);
+  background: var(--bg-primary);
+}
+
+/* Conflicted State */
+.option-chip.conflicted {
+  background: color-mix(in srgb, #f59e0b 10%, var(--bg-primary));
+  border-color: #f59e0b;
+}
+
+.option-chip.conflicted .chip-indicator {
+  border-color: #f59e0b;
+}
+
+.option-chip.conflicted.active .chip-indicator {
+  background: #f59e0b;
+}
+
+.option-chip.conflicted .chip-label {
+  color: #d97706;
+}
+
+.option-chip.conflicted::after {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 0.65em;
+  color: white;
+  content: '!';
+  background: #f59e0b;
+  border-radius: 50%;
+}
+
+/* ===== Conflict Alert ===== */
+.conflict-alert {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background: color-mix(in srgb, #f59e0b 12%, var(--bg-secondary));
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  animation: alert-pulse 2s ease-in-out infinite;
+}
+
+@keyframes alert-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, #f59e0b 20%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, #f59e0b 10%, transparent);
+  }
+}
+
+[data-theme='light'] .conflict-alert {
+  background: color-mix(in srgb, #f59e0b 8%, #fff);
+}
+
+.alert-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: #f59e0b;
+  background: color-mix(in srgb, #f59e0b 20%, transparent);
+  border-radius: 8px;
+}
+
+.alert-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-title {
+  margin-bottom: 8px;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #d97706;
+}
+
+[data-theme='light'] .alert-title {
+  color: #b45309;
+}
+
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.alert-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+  background: color-mix(in srgb, #f59e0b 10%, transparent);
+  border-radius: 6px;
+}
+
+.alert-opt-name {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.8em;
+  font-weight: 600;
+  color: #d97706;
+}
+
+[data-theme='light'] .alert-opt-name {
+  color: #b45309;
+}
+
+.alert-reason {
+  font-size: 0.75em;
+  color: var(--text-secondary);
+}
+
+/* ===== Dynamic Fields Section ===== */
+.dynamic-fields {
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.warning-enter-active,
+.warning-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.warning-enter-from,
+.warning-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.tooltip .tooltip-arrow {
+  left: 20px;
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+}
+
+.tooltip.tooltip-down .tooltip-arrow {
+  top: -6px;
+  border-bottom: 6px solid #fff;
+}
+
+[data-theme='dark'] .tooltip.tooltip-down .tooltip-arrow {
+  border-bottom-color: #2d3748;
+}
+
+.tooltip.tooltip-up .tooltip-arrow {
+  bottom: -6px;
+  border-top: 6px solid #fff;
+}
+
+[data-theme='dark'] .tooltip.tooltip-up .tooltip-arrow {
+  border-top-color: #2d3748;
+}
+
+.tooltip-content {
+  padding: 8px 12px;
+  font-size: 0.8em;
+  line-height: 1.5;
+  color: #333;
+  white-space: nowrap;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px -4px rgb(0 0 0 / 12%), 0 6px 16px 0 rgb(0 0 0 / 8%), 0 9px 28px 8px rgb(0 0 0 / 5%);
+}
+
+[data-theme='dark'] .tooltip-content {
+  color: #fff;
+  background: #2d3748;
+  border-color: #4a5568;
+  box-shadow: 0 4px 8px rgb(0 0 0 / 40%), 0 8px 20px rgb(0 0 0 / 30%);
+}
+
+.tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.tooltip-enter-active,
+.tooltip-leave-active {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tooltip-enter-from,
+.tooltip-leave-to {
+  opacity: 0;
+}
+
+.tooltip-down.tooltip-enter-from,
+.tooltip-down.tooltip-leave-to {
+  transform: translateY(-8px);
+}
+
+.tooltip-up.tooltip-enter-from,
+.tooltip-up.tooltip-leave-to {
+  transform: translateY(8px);
+}
+
+/* ===== Methods Card ===== */
+.methods-card {
+  flex-shrink: 0;
+}
+
+.methods-card .card-header-icon.methods-icon {
+  color: #8b5cf6;
+  background: color-mix(in srgb, #8b5cf6 15%, transparent);
+}
+
+.methods-card .options-count {
+  color: #8b5cf6;
+  background: color-mix(in srgb, #8b5cf6 15%, transparent);
+}
+
+.methods-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.method-chip {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 10px;
+  cursor: pointer;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.method-chip:hover {
+  z-index: 100;
+  border-color: #8b5cf6;
+  background: color-mix(in srgb, #8b5cf6 5%, var(--bg-primary));
+}
+
+.method-chip input {
+  display: none;
+}
+
+.method-chip .chip-indicator {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.method-chip .chip-indicator::after {
+  top: 3px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+}
+
+.method-chip.active {
+  border-color: #8b5cf6;
+}
+
+.method-chip.active .chip-indicator {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+}
+
+.method-chip.active .chip-label {
+  color: #8b5cf6;
+}
+
+.method-chip.conflicted {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.method-chip.conflicted:hover {
+  border-color: var(--border-color);
+  background: var(--bg-primary);
+}
+
+.method-chip.conflicted.active {
+  opacity: 0.6;
+}
+
+.method-chip.conflicted.active .chip-indicator {
+  background: var(--text-secondary);
+  border-color: var(--text-secondary);
+}
+
+.method-chip.conflicted.active .chip-label {
+  color: var(--text-secondary);
+}
+
+/* ===== Info Alert ===== */
+.info-alert {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background: color-mix(in srgb, #3b82f6 12%, var(--bg-secondary));
+  border: 1px solid #3b82f6;
+  border-radius: 10px;
+}
+
+[data-theme='light'] .info-alert {
+  background: color-mix(in srgb, #3b82f6 8%, #fff);
+}
+
+.alert-icon.info-icon {
+  color: #3b82f6;
+  background: color-mix(in srgb, #3b82f6 20%, transparent);
+}
+
+.info-alert .alert-title {
+  color: #3b82f6;
+}
+
+[data-theme='light'] .info-alert .alert-title {
+  color: #2563eb;
+}
+
+.code-block {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+[data-theme='light'] .code-block {
+  background: #f6f8fa;
+  border-color: var(--border-color);
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: rgb(255 255 255 / 5%);
+  border-bottom: 1px solid #333;
+}
+
+[data-theme='light'] .code-block-header {
+  background: rgb(0 0 0 / 3%);
+  border-bottom-color: var(--border-color);
+}
+
+.code-lang {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: #888;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+[data-theme='light'] .code-lang {
+  color: #666;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  color: #888;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  opacity: 0.6;
+  transition: all 0.25s ease;
+}
+
+.copy-btn:hover {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  opacity: 1;
+}
+
+.code-block-content {
+  flex: 1;
+  min-height: 0;
+  padding: 12px;
+  overflow: hidden auto;
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+
+.command-line {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 3px 8px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  border-left: 3px solid transparent;
+  border-radius: 3px;
+}
+
+.command-line.line-runtime-methods {
+  white-space: normal;
+}
+
+.command-line.line-runtime-methods .line-name {
+  white-space: nowrap;
+}
+
+.command-line:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+[data-theme='light'] .command-line:hover {
+  background: rgb(0 0 0 / 5%);
+}
+
+.command-line.line-even {
+  background: rgb(255 255 255 / 2%);
+  border-left-color: #4fc3f7;
+}
+
+[data-theme='light'] .command-line.line-even {
+  background: rgb(0 0 0 / 1.5%);
+  border-left-color: #0288d1;
+}
+
+.command-line.line-odd {
+  border-left-color: #81c784;
+}
+
+[data-theme='light'] .command-line.line-odd {
+  border-left-color: #388e3c;
+}
+
+.command-line.line-type-command {
+  border-left-color: #ff79c6 !important;
+}
+
+.command-line.line-type-command .line-name {
+  font-weight: 700;
+  color: #ff79c6;
+}
+
+[data-theme='light'] .command-line.line-type-command .line-name {
+  color: #d63384;
+}
+
+.command-line.line-type-command .line-value {
+  color: #8be9fd;
+}
+
+[data-theme='light'] .command-line.line-type-command .line-value {
+  color: #0d6efd;
+}
+
+.command-line.line-type-output {
+  padding-left: 20px;
+  border-left-color: #50fa7b !important;
+}
+
+.command-line.line-type-output .line-name {
+  color: #50fa7b;
+}
+
+[data-theme='light'] .command-line.line-type-output .line-name {
+  color: #198754;
+}
+
+.command-line.line-type-output .line-value {
+  color: #f1fa8c;
+}
+
+[data-theme='light'] .command-line.line-type-output .line-value {
+  color: #6f42c1;
+}
+
+.command-line.line-type-flag {
+  padding-left: 20px;
+}
+
+.command-line.line-type-flag .line-name {
+  color: #bd93f9;
+}
+
+[data-theme='light'] .command-line.line-type-flag .line-name {
+  color: #6610f2;
+}
+
+.command-line.line-custom {
+  background: rgb(245 158 11 / 8%);
+  border-left-color: #f59e0b !important;
+}
+
+[data-theme='light'] .command-line.line-custom {
+  background: rgb(245 158 11 / 6%);
+}
+
+.command-line.line-custom .line-name {
+  color: #f59e0b;
+}
+
+[data-theme='light'] .command-line.line-custom .line-name {
+  color: #d97706;
+}
+
+.command-line.line-custom .line-value {
+  color: #fbbf24;
+}
+
+[data-theme='light'] .command-line.line-custom .line-value {
+  color: #b45309;
+}
+
+.line-name {
+  font-weight: 500;
+  color: #bd93f9;
+}
+
+[data-theme='light'] .line-name {
+  color: #6610f2;
+}
+
+.line-eq,
+.line-space {
+  color: #888;
+  white-space: pre;
+}
+
+.line-value {
+  font-weight: 500;
+  color: #f38ba8;
+}
+
+[data-theme='light'] .line-value {
+  color: #c2185b;
+}
+
+.line-runtime-methods {
+  flex-wrap: wrap;
+}
+
+.line-runtime-methods .methods-value {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+.line-runtime-methods .methods-value .method-item {
+  font-weight: 600;
+  color: #50fa7b;
+}
+
+[data-theme='light'] .line-runtime-methods .methods-value .method-item {
+  color: #198754;
+}
+
+.execute-btn {
+  display: flex;
+  flex-shrink: 0;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 16px 24px;
+  font-size: 1em;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px color-mix(in srgb, #22c55e 35%, transparent);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.execute-btn svg {
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
+.execute-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  box-shadow: 0 8px 20px color-mix(in srgb, #22c55e 45%, transparent);
+  transform: translateY(-2px);
+}
+
+.execute-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px color-mix(in srgb, #22c55e 30%, transparent);
+}
+
+.execute-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.link-span {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--color-primary);
+  text-underline-offset: 2px;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.link-span:hover {
+  color: var(--color-primary-hover);
+  text-decoration-color: var(--color-primary-hover);
+}
+
+.link-span:focus,
+.link-span:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+  outline-offset: 2px;
+}
+
+.link-span:active {
+  text-decoration-thickness: 1.5px;
 }
 </style>
