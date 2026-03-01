@@ -267,34 +267,6 @@ const handleAddCustomMethod = () => {
           </div>
 
           <div class="card-content">
-            <!-- 冲突警告提示 -->
-            <Transition name="warning">
-              <div v-if="conflictedOptions.length > 0" class="conflict-alert">
-                <div class="alert-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
-                    <line x1="12" x2="12" y1="9" y2="13"/>
-                    <line x1="12" x2="12.01" y1="17" y2="17"/>
-                  </svg>
-                </div>
-                <div class="alert-content">
-                  <div class="alert-title">
-                    检测到 {{ conflictedOptions.length }} 个冲突选项
-                  </div>
-                  <div class="alert-list">
-                    <div
-                      v-for="opt in conflictedOptions"
-                      :key="opt.key"
-                      class="alert-item"
-                    >
-                      <span class="alert-opt-name">{{ opt.name }}</span>
-                      <span class="alert-reason">{{ getConflictMessage(opt.key) }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Transition>
-
             <!-- 选项网格 -->
             <div class="options-grid">
               <label
@@ -328,7 +300,15 @@ const handleAddCustomMethod = () => {
                     :style="{ left: tooltipPosition.left, top: tooltipPosition.top }"
                   >
                     <div class="tooltip-content">
-                      {{ opt.hint }}
+                      <span>{{ opt.hint }}</span>
+                      <div v-if="hasConflict(opt.key)" class="tooltip-conflict">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+                          <line x1="12" x2="12" y1="9" y2="13"/>
+                          <line x1="12" x2="12.01" y1="17" y2="17"/>
+                        </svg>
+                        <span>{{ getConflictMessage(opt.key) }}</span>
+                      </div>
                     </div>
                     <div class="tooltip-arrow"></div>
                   </div>
@@ -473,28 +453,6 @@ const handleAddCustomMethod = () => {
           </div>
 
           <div class="card-content">
-            <!-- 运行时方法冲突警告 -->
-            <Transition name="warning">
-              <div
-                v-if="state.outputFormat === 'wasm-only' && state.runtimeMethods.some(m => m.enabled)"
-                class="info-alert"
-              >
-                <div class="alert-icon info-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M12 16v-4"/>
-                    <path d="M12 8h.01"/>
-                  </svg>
-                </div>
-                <div class="alert-content">
-                  <div class="alert-title">运行时方法仅在 JS + WASM 模式下有效</div>
-                  <div class="alert-reason">
-                    纯 WASM 模式不生成 JS glue 代码，无法使用这些运行时方法
-                  </div>
-                </div>
-              </div>
-            </Transition>
-
             <div class="methods-grid">
               <label
                 v-for="method in state.runtimeMethods"
@@ -524,7 +482,17 @@ const handleAddCustomMethod = () => {
                     :class="'tooltip-' + tooltipDirection"
                     :style="{ left: tooltipPosition.left, top: tooltipPosition.top }"
                   >
-                    <div class="tooltip-content">{{ method.hint }}</div>
+                    <div class="tooltip-content">
+                      <span>{{ method.hint }}</span>
+                      <div v-if="state.outputFormat === 'wasm-only'" class="tooltip-conflict">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <path d="M12 16v-4"/>
+                          <path d="M12 8h.01"/>
+                        </svg>
+                        <span>纯 WASM 模式不生成 JS glue 代码，此方法无效</span>
+                      </div>
+                    </div>
                     <div class="tooltip-arrow"></div>
                   </div>
                 </Transition>
@@ -1158,6 +1126,7 @@ const handleAddCustomMethod = () => {
   line-height: 1.5;
   color: #333;
   white-space: nowrap;
+  max-width: 280px;
   background: #fff;
   border: 1px solid #e8e8e8;
   border-radius: 8px;
@@ -1169,6 +1138,35 @@ const handleAddCustomMethod = () => {
   background: #2d3748;
   border-color: #4a5568;
   box-shadow: 0 4px 8px rgb(0 0 0 / 40%), 0 8px 20px rgb(0 0 0 / 30%);
+}
+
+.tooltip-conflict {
+  display: flex;
+  gap: 5px;
+  align-items: flex-start;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #f59e0b40;
+  color: #d97706;
+  font-size: 0.95em;
+  white-space: normal;
+  max-width: 240px;
+  line-height: 1.4;
+}
+
+.tooltip-conflict svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #f59e0b;
+}
+
+[data-theme='dark'] .tooltip-conflict {
+  color: #fbbf24;
+  border-top-color: #f59e0b30;
+}
+
+[data-theme='dark'] .tooltip-conflict svg {
+  color: #fbbf24;
 }
 
 .tooltip-arrow {
