@@ -24,6 +24,7 @@ const fileContent = ref('')
 const isDragging = ref(false)
 const isDirty = ref(false)
 const isSaving = ref(false)
+const lineCount = ref(0)
 // 保存成功短暂反馈
 const savedFlash = ref(false)
 // 保存原始内容用于对比
@@ -149,6 +150,7 @@ function initEditor(content: string, filename: string) {
           if (update.docChanged) {
             const current = update.state.doc.toString()
             isDirty.value = current !== savedContent
+            lineCount.value = update.state.doc.lines
           }
         }),
       ],
@@ -166,6 +168,7 @@ async function processFile(file: File) {
     fileContent.value = content
     savedContent = content
     isDirty.value = false
+    lineCount.value = content.split('\n').length
     setSelectedFile({ name: file.name, path: file.webkitRelativePath || file.name })
     await nextTick()
     initEditor(content, file.name)
@@ -418,7 +421,7 @@ onUnmounted(() => {
           <span class="file-name" :class="{ 'file-name--dirty': isDirty }">{{ state.selectedFile?.name }}</span>
         </div>
         <div class="editor-header__right">
-          <span class="line-count">{{ editorView ? editorView.state.doc.lines : fileContent.split('\n').length }} 行</span>
+          <span class="line-count">{{ lineCount }} 行</span>
 
           <!-- 保存按钮 -->
           <button
