@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 
 import { useAppState } from '@/stores'
 import { optionConflicts, optimizationLevels } from '@/data'
-import { getConflictedOptions, getConflictReason, formatCommandLine } from '@/utils/compileUtils'
+import { getConflictedOptions, getConflictReason, formatCommandLine, isOptionReallyEnabled } from '@/utils/compileUtils'
 import type { CommandLine } from '@/types'
 import SearchBtn from './SearchBtn.vue'
 
@@ -21,7 +21,7 @@ const getEmitTsdOption = () => state.compileOptions.find(opt => opt.key === 'emi
 // 有输入框的已启用选项
 const optionsWithInput = computed(() =>
   state.compileOptions.filter(
-    opt => opt.hasInput && opt.key !== 'emitTsd' && isOptionEnabled(opt)
+    opt => opt.hasInput && opt.key !== 'emitTsd' && isOptionReallyEnabled(opt, state.compileOptions)
   )
 )
 
@@ -41,16 +41,6 @@ const conflictedKeys = computed(() =>
 const conflictedOptions = computed(() =>
   state.compileOptions.filter(opt => conflictedKeys.value.has(opt.key))
 )
-
-// 检查选项是否启用（包括依赖检查）
-const isOptionEnabled = (option: typeof state.compileOptions[number]): boolean => {
-  if (!option.enabled) return false
-  if (option.dependsOn) {
-    const dep = state.compileOptions.find(o => o.key === option.dependsOn)
-    if (!dep?.enabled) return false
-  }
-  return true
-}
 
 // 检查单个选项是否有冲突
 const hasConflict = (optionKey: string): boolean => conflictedKeys.value.has(optionKey)
@@ -77,7 +67,7 @@ const commandLines = computed(() => {
 
   // 遍历所有编译选项
   for (const option of state.compileOptions) {
-    if (!isOptionEnabled(option)) continue
+    if (!isOptionReallyEnabled(option, state.compileOptions)) continue
     if (option.jsWasmOnly && !isJsWasm) continue
 
     // 处理 select 类型
@@ -161,7 +151,7 @@ const getAllExistingCommandNames = computed(() => {
   const isJsWasm = state.outputFormat === 'js-wasm'
 
   for (const option of state.compileOptions) {
-    if (!isOptionEnabled(option)) continue
+    if (!isOptionReallyEnabled(option, state.compileOptions)) continue
     if (option.jsWasmOnly && !isJsWasm) continue
 
     if (option.valueType === 'select') {

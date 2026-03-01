@@ -28,7 +28,9 @@ const currentTab = computed(() => appState.state.activeTab)
       <AppSidebar />
 
       <div class="content-area">
-        <component :is="tabComponents[currentTab]" />
+        <keep-alive>
+          <component :is="tabComponents[currentTab]" />
+        </keep-alive>
       </div>
     </main>
 

@@ -1,8 +1,8 @@
-import type { CompileOptionState, CommandLine, OptionConflict } from '@/types'
+import type { CompileOptionState, CommandLine, OptionConflict, OutputFormat } from '@/types'
 
 // 根据输出格式和当前选项状态获取应禁用的选项 keys
 export function getConflictedOptions(
-  outputFormat: 'js-wasm' | 'wasm-only',
+  outputFormat: OutputFormat,
   options: readonly CompileOptionState[],
   optionConflicts: OptionConflict[]
 ): Set<string> {
@@ -36,7 +36,7 @@ export function getConflictedOptions(
 // 获取冲突描述信息
 export function getConflictReason(
   optionKey: string,
-  outputFormat: 'js-wasm' | 'wasm-only',
+  outputFormat: OutputFormat,
   options: readonly CompileOptionState[],
   optionConflicts: OptionConflict[]
 ): string | null {
@@ -44,15 +44,13 @@ export function getConflictReason(
   if (!opt) return null
 
   // 检查纯 WASM 模式冲突
-  if (outputFormat === 'wasm-only') {
-    if (opt?.jsWasmOnly && isOptionReallyEnabled(opt, options)) {
-      return '此选项需要 JavaScript glue 代码，纯 WASM 模式下不生成 JS 文件'
-    }
+  if (outputFormat === 'wasm-only' && opt.jsWasmOnly && isOptionReallyEnabled(opt, options)) {
+    return '此选项需要 JavaScript glue 代码，纯 WASM 模式下不生成 JS 文件'
   }
 
   // 检查选项间冲突规则
   for (const conflict of optionConflicts) {
-    const triggerOpt = options.find(opt => opt.key === conflict.triggerKey)
+    const triggerOpt = options.find(o => o.key === conflict.triggerKey)
     if (triggerOpt?.enabled && conflict.conflictsWith.includes(optionKey)) {
       return conflict.reason
     }
