@@ -16,7 +16,7 @@ const tooltipPosition = ref({ left: '0px', top: '0px' })
 let hideTooltipTimer: ReturnType<typeof setTimeout> | null = null
 
 // 获取 emitTsd 选项
-const getEmitTsdOption = () => state.compileOptions.find(opt => opt.key === 'emitTsd')
+const emitTsdOption = computed(() => state.compileOptions.find(opt => opt.key === 'emitTsd'))
 
 // 有输入框的已启用选项
 const optionsWithInput = computed(() =>
@@ -35,11 +35,6 @@ const optionsWithSelect = computed(() =>
 // 当前有冲突的选项 keys
 const conflictedKeys = computed(() =>
   getConflictedOptions(state.outputFormat, state.compileOptions, optionConflicts)
-)
-
-// 当前有冲突的选项对象（用于显示警告）
-const conflictedOptions = computed(() =>
-  state.compileOptions.filter(opt => conflictedKeys.value.has(opt.key))
 )
 
 // 检查单个选项是否有冲突
@@ -230,7 +225,6 @@ const copyCommand = async () => {
 
 const executeCommand = () => {
   // TODO: 实现编译执行功能
-  console.log('Execute compile:', fullCommand.value)
 }
 
 const handleAddCompileOptions = (value: string) => {
@@ -355,15 +349,15 @@ const handleAddCustomMethod = () => {
             </div>
 
             <!-- TypeScript 定义文件名 -->
-            <div v-if="getEmitTsdOption()?.enabled" class="dynamic-fields">
+            <div v-if="emitTsdOption?.enabled" class="dynamic-fields">
               <div class="form-field form-field-compact">
-                <label class="field-label">{{ getEmitTsdOption()?.inputLabel }}</label>
+                <label class="field-label">{{ emitTsdOption?.inputLabel }}</label>
                 <div class="input-with-suffix">
                   <input
                     :value="state.dtsFileName"
                     type="text"
                     class="field-input"
-                    :placeholder="getEmitTsdOption()?.inputPlaceholder"
+                    :placeholder="emitTsdOption?.inputPlaceholder"
                     spellcheck="false"
                     @input="setDtsFileName(($event.target as HTMLInputElement).value)"
                   />

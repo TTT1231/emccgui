@@ -70,8 +70,8 @@ export function formatCommandLine(line: CommandLine): string {
   return `${line.name}=${line.value}`
 }
 
-// 辅助函数：根据 key 获取编译选项
-function getOptionByKey(options: readonly CompileOptionState[], key: string): CompileOptionState | undefined {
+// 辅助函数：根据 key 获取编译选项（导出供其他模块使用）
+export function getOptionByKey(options: readonly CompileOptionState[], key: string): CompileOptionState | undefined {
   return options.find(opt => opt.key === key)
 }
 

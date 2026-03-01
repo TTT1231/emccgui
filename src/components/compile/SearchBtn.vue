@@ -103,9 +103,6 @@ const handleAdd = () => {
   const commandToAdd = searchValue.value.trim()
 
   if (isCommandDuplicate(commandToAdd)) {
-    const commandName = extractCommandName(commandToAdd)
-    // TODO: 使用 toast 提示
-    console.warn(`命令 "${commandName}" 已存在，请勿重复添加`)
     return
   }
 
