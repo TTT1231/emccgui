@@ -341,33 +341,47 @@ onUnmounted(() => {
         @change="handleFileSelect"
       />
 
-      <!-- 拖拽上传卡 -->
-      <div
-        class="upload-card"
-        :class="{ 'upload-card--active': isDragging }"
-        @click="fileInput?.click()"
-      >
-        <div class="drop-zone__icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/>
-            <path d="M14 2v4a2 2 0 0 0 2 2h4"/>
-            <path d="M12 12v6"/>
-            <path d="m9 15 3-3 3 3"/>
-          </svg>
+      <!-- 居中布局容器 -->
+      <div class="empty-state">
+        <!-- 主上传区 -->
+        <div
+          class="upload-card"
+          :class="{ 'upload-card--active': isDragging }"
+          @click="fileInput?.click()"
+        >
+          <div class="drop-zone__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/>
+              <path d="M14 2v4a2 2 0 0 0 2 2h4"/>
+              <path d="M12 12v6"/>
+              <path d="m9 15 3-3 3 3"/>
+            </svg>
+          </div>
+          <p class="drop-zone__title">拖拽文件到此处，或 <span class="drop-zone__link">点击选择</span></p>
+          <p class="drop-zone__hint">支持 C / C++ / Rust &nbsp;·&nbsp; .c &nbsp;.cpp &nbsp;.cc &nbsp;.cxx &nbsp;.h &nbsp;.hpp &nbsp;.rs</p>
         </div>
-        <p class="drop-zone__title">拖拽文件到此处，或 <span class="drop-zone__link">点击选择</span></p>
-        <p class="drop-zone__hint">支持 C / C++ / Rust &nbsp;·&nbsp; .c &nbsp;.cpp &nbsp;.cc &nbsp;.cxx &nbsp;.h &nbsp;.hpp &nbsp;.rs</p>
-      </div>
 
-      <!-- 使用说明 -->
-      <div class="instructions-card">
-        <h3 class="instructions-title">使用说明</h3>
-        <ol class="instructions-list">
-          <li>选择要编译的 C / C++ / Rust 源文件</li>
-          <li>在「编译」标签页配置编译选项</li>
-          <li>复制生成的 emcc 命令</li>
-          <li>在终端中运行命令进行编译</li>
-        </ol>
+        <!-- 使用步骤 -->
+        <div class="steps">
+          <div class="step">
+            <span class="step-num">1</span>
+            <span class="step-text">选择 C / C++ / Rust 源文件</span>
+          </div>
+          <div class="step-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </div>
+          <div class="step">
+            <span class="step-num">2</span>
+            <span class="step-text">在「编译」页配置选项</span>
+          </div>
+          <div class="step-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </div>
+          <div class="step">
+            <span class="step-num">3</span>
+            <span class="step-text">复制 emcc 命令并执行</span>
+          </div>
+        </div>
       </div>
     </template>
 
@@ -472,11 +486,24 @@ onUnmounted(() => {
   padding: 24px;
   box-sizing: border-box;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 // ===== 隐藏 file input =====
 .file-input-hidden {
   display: none;
+}
+
+// ===== 无文件：居中容器 =====
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 0;
 }
 
 // ===== 无文件：上传卡 =====
@@ -486,14 +513,14 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 180px;
+  width: 100%;
+  max-width: 520px;
   padding: 44px 24px;
   background: var(--bg-secondary);
   border: 2px dashed var(--border);
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
-  margin-bottom: 12px;
 
   &:hover {
     border-color: var(--accent);
@@ -602,6 +629,50 @@ onUnmounted(() => {
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 10%, var(--bg-tertiary));
   border-left: 1px solid var(--border);
+}
+
+// ===== 使用步骤 =====
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.step-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.step-arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 // ===== 使用说明（无文件时）=====

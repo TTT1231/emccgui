@@ -71,7 +71,7 @@ function handleDefaultValueClick(event: MouseEvent) {
   >
     <div class="option-name">
       <span v-if="isSelected" class="check-icon">✓</span>
-      {{ option.option }}
+      <span class="option-name-text">{{ option.option }}</span>
     </div>
 
     <div
@@ -165,9 +165,9 @@ function handleDefaultValueClick(event: MouseEvent) {
 /* 选项名称 */
 .option-name {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
-  color: var(--ref-primary);
+  color: var(--ref-text);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -175,8 +175,24 @@ function handleDefaultValueClick(event: MouseEvent) {
   transition: transform 0.15s ease;
 }
 
+.option-name-text {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  background: var(--ref-bg-card-hover);
+  border: 1px solid var(--ref-border);
+  border-radius: 5px;
+  transition: all 0.2s ease;
+}
+
 .option-row.selected .option-name {
   transform: translateX(4px);
+}
+
+.option-row.selected .option-name-text {
+  background: color-mix(in srgb, var(--ref-primary) 12%, transparent);
+  border-color: color-mix(in srgb, var(--ref-primary) 40%, transparent);
+  color: var(--ref-primary);
 }
 
 .check-icon {
