@@ -125,6 +125,11 @@ function selectCategory(categoryName: string) {
 
 <style scoped>
 .reference-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px;
+  box-sizing: border-box;
   font-family: var(--font-sans);
   max-width: 1200px;
 }

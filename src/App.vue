@@ -57,10 +57,11 @@ const currentTab = computed(() => appState.state.activeTab)
 }
 
 .content-area {
+  display: flex;
   flex: 1;
-  padding: 24px;
+  flex-direction: column;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   background: var(--bg-primary);
 }
 </style>

@@ -489,7 +489,12 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .file-selector {
+  flex: 1;
   width: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px;
+  box-sizing: border-box;
   position: relative;
 }
 
