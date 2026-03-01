@@ -2,50 +2,48 @@ import type { RefConfigData } from '@/types'
 
 /**
  * ============================================================================
- * 参考配置数据 (refConfigData)
- * ============================================================================
+ * * 参考配置数据 (refConfigData)
+ * * ============================================================================
  *
- * 【作用】这是**Emscripten 完整选项的参考文档库**，供用户浏览和学习
+ * * 【作用】这是**Emscripten 完整选项的参考文档库**，供用户浏览和学习
  *
- * 【数据流】用户在参考面板选择 → state.refSelectedOptions → (待实现) → 合并到命令
- *                            ↓
- *                        仅存储选中状态
+ * * 【数据流】用户在参考面板选择 → state.refSelectedOptions → (待实现) → 合并到命令
+ * *                            ↓
+ * *                        仅存储选中状态
  *
- * 【与 compileOptionsData 的关系】
- *   ┌─────────────────────────────────────────────────────────────────────┐
- *   │                      两个数据源对比                                  │
+ * * 【与 compileOptionsData 的关系】
+ * *   ┌─────────────────────────────────────────────────────────────────────┐
+ * *   │ compileOptionsData             │ refConfigData                                  │
  *   ├─────────────────────────────────────────────────────────────────────┤
- *   │ compileOptionsData │ refConfigData                                  │
- *   ├─────────────────────────────────────────────────────────────────────┤
- *   │ 精选高频选项       │ 完整的 Emscripten 选项文档                     │
- *   │ 约 20-30 个        │ 100+ 个选项，涵盖所有分类                      │
- *   │ 直接生成命令       │ 目前仅作为参考，选中后需额外处理才能生成命令     │
- *   │ 提供完整配置       │ 提供 enabledValue 模板，但未连接到命令生成逻辑  │
- *   └─────────────────────────────────────────────────────────────────────┘
+ * *   │ 精选高频选项               │ 完整的 Emscripten 选项文档                     │
+ * *   │ 约 20-30 个        │ 100+ 个选项，涵盖所有分类                      │
+ * *   │ 直接生成命令       │ 目前仅作为参考，选中后需额外处理才能生成命令     │
+ * *   │ 提供完整配置       │ 提供 enabledValue 模板，但未连接到命令生成逻辑  │
+ * *   └─────────────────────────────────────────────────────────────────────┘
  *
- * 【enabledValue 字段说明】
- *   - 定义：选中该选项后应生成的命令片段模板
- *   - 当前状态：已定义但未使用
- *   - 示例："-o <file>" → 选中后生成 "-o myoutput.js"
+ * * 【enabledValue 字段段说明】
+ * *   - 定义：选中该选项后应生成的命令片段模板
+ * *   - 当前状态：已定义但未使用
+ * *   - 示例："-o <file>" → 选中后生成 "-o myoutput.js"
  *
- * 【TODO】
- *   当前 state.refSelectedOptions 中的选中项**不会**自动添加到编译命令中。
+ * * 【TODO】
+ * *   当前 state.refSelectedOptions 中的选中项**不会**自动添加到编译命令中。
  *   需要在 CompileOptions.vue 的 commandLines computed 中处理这些选中项。
  *
- * ============================================================================
+ * * ============================================================================
  */
 
 // SVG Icons for categories
 const icons = {
-  modular: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>',
+  modular: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0-2 2v16a2 2 0 0 2 2h12a2 2 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>',
   debug: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 12-5 5"/><path d="m12 12 5 5"/><path d="m12 12 5-5"/><path d="m12 12-5-5"/><circle cx="12" cy="12" r="3"/></svg>',
   memory: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/><path d="M4 12h4"/><path d="M16 12h4"/></svg>',
-  filesystem: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
-  embind: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><circle cx="12" cy="12" r="4"/></svg>',
-  wasm: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
-  advanced: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 1 1 1-6.219-8.56"/><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/></svg>',
+  filesystem: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 3h9a2 0 0 1 2 2z"/></svg>',
+  embind: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><circle cx="12" cy="12" r="4"/></svg>',
+  wasm: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
+  advanced: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M21 12a9 9 1 1 1-6.219-8.56"/><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/></svg>',
   exception: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 7-4 4-4-4"/><path d="M17 11V3"/><path d="M7 21h10"/><path d="M12 17v4"/></svg>',
-  codeSize: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>',
+  codeSize: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 1 1-5.8-1.6"/></svg>',
   optimization: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
   network: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
   library: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
@@ -66,6 +64,11 @@ const icons = {
  * - 优化级别 (-O0~-Oz): 直接使用
  * - 列表值: -sOPTION=val1,val2 (推荐逗号分隔)
  * - 字符串/数值: -sOPTION=value
+ *
+ * 数据类型说明:
+ * - boolean: 默认值为 "true" 或 "false"（官方文档格式）
+ * - number: 数值类型，默认值为数字字符串
+ * - string: 字符串类型，默认值为字符串
  */
 export const refConfigData: RefConfigData = {
   categories: [
@@ -83,7 +86,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sMODULARIZE",
-          default: "0",
+          default: "false",
           description: "将 JS 代码转化为工厂函数，返回 Promise",
           valueType: "boolean",
           editable: false,
@@ -91,7 +94,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sEXPORT_ES6",
-          default: "0",
+          default: "false",
           description: "生成 ES6 模块格式（需配合 MODULARIZE）",
           valueType: "boolean",
           editable: false,
@@ -107,7 +110,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sSINGLE_FILE",
-          default: "0",
+          default: "false",
           description: "将 wasm 以 base64 内嵌到 JS 文件中",
           valueType: "boolean",
           editable: false,
@@ -161,7 +164,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-gsource-map",
-          default: "关闭",
+          default: "false",
           description: "生成 source map",
           valueType: "boolean",
           editable: false,
@@ -215,7 +218,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sALLOW_MEMORY_GROWTH",
-          default: "0",
+          default: "false",
           description: "允许内存动态增长",
           valueType: "boolean",
           editable: false,
@@ -275,7 +278,7 @@ export const refConfigData: RefConfigData = {
       options: [
         {
           option: "-lembind",
-          default: "关闭",
+          default: "false",
           description: "链接 Embind 库（C++ 与 JS 绑定）",
           valueType: "boolean",
           editable: false,
@@ -313,7 +316,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sSTANDALONE_WASM",
-          default: "0",
+          default: "false",
           description: "生成独立的 WASM 文件（最小化 JS 依赖）",
           valueType: "boolean",
           editable: false,
@@ -321,7 +324,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sIMPORT_MEMORY",
-          default: "0",
+          default: "false",
           description: "从外部导入内存",
           valueType: "boolean",
           editable: false,
@@ -329,7 +332,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sEXPORT_ALL",
-          default: "0",
+          default: "false",
           description: "导出所有符号到 Module 对象（调试用）",
           valueType: "boolean",
           editable: false,
@@ -343,7 +346,7 @@ export const refConfigData: RefConfigData = {
       options: [
         {
           option: "-pthread",
-          default: "关闭",
+          default: "false",
           description: "启用 Pthreads 多线程（GCC 标准标志）",
           valueType: "boolean",
           editable: false,
@@ -359,7 +362,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sPROXY_TO_PTHREAD",
-          default: "0",
+          default: "false",
           description: "在 pthread 中运行 main()",
           valueType: "boolean",
           editable: false,
@@ -373,7 +376,7 @@ export const refConfigData: RefConfigData = {
       options: [
         {
           option: "-fexceptions",
-          default: "关闭",
+          default: "false",
           description: "启用 C++ 异常（Wasm 原生异常处理）",
           valueType: "boolean",
           editable: false,
@@ -389,8 +392,8 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sEXCEPTION_STACK_TRACES",
-          default: "0",
-          description: "异常时显示堆栈跟踪",
+          default: "false",
+          description: "异常时显示堆栈跟踪（ASSERTIONS=1 时默认为 true）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sEXCEPTION_STACK_TRACES"
@@ -419,7 +422,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sIGNORE_MISSING_MAIN",
-          default: "1",
+          default: "true",
           description: "无 main 函数时不报错",
           valueType: "boolean",
           editable: false,
@@ -428,14 +431,14 @@ export const refConfigData: RefConfigData = {
         {
           option: "-sMALLOC",
           default: "dlmalloc",
-          description: "内存分配器（dlmalloc 默认，emmalloc 更小，mimalloc 多线程更好）",
+          description: "内存分配器（dlmalloc 默认，emmalloc 更小但慢，mimalloc 多线程更好）",
           valueType: "string",
           editable: true,
           enabledValue: "-sMALLOC={value}"
         },
         {
           option: "-sEVAL_CTORS",
-          default: "0",
+          default: "false",
           description: "编译时执行构造函数（减少运行时开销）",
           valueType: "boolean",
           editable: false,
@@ -443,7 +446,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sAGGRESSIVE_VARIABLE_ELIMINATION",
-          default: "0",
+          default: "false",
           description: "激进的变量消除",
           valueType: "boolean",
           editable: false,
@@ -457,7 +460,7 @@ export const refConfigData: RefConfigData = {
       options: [
         {
           option: "-O0",
-          default: "启用",
+          default: "true",
           description: "无优化，编译最快，包含断言",
           valueType: "boolean",
           editable: false,
@@ -465,7 +468,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-O1",
-          default: "-",
+          default: "false",
           description: "基础优化",
           valueType: "boolean",
           editable: false,
@@ -473,7 +476,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-O2",
-          default: "-",
+          default: "false",
           description: "标准优化（推荐用于发布）",
           valueType: "boolean",
           editable: false,
@@ -481,7 +484,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-O3",
-          default: "-",
+          default: "false",
           description: "激进优化（可能增加代码体积）",
           valueType: "boolean",
           editable: false,
@@ -489,7 +492,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-Os",
-          default: "-",
+          default: "false",
           description: "优化代码体积",
           valueType: "boolean",
           editable: false,
@@ -497,7 +500,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-Oz",
-          default: "-",
+          default: "false",
           description: "极限压缩代码体积",
           valueType: "boolean",
           editable: false,
@@ -511,7 +514,7 @@ export const refConfigData: RefConfigData = {
       options: [
         {
           option: "-sFETCH",
-          default: "0",
+          default: "false",
           description: "启用 Fetch API 支持",
           valueType: "boolean",
           editable: false,
@@ -527,7 +530,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sPROXY_POSIX_SOCKETS",
-          default: "0",
+          default: "false",
           description: "通过 WebSocket 代理 POSIX socket",
           valueType: "boolean",
           editable: false,
@@ -549,7 +552,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sUSE_ZLIB",
-          default: "0",
+          default: "false",
           description: "使用 zlib",
           valueType: "boolean",
           editable: false,
@@ -557,7 +560,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sUSE_LIBPNG",
-          default: "0",
+          default: "false",
           description: "使用 libpng",
           valueType: "boolean",
           editable: false,
@@ -565,7 +568,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sUSE_FREETYPE",
-          default: "0",
+          default: "false",
           description: "使用 FreeType",
           valueType: "boolean",
           editable: false,
@@ -573,7 +576,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sUSE_BOOST_HEADERS",
-          default: "0",
+          default: "false",
           description: "使用 Boost 头文件",
           valueType: "boolean",
           editable: false,
@@ -587,7 +590,7 @@ export const refConfigData: RefConfigData = {
       options: [
         {
           option: "-sINVOKE_RUN",
-          default: "1",
+          default: "true",
           description: "自动运行 main()",
           valueType: "boolean",
           editable: false,
@@ -595,7 +598,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sEXIT_RUNTIME",
-          default: "0",
+          default: "false",
           description: "main 结束后清理运行时（调用 atexit 等）",
           valueType: "boolean",
           editable: false,
@@ -603,7 +606,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sNO_EXIT_RUNTIME",
-          default: "0",
+          default: "false",
           description: "禁止运行时退出（保持运行时活跃）",
           valueType: "boolean",
           editable: false,
@@ -611,7 +614,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sMODULARIZE_INSTANCE",
-          default: "0",
+          default: "false",
           description: "导出实例而非工厂函数（配合 MODULARIZE）",
           valueType: "boolean",
           editable: false,
@@ -625,7 +628,7 @@ export const refConfigData: RefConfigData = {
       options: [
         {
           option: "-sSTRICT",
-          default: "0",
+          default: "false",
           description: "严格模式（检查废弃选项，向前兼容）",
           valueType: "boolean",
           editable: false,
@@ -633,7 +636,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sVERBOSE",
-          default: "0",
+          default: "false",
           description: "详细输出编译过程",
           valueType: "boolean",
           editable: false,
@@ -665,7 +668,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sAUTO_JS_LIBRARIES",
-          default: "1",
+          default: "true",
           description: "自动链接 JS 库",
           valueType: "boolean",
           editable: false,
@@ -673,7 +676,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sLEGACY_VM_SUPPORT",
-          default: "0",
+          default: "false",
           description: "支持旧版 VM（iOS 11.2 之前）",
           valueType: "boolean",
           editable: false,
