@@ -1,5 +1,40 @@
 import type { RefConfigData } from '@/types'
 
+/**
+ * ============================================================================
+ * 参考配置数据 (refConfigData)
+ * ============================================================================
+ *
+ * 【作用】这是**Emscripten 完整选项的参考文档库**，供用户浏览和学习
+ *
+ * 【数据流】用户在参考面板选择 → state.refSelectedOptions → (待实现) → 合并到命令
+ *                            ↓
+ *                        仅存储选中状态
+ *
+ * 【与 compileOptionsData 的关系】
+ *   ┌─────────────────────────────────────────────────────────────────────┐
+ *   │                      两个数据源对比                                  │
+ *   ├─────────────────────────────────────────────────────────────────────┤
+ *   │ compileOptionsData │ refConfigData                                  │
+ *   ├─────────────────────────────────────────────────────────────────────┤
+ *   │ 精选高频选项       │ 完整的 Emscripten 选项文档                     │
+ *   │ 约 20-30 个        │ 100+ 个选项，涵盖所有分类                      │
+ *   │ 直接生成命令       │ 目前仅作为参考，选中后需额外处理才能生成命令     │
+ *   │ 提供完整配置       │ 提供 enabledValue 模板，但未连接到命令生成逻辑  │
+ *   └─────────────────────────────────────────────────────────────────────┘
+ *
+ * 【enabledValue 字段说明】
+ *   - 定义：选中该选项后应生成的命令片段模板
+ *   - 当前状态：已定义但未使用
+ *   - 示例："-o <file>" → 选中后生成 "-o myoutput.js"
+ *
+ * 【TODO】
+ *   当前 state.refSelectedOptions 中的选中项**不会**自动添加到编译命令中。
+ *   需要在 CompileOptions.vue 的 commandLines computed 中处理这些选中项。
+ *
+ * ============================================================================
+ */
+
 // SVG Icons for categories
 const icons = {
   modular: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>',
@@ -39,12 +74,12 @@ export const refConfigData: RefConfigData = {
       icon: icons.modular,
       options: [
         {
-          option: "-o <file>",
-          default: "a.out.js",
+          option: "-o <fileName>",
+          default: "-",
           description: "指定输出文件名",
           valueType: "string",
           editable: true,
-          enabledValue: "-o <file>"
+          enabledValue: "-o {value}"
         },
         {
           option: "-sMODULARIZE",
@@ -68,7 +103,7 @@ export const refConfigData: RefConfigData = {
           description: "指定导出的模块名称",
           valueType: "string",
           editable: true,
-          enabledValue: "-sEXPORT_NAME=<value>"
+          enabledValue: "-sEXPORT_NAME={value}"
         },
         {
           option: "-sSINGLE_FILE",
@@ -84,7 +119,7 @@ export const refConfigData: RefConfigData = {
           description: "生成 TypeScript 类型声明文件",
           valueType: "string",
           editable: true,
-          enabledValue: "--emit-tsd <file>"
+          enabledValue: "--emit-tsd {value}"
         },
         {
           option: "-sENVIRONMENT",
@@ -92,7 +127,7 @@ export const refConfigData: RefConfigData = {
           description: "目标运行环境（多个用逗号分隔）",
           valueType: "string",
           editable: true,
-          enabledValue: "-sENVIRONMENT=<value>"
+          enabledValue: "-sENVIRONMENT={value}"
         },
         {
           option: "-sEXPORTED_FUNCTIONS",
@@ -100,7 +135,7 @@ export const refConfigData: RefConfigData = {
           description: "指定导出的 C/C++ 函数（需加 _ 前缀，如 _main）",
           valueType: "string",
           editable: true,
-          enabledValue: "-sEXPORTED_FUNCTIONS=<value>"
+          enabledValue: "-sEXPORTED_FUNCTIONS={value}"
         },
         {
           option: "-sEXPORTED_RUNTIME_METHODS",
@@ -108,7 +143,7 @@ export const refConfigData: RefConfigData = {
           description: "导出运行时辅助方法（如 ccall, cwrap）",
           valueType: "string",
           editable: true,
-          enabledValue: "-sEXPORTED_RUNTIME_METHODS=<value>"
+          enabledValue: "-sEXPORTED_RUNTIME_METHODS={value}"
         }
       ]
     },
@@ -122,7 +157,7 @@ export const refConfigData: RefConfigData = {
           description: "保留调试信息（-g1 保留空白，-g2 保留函数名，-g3 保留 DWARF，-g4 包含源码）",
           valueType: "string",
           editable: true,
-          enabledValue: "-g"
+          enabledValue: "-g{value}"
         },
         {
           option: "-gsource-map",
@@ -138,7 +173,7 @@ export const refConfigData: RefConfigData = {
           description: "启用运行时断言检查（1 基础，2 详细，-O1+ 时默认为 0）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sASSERTIONS=<value>"
+          enabledValue: "-sASSERTIONS={value}"
         },
         {
           option: "-sSAFE_HEAP",
@@ -146,7 +181,7 @@ export const refConfigData: RefConfigData = {
           description: "检测内存访问错误（1 启用，2 更详细，性能开销大）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sSAFE_HEAP=<value>"
+          enabledValue: "-sSAFE_HEAP={value}"
         },
         {
           option: "-sSTACK_OVERFLOW_CHECK",
@@ -154,7 +189,7 @@ export const refConfigData: RefConfigData = {
           description: "栈溢出检测（1 启用，2 更严格，ASSERTIONS=1 时默认为 1）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sSTACK_OVERFLOW_CHECK=<value>"
+          enabledValue: "-sSTACK_OVERFLOW_CHECK={value}"
         }
       ]
     },
@@ -168,7 +203,7 @@ export const refConfigData: RefConfigData = {
           description: "初始内存大小（-1 自动计算，否则必须是 64KB 的倍数）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sINITIAL_MEMORY=<value>"
+          enabledValue: "-sINITIAL_MEMORY={value}"
         },
         {
           option: "-sMAXIMUM_MEMORY",
@@ -176,7 +211,7 @@ export const refConfigData: RefConfigData = {
           description: "最大内存限制（需配合 ALLOW_MEMORY_GROWTH）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sMAXIMUM_MEMORY=<value>"
+          enabledValue: "-sMAXIMUM_MEMORY={value}"
         },
         {
           option: "-sALLOW_MEMORY_GROWTH",
@@ -192,7 +227,7 @@ export const refConfigData: RefConfigData = {
           description: "设置栈大小（64KB）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sSTACK_SIZE=<value>"
+          enabledValue: "-sSTACK_SIZE={value}"
         }
       ]
     },
@@ -206,7 +241,7 @@ export const refConfigData: RefConfigData = {
           description: "文件系统支持（0 禁用，1 启用）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sFILESYSTEM=<value>"
+          enabledValue: "-sFILESYSTEM={value}"
         },
         {
           option: "-sFORCE_FILESYSTEM",
@@ -214,7 +249,7 @@ export const refConfigData: RefConfigData = {
           description: "强制包含文件系统（0 关闭，1 强制包含）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sFORCE_FILESYSTEM=<value>"
+          enabledValue: "-sFORCE_FILESYSTEM={value}"
         },
         {
           option: "--preload-file <path>",
@@ -222,7 +257,7 @@ export const refConfigData: RefConfigData = {
           description: "预加载文件到虚拟文件系统（生成 .data 文件）",
           valueType: "string",
           editable: true,
-          enabledValue: "--preload-file <path>"
+          enabledValue: "--preload-file {value}"
         },
         {
           option: "--embed-file <path>",
@@ -230,7 +265,7 @@ export const refConfigData: RefConfigData = {
           description: "嵌入文件到 JS/wasm 中（不生成额外文件）",
           valueType: "string",
           editable: true,
-          enabledValue: "--embed-file <path>"
+          enabledValue: "--embed-file {value}"
         }
       ]
     },
@@ -252,7 +287,7 @@ export const refConfigData: RefConfigData = {
           description: "支持 JS BigInt 与 i64 互操作（0 禁用，1 启用）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sWASM_BIGINT=<value>"
+          enabledValue: "-sWASM_BIGINT={value}"
         }
       ]
     },
@@ -266,7 +301,7 @@ export const refConfigData: RefConfigData = {
           description: "输出 WebAssembly（0 输出 asm.js，1 输出 wasm）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sWASM=<value>"
+          enabledValue: "-sWASM={value}"
         },
         {
           option: "-sWASM_ASYNC_COMPILATION",
@@ -274,7 +309,7 @@ export const refConfigData: RefConfigData = {
           description: "异步编译 wasm（0 同步，1 异步）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sWASM_ASYNC_COMPILATION=<value>"
+          enabledValue: "-sWASM_ASYNC_COMPILATION={value}"
         },
         {
           option: "-sSTANDALONE_WASM",
@@ -320,7 +355,7 @@ export const refConfigData: RefConfigData = {
           description: "线程池大小（0 表示按需创建）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sPTHREAD_POOL_SIZE=<value>"
+          enabledValue: "-sPTHREAD_POOL_SIZE={value}"
         },
         {
           option: "-sPROXY_TO_PTHREAD",
@@ -350,7 +385,7 @@ export const refConfigData: RefConfigData = {
           description: "异常捕获控制（0 启用 JS 模拟，1 禁用，默认 1）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sDISABLE_EXCEPTION_CATCHING=<value>"
+          enabledValue: "-sDISABLE_EXCEPTION_CATCHING={value}"
         },
         {
           option: "-sEXCEPTION_STACK_TRACES",
@@ -372,7 +407,7 @@ export const refConfigData: RefConfigData = {
           description: "使用 Closure Compiler 压缩 JS（0 关闭，1 压缩支持代码，2 压缩全部）",
           valueType: "number",
           editable: true,
-          enabledValue: "--closure 1"
+          enabledValue: "--closure {value}"
         },
         {
           option: "--closure-args",
@@ -380,7 +415,7 @@ export const refConfigData: RefConfigData = {
           description: "传递参数给 Closure Compiler",
           valueType: "string",
           editable: true,
-          enabledValue: "--closure-args=<value>"
+          enabledValue: "--closure-args={value}"
         },
         {
           option: "-sIGNORE_MISSING_MAIN",
@@ -396,7 +431,7 @@ export const refConfigData: RefConfigData = {
           description: "内存分配器（dlmalloc 默认，emmalloc 更小，mimalloc 多线程更好）",
           valueType: "string",
           editable: true,
-          enabledValue: "-sMALLOC=<value>"
+          enabledValue: "-sMALLOC={value}"
         },
         {
           option: "-sEVAL_CTORS",
@@ -488,7 +523,7 @@ export const refConfigData: RefConfigData = {
           description: "WebSocket 连接 URL",
           valueType: "string",
           editable: true,
-          enabledValue: "-sWEBSOCKET_URL=<value>"
+          enabledValue: "-sWEBSOCKET_URL={value}"
         },
         {
           option: "-sPROXY_POSIX_SOCKETS",
@@ -510,7 +545,7 @@ export const refConfigData: RefConfigData = {
           description: "使用 SDL（2 表示 SDL2）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sUSE_SDL=<value>"
+          enabledValue: "-sUSE_SDL={value}"
         },
         {
           option: "-sUSE_ZLIB",
@@ -610,7 +645,7 @@ export const refConfigData: RefConfigData = {
           description: "最低 Chrome 版本（85 = 2020-08 发布）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sMIN_CHROME_VERSION=<value>"
+          enabledValue: "-sMIN_CHROME_VERSION={value}"
         },
         {
           option: "-sMIN_FIREFOX_VERSION",
@@ -618,7 +653,7 @@ export const refConfigData: RefConfigData = {
           description: "最低 Firefox 版本（79 = 2020-07 发布）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sMIN_FIREFOX_VERSION=<value>"
+          enabledValue: "-sMIN_FIREFOX_VERSION={value}"
         },
         {
           option: "-sINCOMING_MODULE_JS_API",
@@ -626,7 +661,7 @@ export const refConfigData: RefConfigData = {
           description: "指定导入的 Module 属性（空=使用默认）",
           valueType: "string",
           editable: true,
-          enabledValue: "-sINCOMING_MODULE_JS_API=<value>"
+          enabledValue: "-sINCOMING_MODULE_JS_API={value}"
         },
         {
           option: "-sAUTO_JS_LIBRARIES",

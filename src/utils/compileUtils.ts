@@ -75,6 +75,25 @@ function getOptionByKey(options: readonly CompileOptionState[], key: string): Co
   return options.find(opt => opt.key === key)
 }
 
+/**
+ * 将 enabledValue 模板中的 {value} 占位符替换为用户实际输入的值。
+ *
+ * 规则：
+ * - 含 {value} → 替换为 userValue（若 userValue 为空则保留占位符原样）
+ * - 不含 {value} → 直接返回 enabledValue（boolean 开关类，如 -sMODULARIZE）
+ *
+ * @example
+ * resolveEnabledValue("-o {value}", "qwe.out.js")  // → "-o qwe.out.js"
+ * resolveEnabledValue("-sEXPORT_NAME={value}", "MyModule")  // → "-sEXPORT_NAME=MyModule"
+ * resolveEnabledValue("-sMODULARIZE", "")  // → "-sMODULARIZE"
+ * resolveEnabledValue("-g{value}", "2")  // → "-g2"
+ */
+export function resolveEnabledValue(enabledValue: string, userValue: string): string {
+  if (!enabledValue.includes('{value}')) return enabledValue
+  const v = userValue.trim()
+  return v ? enabledValue.replace('{value}', v) : enabledValue
+}
+
 // 辅助函数：检查选项是否真正启用（包括依赖检查）
 export function isOptionReallyEnabled(option: CompileOptionState, allOptions: readonly CompileOptionState[]): boolean {
   if (!option.enabled) return false

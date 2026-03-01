@@ -1,5 +1,31 @@
 import type { CompileOptionDef, OptimizationLevelOption } from '@/types'
 
+/**
+ * ============================================================================
+ * 编译选项数据 (compileOptionsData)
+ * ============================================================================
+ *
+ * 【作用】这是**实际用于生成编译命令**的选项配置
+ *
+ * 【数据流】compileOptionsData → state.compileOptions → commandLines → 最终命令
+ *          ↓                    ↓
+ *      用户在这里配置       生成编译命令
+ *
+ * 【与 refConfigData 的关系】
+ *   - compileOptionsData: 精选的、高频使用的编译选项（本应用直接支持的）
+ *   - refConfigData: 完整的 Emscripten 选项参考文档（供查阅和学习）
+ *
+ *   例如：
+ *   - compileOptionsData 有 MODULARIZE 的完整配置，可以直接开关并生成命令
+ *   - refConfigData 有所有 Emscripten 选项的文档说明，但选中后需要额外处理
+ *
+ * 【建议】
+ *   - 常用选项应添加到 compileOptionsData（提供更好的 UX）
+ *   - refConfigData 作为完整文档库，供用户查阅和选择
+ *
+ * ============================================================================
+ */
+
 // 配置参考地址
 export const optionsReferenceURL =
   'https://ttt1231.github.io/Turw-docs/WebAssembly.html#%E9%85%8D%E7%BD%AE%E9%80%9F%E6%9F%A5'
