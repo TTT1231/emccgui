@@ -106,7 +106,7 @@ function handleCurrentDblClick(event: MouseEvent) {
         </template>
         <template v-else>
           <span class="value-text">{{ displayValue }}</span>
-          <span v-if="option.editable" class="edit-indicator">✎</span>
+          <span v-if="option.editable" class="edit-hint">双击编辑</span>
         </template>
       </template>
       <template v-else>
@@ -294,7 +294,7 @@ function handleCurrentDblClick(event: MouseEvent) {
   box-shadow: 0 2px 8px color-mix(in srgb, var(--ref-primary) 30%, transparent);
 }
 
-.option-current.selected:hover {
+.option-current.selected:not(.editable):not(.editing):hover {
   background: var(--ref-primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px color-mix(in srgb, var(--ref-primary) 40%, transparent);
@@ -303,21 +303,42 @@ function handleCurrentDblClick(event: MouseEvent) {
 .option-current.editable.selected {
   border-style: dashed;
   cursor: default;
+  position: relative;
+  overflow: hidden;
 }
 
-.option-current.editable.selected .edit-indicator {
-  opacity: 0;
-  font-size: 10px;
+/* hover 时将值文字淮化 */
+.option-current.editable.selected:hover .value-text {
+  opacity: 0.25;
+}
+.option-current .value-text {
   transition: opacity 0.15s ease;
-  cursor: default;
+}
+/* 双击编辑提示覆盖层 */
+.edit-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: white;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
 }
 
-.option-current.editable.selected:hover .edit-indicator {
-  opacity: 0.9;
+.option-current.editable.selected:hover .edit-hint {
+  opacity: 1;
 }
 
 .option-current.editable.selected:hover {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ref-primary) 15%, transparent);
+  transform: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ref-primary) 25%, transparent);
+  border-style: solid;
 }
 
 .option-current.editing {
