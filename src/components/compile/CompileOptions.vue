@@ -3,11 +3,11 @@ import { ref, computed } from 'vue'
 
 import { useAppState } from '@/stores'
 import { optionConflicts, optimizationLevels, optionsReferenceURL } from '@/data'
-import { getConflictedOptions, getConflictReason, formatCommandLine, isOptionReallyEnabled } from '@/utils/compileUtils'
+import { getConflictedOptions, getConflictReason, formatCommandLine } from '@/utils/compileUtils'
 import type { CommandLine } from '@/types'
 import SearchBtn from './SearchBtn.vue'
 
-const { state, setDtsFileName, setOptimizationLevel, updateOption, updateOptionValue, toggleRuntimeMethod, addCustomOption, revokeCustomOption } = useAppState()
+const { state, setDtsFileName, setOptimizationLevel, updateOption, updateOptionValue, toggleRuntimeMethod, addCustomOption, revokeCustomOption, addCustomRuntimeMethod, removeCustomRuntimeMethod } = useAppState()
 
 // Tooltip 状态
 const activeTooltip = ref<string | null>(null)
@@ -133,7 +133,10 @@ const commandLines = computed(() => {
   }
 
   // 导出的运行时方法
-  const enabledMethods = state.runtimeMethods.filter(m => m.enabled).map(m => m.name)
+  const enabledMethods = [
+    ...state.runtimeMethods.filter(m => m.enabled).map(m => m.name),
+    ...state.customRuntimeMethods,
+  ]
   if (enabledMethods.length > 0 && isJsWasm) {
     lines.push({
       name: '-sEXPORTED_RUNTIME_METHODS',
@@ -177,7 +180,10 @@ const getAllExistingCommandNames = computed(() => {
 
   commandNames.push(`-${state.optimizationLevel}`)
 
-  const enabledMethods = state.runtimeMethods.filter(m => m.enabled).map(m => m.name)
+  const enabledMethods = [
+    ...state.runtimeMethods.filter(m => m.enabled).map(m => m.name),
+    ...state.customRuntimeMethods,
+  ]
   if (enabledMethods.length > 0 && isJsWasm) {
     commandNames.push('-sEXPORTED_RUNTIME_METHODS')
   }
@@ -243,6 +249,15 @@ const handleRevokeCompileOptions = () => {
 // 打开浏览器
 const openBrowser = () => {
   window.open(optionsReferenceURL, '_blank')
+}
+
+// 自定义运行时方法
+const customMethodInput = ref('')
+const handleAddCustomMethod = () => {
+  const name = customMethodInput.value.trim()
+  if (!name) return
+  addCustomRuntimeMethod(name)
+  customMethodInput.value = ''
 }
 </script>
 
@@ -529,6 +544,34 @@ const openBrowser = () => {
                   </div>
                 </Transition>
               </label>
+
+              <!-- 自定义方法 chips -->
+              <span
+                v-for="name in state.customRuntimeMethods"
+                :key="name"
+                class="method-chip active custom-method-chip"
+              >
+                <span class="chip-indicator"></span>
+                <span class="chip-label">{{ name }}</span>
+                <button class="remove-method-btn" @click.stop="removeCustomRuntimeMethod(name)" title="移除">×</button>
+              </span>
+            </div>
+
+            <!-- 自定义运行时方法输入 -->
+            <div class="custom-method-input-row">
+              <input
+                v-model="customMethodInput"
+                type="text"
+                class="field-input custom-method-input"
+                placeholder="输入方法名，如 UTF8ToString"
+                spellcheck="false"
+                @keydown.enter="handleAddCustomMethod"
+              />
+              <button
+                class="add-method-btn"
+                :disabled="!customMethodInput.trim()"
+                @click="handleAddCustomMethod"
+              >+</button>
             </div>
           </div>
         </section>
@@ -556,7 +599,7 @@ const openBrowser = () => {
   flex-direction: column;
   min-height: 0;
   max-height: 100%;
-  padding: 20px;
+  padding: 24px;
   overflow: hidden;
 }
 
@@ -564,13 +607,114 @@ const openBrowser = () => {
   display: flex;
   flex: 1;
   flex-direction: row;
-  gap: 20px;
+  gap: 24px;
   min-height: 0;
 }
 
+/* ===== 响应式断点 ===== */
+
+/* 大屏（1600px+）：增大内间距，限制最大宽度防止过度拉伸 */
+@media (min-width: 1600px) {
+  .emcc-container {
+    padding: 32px;
+    max-width: 2000px;
+    margin: 0 auto;
+  }
+
+  .main-content {
+    gap: 32px;
+  }
+}
+
+/* 小屏笔记本（900px - 1280px）：收紧 padding 和 gap */
+@media (max-width: 1280px) {
+  .emcc-container {
+    padding: 16px;
+  }
+
+  .main-content {
+    gap: 16px;
+  }
+
+  .card-header {
+    padding: 12px 14px;
+  }
+
+  .card-content {
+    padding: 12px;
+  }
+}
+
+/* 平板横屏（768px - 900px）：单列布局，高度自适应滚动 */
 @media (max-width: 900px) {
+  .emcc-container {
+    padding: 12px;
+    max-height: none;
+    overflow: auto;
+  }
+
   .main-content {
     flex-direction: column;
+    gap: 14px;
+    min-height: min-content;
+  }
+
+  .config-panel,
+  .preview-panel {
+    overflow-y: visible;
+    min-height: 0;
+  }
+
+  .config-card {
+    flex: none;
+  }
+
+  .code-block {
+    flex: none;
+    min-height: 200px;
+    max-height: 320px;
+  }
+}
+
+/* 平板竖屏（600px - 768px）：进一步收缩字号和间距 */
+@media (max-width: 768px) {
+  .emcc-container {
+    padding: 10px;
+  }
+
+  .main-content {
+    gap: 12px;
+  }
+
+  .card-header {
+    padding: 10px 12px;
+  }
+
+  .card-title {
+    font-size: 0.9em;
+  }
+
+  .chip-label {
+    font-size: 0.75em;
+  }
+
+  .option-chip {
+    padding: 6px 10px;
+  }
+
+  .method-chip {
+    padding: 5px 8px;
+  }
+
+  .field-input,
+  .field-select {
+    font-size: 0.85em;
+    padding: 8px 10px;
+  }
+
+  .execute-btn {
+    padding: 12px 16px;
+    font-size: 0.9em;
   }
 }
 
@@ -579,6 +723,7 @@ const openBrowser = () => {
   flex: 1;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -593,11 +738,15 @@ const openBrowser = () => {
 
 /* ===== Config Cards ===== */
 .config-card {
+  display: flex;
+  flex-direction: column;
   padding: 0;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
+  flex: 1;
+  min-height: 0;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -649,7 +798,10 @@ const openBrowser = () => {
 }
 
 .card-content {
+  flex: 1;
+  min-height: 0;
   padding: 16px;
+  overflow-y: auto;
 }
 
 /* ===== Form Fields ===== */
@@ -1062,7 +1214,83 @@ const openBrowser = () => {
 
 /* ===== Methods Card ===== */
 .methods-card {
+  flex: none;
+}
+
+.custom-method-chip {
+  cursor: default;
+  background: color-mix(in srgb, #8b5cf6 12%, var(--bg-primary));
+}
+
+.custom-method-chip:hover {
+  background: color-mix(in srgb, #8b5cf6 12%, var(--bg-primary));
+  border-color: #8b5cf6;
+}
+
+.remove-method-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin-left: 2px;
+  font-size: 1em;
+  line-height: 1;
+  color: #8b5cf6;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  opacity: 0.7;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.remove-method-btn:hover {
+  background: color-mix(in srgb, #8b5cf6 20%, transparent);
+  opacity: 1;
+}
+
+.custom-method-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-top: 10px;
+  margin-top: 10px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.custom-method-input {
+  flex: 1;
+  padding: 7px 12px;
+  font-size: 0.85em;
+}
+
+.add-method-btn {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 1.3em;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  background: #8b5cf6;
+  border: none;
+  border-radius: 8px;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.add-method-btn:hover:not(:disabled) {
+  background: #7c3aed;
+  transform: scale(1.05);
+}
+
+.add-method-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .methods-card .card-header-icon.methods-icon {

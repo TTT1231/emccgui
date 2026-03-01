@@ -25,6 +25,7 @@ export interface AppState {
   outputFileName: string
   dtsFileName: string
   addOptionsStack: string[]
+  customRuntimeMethods: string[]
 }
 
 // Injection Key
@@ -66,7 +67,8 @@ export function createAppState() {
     refActiveCategory: 'all',
     outputFileName: 'hello',
     dtsFileName: '',
-    addOptionsStack: []
+    addOptionsStack: [],
+    customRuntimeMethods: []
   })
 
   // Actions
@@ -105,6 +107,22 @@ export function createAppState() {
 
   function revokeCustomOption() {
     state.addOptionsStack.pop()
+  }
+
+  function addCustomRuntimeMethod(name: string) {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    const allNames = [
+      ...state.runtimeMethods.map(m => m.name),
+      ...state.customRuntimeMethods
+    ]
+    if (allNames.includes(trimmed)) return
+    state.customRuntimeMethods.push(trimmed)
+  }
+
+  function removeCustomRuntimeMethod(name: string) {
+    const idx = state.customRuntimeMethods.indexOf(name)
+    if (idx !== -1) state.customRuntimeMethods.splice(idx, 1)
   }
 
   function updateOption(key: string, enabled: boolean) {
@@ -185,6 +203,8 @@ export function createAppState() {
     setRefActiveCategory,
     addCustomOption,
     revokeCustomOption,
+    addCustomRuntimeMethod,
+    removeCustomRuntimeMethod,
     initTheme
   }
 }
