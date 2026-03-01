@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { ref, computed } from 'vue'
 
 import { useAppState } from '@/stores'
@@ -200,8 +200,13 @@ const showTooltip = (name: string, event: MouseEvent) => {
   const spaceBelow = window.innerHeight - rect.bottom
 
   tooltipDirection.value = spaceBelow < 80 ? 'up' : 'down'
+
+  // 防止 tooltip 溢出视口右侧（max-width: 280px + 8px margin）
+  const TOOLTIP_MAX_W = 288
+  const clampedLeft = Math.min(rect.left, window.innerWidth - TOOLTIP_MAX_W - 8)
+
   tooltipPosition.value = {
-    left: `${rect.left}px`,
+    left: `${Math.max(8, clampedLeft)}px`,
     top: tooltipDirection.value === 'down' ? `${rect.bottom + 8}px` : `${rect.top - 8}px`,
   }
 
@@ -695,7 +700,7 @@ const handleAddCustomMethod = () => {
   flex-direction: column;
   padding: 0;
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
   flex: 1;
@@ -704,7 +709,7 @@ const handleAddCustomMethod = () => {
 }
 
 .config-card:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--border-color));
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
 }
 
 .card-header {
@@ -712,8 +717,8 @@ const handleAddCustomMethod = () => {
   gap: 10px;
   align-items: center;
   padding: 14px 16px;
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary));
-  border-bottom: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-secondary));
+  border-bottom: 1px solid var(--border);
 }
 
 .card-header-icon {
@@ -722,8 +727,8 @@ const handleAddCustomMethod = () => {
   justify-content: center;
   width: 32px;
   height: 32px;
-  color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
   border-radius: 8px;
 }
 
@@ -742,11 +747,11 @@ const handleAddCustomMethod = () => {
 
 .options-count {
   padding: 4px 10px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.75em;
   font-weight: 600;
-  color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
   border-radius: 20px;
 }
 
@@ -791,11 +796,11 @@ const handleAddCustomMethod = () => {
   box-sizing: border-box;
   width: 100%;
   padding: 10px 14px;
-  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.9em;
   color: var(--text-primary);
   background: var(--bg-input);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 8px;
   transition: all 0.25s ease;
 }
@@ -803,8 +808,8 @@ const handleAddCustomMethod = () => {
 .field-input:focus,
 .field-select:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .field-input::placeholder {
@@ -827,14 +832,14 @@ const handleAddCustomMethod = () => {
   align-items: stretch;
   overflow: hidden;
   background: var(--bg-input);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 8px;
   transition: all 0.25s ease;
 }
 
 .input-with-suffix:focus-within {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .input-with-suffix .field-input {
@@ -852,12 +857,12 @@ const handleAddCustomMethod = () => {
   display: flex;
   align-items: center;
   padding: 0 14px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.85em;
   font-weight: 500;
-  color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-button));
-  border-left: 1px solid var(--border-color);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-secondary));
+  border-left: 1px solid var(--border);
 }
 
 /* ===== Options Grid ===== */
@@ -878,15 +883,15 @@ const handleAddCustomMethod = () => {
   padding: 8px 12px;
   cursor: pointer;
   background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 8px;
   transition: all 0.25s ease;
 }
 
 .option-chip:hover {
   z-index: 100;
-  border-color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-primary));
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg-primary));
 }
 
 .option-chip input {
@@ -899,7 +904,7 @@ const handleAddCustomMethod = () => {
   width: 18px;
   height: 18px;
   background: var(--bg-secondary);
-  border: 2px solid var(--border-color);
+  border: 2px solid var(--border);
   border-radius: 4px;
   transition: all 0.25s ease;
 }
@@ -920,8 +925,8 @@ const handleAddCustomMethod = () => {
 }
 
 .option-chip.active .chip-indicator {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .option-chip.active .chip-indicator::after {
@@ -930,7 +935,7 @@ const handleAddCustomMethod = () => {
 }
 
 .chip-label {
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.8em;
   font-weight: 500;
   color: var(--text-primary);
@@ -940,7 +945,7 @@ const handleAddCustomMethod = () => {
 }
 
 .option-chip.active .chip-label {
-  color: var(--color-primary);
+  color: var(--accent);
 }
 
 /* Disabled State */
@@ -950,7 +955,7 @@ const handleAddCustomMethod = () => {
 }
 
 .option-chip.disabled:hover {
-  border-color: var(--border-color);
+  border-color: var(--border);
   background: var(--bg-primary);
 }
 
@@ -1057,7 +1062,7 @@ const handleAddCustomMethod = () => {
 }
 
 .alert-opt-name {
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.8em;
   font-weight: 600;
   color: #d97706;
@@ -1076,7 +1081,7 @@ const handleAddCustomMethod = () => {
 .dynamic-fields {
   padding-top: 12px;
   margin-top: 12px;
-  border-top: 1px dashed var(--border-color);
+  border-top: 1px dashed var(--border);
 }
 
 .warning-enter-active,
@@ -1104,40 +1109,26 @@ const handleAddCustomMethod = () => {
 
 .tooltip.tooltip-down .tooltip-arrow {
   top: -6px;
-  border-bottom: 6px solid #fff;
-}
-
-[data-theme='dark'] .tooltip.tooltip-down .tooltip-arrow {
-  border-bottom-color: #2d3748;
+  border-bottom: 6px solid var(--tooltip-arrow-down);
 }
 
 .tooltip.tooltip-up .tooltip-arrow {
   bottom: -6px;
-  border-top: 6px solid #fff;
-}
-
-[data-theme='dark'] .tooltip.tooltip-up .tooltip-arrow {
-  border-top-color: #2d3748;
+  border-top: 6px solid var(--tooltip-arrow-up);
 }
 
 .tooltip-content {
   padding: 8px 12px;
   font-size: 0.8em;
   line-height: 1.5;
-  color: #333;
-  white-space: nowrap;
+  color: var(--tooltip-text);
+  white-space: normal;
   max-width: 280px;
-  background: #fff;
-  border: 1px solid #e8e8e8;
+  width: max-content;
+  background: var(--tooltip-bg);
+  border: 1px solid var(--tooltip-border);
   border-radius: 8px;
-  box-shadow: 0 3px 6px -4px rgb(0 0 0 / 12%), 0 6px 16px 0 rgb(0 0 0 / 8%), 0 9px 28px 8px rgb(0 0 0 / 5%);
-}
-
-[data-theme='dark'] .tooltip-content {
-  color: #fff;
-  background: #2d3748;
-  border-color: #4a5568;
-  box-shadow: 0 4px 8px rgb(0 0 0 / 40%), 0 8px 20px rgb(0 0 0 / 30%);
+  box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 .tooltip-conflict {
@@ -1146,8 +1137,8 @@ const handleAddCustomMethod = () => {
   align-items: flex-start;
   margin-top: 6px;
   padding-top: 6px;
-  border-top: 1px solid #f59e0b40;
-  color: #d97706;
+  border-top: 1px solid rgba(245, 158, 11, 0.25);
+  color: var(--warning-emphasis);
   font-size: 0.95em;
   white-space: normal;
   max-width: 240px;
@@ -1157,16 +1148,7 @@ const handleAddCustomMethod = () => {
 .tooltip-conflict svg {
   flex-shrink: 0;
   margin-top: 1px;
-  color: #f59e0b;
-}
-
-[data-theme='dark'] .tooltip-conflict {
-  color: #fbbf24;
-  border-top-color: #f59e0b30;
-}
-
-[data-theme='dark'] .tooltip-conflict svg {
-  color: #fbbf24;
+  color: var(--warning);
 }
 
 .tooltip-arrow {
@@ -1240,7 +1222,7 @@ const handleAddCustomMethod = () => {
   align-items: center;
   padding-top: 10px;
   margin-top: 10px;
-  border-top: 1px dashed var(--border-color);
+  border-top: 1px dashed var(--border);
 }
 
 .custom-method-input {
@@ -1301,7 +1283,7 @@ const handleAddCustomMethod = () => {
   padding: 6px 10px;
   cursor: pointer;
   background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 8px;
   transition: all 0.25s ease;
 }
@@ -1348,7 +1330,7 @@ const handleAddCustomMethod = () => {
 }
 
 .method-chip.conflicted:hover {
-  border-color: var(--border-color);
+  border-color: var(--border);
   background: var(--bg-primary);
 }
 
@@ -1399,14 +1381,9 @@ const handleAddCustomMethod = () => {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-  background: #1e1e1e;
-  border: 1px solid #333;
+  background: var(--code-block-bg);
+  border: 1px solid var(--code-block-border);
   border-radius: 8px;
-}
-
-[data-theme='light'] .code-block {
-  background: #f6f8fa;
-  border-color: var(--border-color);
 }
 
 .code-block-header {
@@ -1414,25 +1391,16 @@ const handleAddCustomMethod = () => {
   align-items: center;
   justify-content: space-between;
   padding: 6px 12px;
-  background: rgb(255 255 255 / 5%);
-  border-bottom: 1px solid #333;
-}
-
-[data-theme='light'] .code-block-header {
-  background: rgb(0 0 0 / 3%);
-  border-bottom-color: var(--border-color);
+  background: var(--code-block-header-bg);
+  border-bottom: 1px solid var(--code-block-header-border);
 }
 
 .code-lang {
   font-size: 0.75em;
   font-weight: 600;
-  color: #888;
+  color: var(--code-lang-color);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-[data-theme='light'] .code-lang {
-  color: #666;
 }
 
 .copy-btn {
@@ -1440,7 +1408,7 @@ const handleAddCustomMethod = () => {
   align-items: center;
   justify-content: center;
   padding: 6px;
-  color: #888;
+  color: var(--text-muted);
   cursor: pointer;
   background: transparent;
   border: none;
@@ -1450,8 +1418,8 @@ const handleAddCustomMethod = () => {
 }
 
 .copy-btn:hover {
-  color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   opacity: 1;
 }
 
@@ -1460,7 +1428,7 @@ const handleAddCustomMethod = () => {
   min-height: 0;
   padding: 12px;
   overflow: hidden auto;
-  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.85em;
   line-height: 1.5;
 }
@@ -1672,10 +1640,10 @@ const handleAddCustomMethod = () => {
 }
 
 .link-span {
-  color: var(--color-primary);
+  color: var(--accent);
   text-decoration: underline;
   text-decoration-thickness: 1px;
-  text-decoration-color: var(--color-primary);
+  text-decoration-color: var(--accent);
   text-underline-offset: 2px;
   cursor: pointer;
   user-select: none;
@@ -1683,8 +1651,8 @@ const handleAddCustomMethod = () => {
 }
 
 .link-span:hover {
-  color: var(--color-primary-hover);
-  text-decoration-color: var(--color-primary-hover);
+  color: var(--accent-hover);
+  text-decoration-color: var(--accent-hover);
 }
 
 .link-span:focus,

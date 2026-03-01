@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { RefOption } from '@/types'
 import { useAppState } from '@/stores'
@@ -140,17 +140,17 @@ function handleDefaultValueClick(event: MouseEvent) {
 
 /* 未选中 hover 状态 */
 .option-row:hover:not(.selected) {
-  background: rgba(59, 130, 246, 0.04);
+  background: color-mix(in srgb, var(--ref-primary) 4%, transparent);
 }
 
 .option-row:hover:not(.selected)::before {
   transform: scaleY(0.6);
-  background: rgba(59, 130, 246, 0.4);
+  background: color-mix(in srgb, var(--ref-primary) 40%, transparent);
 }
 
 /* 选中状态 */
 .option-row.selected {
-  background: rgba(59, 130, 246, 0.08);
+  background: color-mix(in srgb, var(--ref-primary) 8%, transparent);
 }
 
 .option-row.selected::before {
@@ -159,7 +159,7 @@ function handleDefaultValueClick(event: MouseEvent) {
 
 /* 选中 hover 状态 */
 .option-row.selected:hover {
-  background: rgba(59, 130, 246, 0.12);
+  background: color-mix(in srgb, var(--ref-primary) 12%, transparent);
 }
 
 /* 选项名称 */
@@ -244,7 +244,7 @@ function handleDefaultValueClick(event: MouseEvent) {
   border-color: var(--ref-primary);
   background: var(--ref-bg-card-hover);
   transform: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ref-primary) 15%, transparent);
 }
 
 .option-default.editable.selected .edit-indicator {
@@ -279,13 +279,13 @@ function handleDefaultValueClick(event: MouseEvent) {
   border-color: var(--ref-primary);
   border-style: solid;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--ref-primary) 30%, transparent);
 }
 
 .option-default.selected:hover {
-  background: var(--ref-primary-hover, #2563EB);
+  background: var(--ref-primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--ref-primary) 40%, transparent);
 }
 
 /* 选中的可编辑选项 */
@@ -305,7 +305,7 @@ function handleDefaultValueClick(event: MouseEvent) {
   color: var(--ref-text);
   padding: 5px 10px;
   cursor: text;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ref-primary) 15%, transparent);
 }
 
 .edit-input {

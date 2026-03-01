@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { ref, computed, watch, nextTick } from 'vue'
 
 import type { SearchOption } from '@/types'
@@ -309,14 +309,14 @@ const handleFocus = () => {
   align-items: center;
   overflow: visible;
   background: var(--bg-input);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .input-wrapper:focus-within {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .input-icon {
@@ -330,7 +330,7 @@ const handleFocus = () => {
 .search-input {
   flex: 1;
   padding: 10px 12px 10px 0;
-  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.9em;
   color: var(--text-primary);
   outline: none;
@@ -357,8 +357,8 @@ const handleFocus = () => {
   flex-direction: column;
   max-height: 320px;
   overflow: hidden;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: 0 4px 12px var(--shadow-color), 0 8px 24px color-mix(in srgb, var(--shadow-color) 50%, transparent);
 }
@@ -380,7 +380,7 @@ const handleFocus = () => {
   padding: 8px 12px;
   font-size: 0.75em;
   background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .suggestions-count {
@@ -409,7 +409,7 @@ const handleFocus = () => {
 }
 
 .suggestions-list::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--border);
   border-radius: 3px;
 }
 
@@ -426,12 +426,12 @@ const handleFocus = () => {
 }
 
 .suggestion-item:hover {
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-primary));
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-primary));
 }
 
 .suggestion-item.active {
-  background: var(--color-primary);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 30%, transparent);
+  background: var(--accent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .suggestion-item.active .option-name,
@@ -441,7 +441,7 @@ const handleFocus = () => {
 
 .suggestion-item.active .default-value {
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--accent);
   background: white;
   border-color: white;
   opacity: 1;
@@ -473,10 +473,10 @@ const handleFocus = () => {
 }
 
 .option-name {
-  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.85em;
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--accent);
   word-break: break-all;
 }
 
@@ -489,12 +489,12 @@ const handleFocus = () => {
 
 .default-value {
   padding: 2px 8px;
-  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.75em;
   color: var(--text-secondary);
   white-space: nowrap;
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 4px;
   opacity: 0.8;
   transition: all 0.15s ease;
@@ -511,16 +511,16 @@ const handleFocus = () => {
   color: white;
   white-space: nowrap;
   cursor: pointer;
-  background: var(--color-primary);
+  background: var(--accent);
   border: none;
   border-radius: 8px;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 30%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
   transition: all 0.2s ease;
 }
 
 .add-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 40%, transparent);
+  background: var(--accent-hover);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent);
   transform: translateY(-1px);
 }
 
@@ -551,15 +551,15 @@ const handleFocus = () => {
   font-size: 0.9em;
   color: var(--text-primary);
   cursor: pointer;
-  background: var(--bg-button);
-  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
   border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .undo-btn:hover {
-  background: var(--bg-button-hover);
-  border-color: var(--color-primary);
+  background: var(--bg-tertiary);
+  border-color: var(--accent);
 }
 
 .undo-btn:active {

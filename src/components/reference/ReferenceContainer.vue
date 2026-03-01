@@ -167,7 +167,7 @@ function selectCategory(categoryName: string) {
 
 .ref-category-chip.active {
   background: var(--ref-primary);
-  color: #0F172A;
+  color: var(--ref-on-primary);
   font-weight: 600;
 }
 
@@ -185,7 +185,7 @@ function selectCategory(categoryName: string) {
 
 .ref-selected-chip.active {
   background: var(--ref-primary);
-  color: #0F172A;
+  color: var(--ref-on-primary);
 }
 
 /* 卡片容器 */

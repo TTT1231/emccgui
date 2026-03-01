@@ -47,10 +47,34 @@
   --text-muted: #707080;
   --border: #3a3a4e;
 
+  /* 状态色补充 */
+  --warning-emphasis: #fbbf24;
+
+  /* 通用语义变量 */
+  --bg-input: var(--bg-tertiary);
+  --bg-button: var(--bg-secondary);
+  --bg-button-hover: var(--bg-tertiary);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+
+  /* Tooltip */
+  --tooltip-bg: #2d3748;
+  --tooltip-text: var(--text-primary);
+  --tooltip-border: #4a5568;
+  --tooltip-arrow-down: #2d3748;
+  --tooltip-arrow-up: #2d3748;
+
+  /* 代码块 */
+  --code-block-bg: #1e1e1e;
+  --code-block-border: #333333;
+  --code-block-header-bg: rgba(255, 255, 255, 0.05);
+  --code-block-header-border: #333333;
+  --code-lang-color: #888888;
+
   /* Reference Tab 主题 - 柔和的青蓝色，降低眼睛疲劳 */
   --ref-primary: #60A5FA;
   --ref-primary-hover: #93C5FD;
   --ref-primary-muted: rgba(96, 165, 250, 0.15);
+  --ref-on-primary: #0F172A;
   --ref-bg-primary: #0F172A;
   --ref-bg-card: #1E293B;
   --ref-bg-card-hover: #334155;
@@ -69,7 +93,34 @@
   --text-muted: #86868b;
   --border: #d2d2d7;
 
-  /* Reference Tab 主题 */
+  /* 状态色补充 */
+  --warning-emphasis: #d97706;
+
+  /* 通用语义变量 */
+  --bg-input: #ffffff;
+  --bg-button: var(--bg-secondary);
+  --bg-button-hover: var(--bg-tertiary);
+  --shadow-color: rgba(0, 0, 0, 0.1);
+
+  /* Tooltip */
+  --tooltip-bg: #ffffff;
+  --tooltip-text: #333333;
+  --tooltip-border: #e8e8e8;
+  --tooltip-arrow-down: #ffffff;
+  --tooltip-arrow-up: #ffffff;
+
+  /* 代码块 */
+  --code-block-bg: #f6f8fa;
+  --code-block-border: var(--border);
+  --code-block-header-bg: rgba(0, 0, 0, 0.03);
+  --code-block-header-border: var(--border);
+  --code-lang-color: #666666;
+
+  /* Reference Tab 主题 - 在亮色下使用更深的蓝色确保对比度 */
+  --ref-primary: #2563EB;
+  --ref-primary-hover: #1D4ED8;
+  --ref-primary-muted: rgba(37, 99, 235, 0.12);
+  --ref-on-primary: #ffffff;
   --ref-bg-primary: #F8FAFC;
   --ref-bg-card: #FFFFFF;
   --ref-bg-card-hover: #F1F5F9;

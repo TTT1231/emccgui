@@ -80,7 +80,11 @@ function toggleCollapse() {
 .ref-category-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ref-primary) 20%, transparent) 0%,
+    color-mix(in srgb, var(--ref-primary) 10%, transparent) 100%
+  );
   border-radius: var(--radius-md, 12px);
   display: flex;
   align-items: center;
