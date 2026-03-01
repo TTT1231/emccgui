@@ -37,6 +37,13 @@ function toggleCollapse() {
     </div>
 
     <div class="ref-category-content">
+      <div class="ref-table-header">
+        <span>命令</span>
+        <span>说明</span>
+        <span>类型</span>
+        <span>默认值</span>
+        <span>当前值</span>
+      </div>
       <div class="ref-category-inner">
         <OptionRow
           v-for="(option, index) in category.options"
@@ -148,5 +155,30 @@ function toggleCollapse() {
 
 .ref-category-inner {
   overflow: hidden;
+}
+
+/* ===== 表头 ===== */
+.ref-table-header {
+  display: grid;
+  grid-template-columns: minmax(140px, 1.4fr) minmax(0, 2fr) 80px 90px 110px;
+  gap: 20px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--ref-border);
+  background: var(--ref-bg-card-hover);
+}
+
+.ref-table-header span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ref-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+
+.ref-table-header span:nth-child(3),
+.ref-table-header span:nth-child(4),
+.ref-table-header span:nth-child(5) {
+  text-align: center;
 }
 </style>

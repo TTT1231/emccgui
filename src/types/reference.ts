@@ -8,6 +8,8 @@ export interface RefOption {
   description: string
   valueType: RefOptionValueType
   editable: boolean
+  /** 选中后生成的命令片段 */
+  enabledValue: string
 }
 
 // 配置参考分类

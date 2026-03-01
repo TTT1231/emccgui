@@ -47,16 +47,14 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
-function handleDefaultValueClick(event: MouseEvent) {
-  // 已选中且可编辑 → 进入编辑模式，阻止冒泡避免取消选中
+function handleCurrentDblClick(event: MouseEvent) {
+  // 已选中且可编辑 → 双击进入编辑模式
   if (isSelected.value && props.option.editable) {
     event.stopPropagation()
     isEditing.value = true
     const selected = state.refSelectedOptions[props.option.option]
     editValue.value = String(selected !== undefined && selected !== true ? selected : props.option.default)
-    return
   }
-  // 其他情况：让事件冒泡到父元素处理选中/取消
 }
 </script>
 
@@ -69,39 +67,51 @@ function handleDefaultValueClick(event: MouseEvent) {
     }"
     @click="handleClick"
   >
+    <!-- 命令 -->
     <div class="option-name">
       <span v-if="isSelected" class="check-icon">✓</span>
       <span class="option-name-text">{{ option.option }}</span>
     </div>
 
+    <!-- 说明 -->
+    <div class="option-desc">{{ option.description }}</div>
+
+    <!-- 类型 -->
+    <div class="option-type" :class="`type-${option.valueType}`">{{ option.valueType }}</div>
+
+    <!-- 默认值 -->
+    <div class="option-default-val">{{ option.default }}</div>
+
+    <!-- 当前值 -->
     <div
-      class="option-default"
+      class="option-current"
       :class="{
         editable: option.editable && isSelected,
-        readonly: !option.editable || !isSelected,
-        editing: isEditing,
-        selected: isSelected
+        selected: isSelected,
+        editing: isEditing
       }"
-      @click="handleDefaultValueClick"
+      :title="option.editable && isSelected && !isEditing ? '双击编辑值' : undefined"
+      @dblclick="handleCurrentDblClick"
     >
-      <template v-if="isEditing">
-        <input
-          v-model="editValue"
-          type="text"
-          class="edit-input"
-          @blur="handleBlur"
-          @keydown="handleKeydown"
-          @click.stop
-        />
+      <template v-if="isSelected">
+        <template v-if="isEditing">
+          <input
+            v-model="editValue"
+            type="text"
+            class="edit-input"
+            @blur="handleBlur"
+            @keydown="handleKeydown"
+            @click.stop
+          />
+        </template>
+        <template v-else>
+          <span class="value-text">{{ displayValue }}</span>
+          <span v-if="option.editable" class="edit-indicator">✎</span>
+        </template>
       </template>
       <template v-else>
-        <span class="value-text">{{ displayValue }}</span>
-        <span v-if="option.editable && isSelected" class="edit-indicator">✎</span>
+        <span class="empty-dash">—</span>
       </template>
-    </div>
-
-    <div class="option-desc">
-      {{ option.description }}
     </div>
   </div>
 </template>
@@ -109,7 +119,7 @@ function handleDefaultValueClick(event: MouseEvent) {
 <style scoped>
 .option-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) minmax(0, 1.5fr);
+  grid-template-columns: minmax(140px, 1.4fr) minmax(0, 2fr) 80px 90px 110px;
   gap: 20px;
   align-items: center;
   padding: 14px 20px;
@@ -208,104 +218,115 @@ function handleDefaultValueClick(event: MouseEvent) {
   flex-shrink: 0;
 }
 
-/* 默认值徽章 - 基础样式 */
-.option-default {
+
+
+/* 类型 badge */
+.option-type {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.option-type.type-boolean {
+  color: #52c41a;
+  background: color-mix(in srgb, #52c41a 12%, transparent);
+}
+
+.option-type.type-string {
+  color: #1677ff;
+  background: color-mix(in srgb, #1677ff 12%, transparent);
+}
+
+.option-type.type-number {
+  color: #fa8c16;
+  background: color-mix(in srgb, #fa8c16 12%, transparent);
+}
+
+/* 默认值 */
+.option-default-val {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ref-text-muted);
+  text-align: center;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--ref-bg-card-hover);
+  border: 1px solid var(--ref-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 当前值 */
+.option-current {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
-  color: var(--ref-text);
   text-align: center;
-  background: var(--ref-bg-card-hover);
   padding: 6px 12px;
   border-radius: 6px;
-  white-space: nowrap;
-  min-width: 70px;
-  border: 1px solid var(--ref-border);
-  position: relative;
-  transition: all 0.2s ease;
+  border: 1px dashed var(--ref-border);
+  background: transparent;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
+  transition: all 0.2s ease;
+  min-width: 70px;
+  cursor: default;
 }
 
-/* ========== 可编辑选项（已选中） ========== */
-.option-default.editable.selected {
-  border-style: dashed;
-  border-color: var(--ref-primary);
-  background: var(--ref-bg-card);
-  color: var(--ref-text);
-  cursor: text;
-  box-shadow: none;
+.option-current .empty-dash {
+  color: var(--ref-text-muted);
+  opacity: 0.4;
 }
 
-.option-default.editable.selected:hover {
-  border-style: solid;
-  border-color: var(--ref-primary);
-  background: var(--ref-bg-card-hover);
-  transform: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ref-primary) 15%, transparent);
-}
-
-.option-default.editable.selected .edit-indicator {
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  font-size: 10px;
-  color: var(--ref-primary);
-}
-
-.option-default.editable.selected:hover .edit-indicator {
-  opacity: 0.8;
-}
-
-/* ========== 不可编辑（未选中或不可编辑选项） ========== */
-.option-default.readonly {
-  border-style: solid;
-  border-color: var(--ref-border);
-  cursor: not-allowed;
-  opacity: 0.85;
-}
-
-.option-default.readonly:hover {
-  opacity: 1;
-  background: var(--ref-bg-card-hover);
-  border-color: rgba(148, 163, 184, 0.4);
-}
-
-/* ========== 选中状态 ========== */
-.option-default.selected {
+.option-current.selected {
   background: var(--ref-primary);
-  color: white;
   border-color: var(--ref-primary);
   border-style: solid;
+  color: white;
   font-weight: 600;
   box-shadow: 0 2px 8px color-mix(in srgb, var(--ref-primary) 30%, transparent);
 }
 
-.option-default.selected:hover {
+.option-current.selected:hover {
   background: var(--ref-primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px color-mix(in srgb, var(--ref-primary) 40%, transparent);
 }
 
-/* 选中的可编辑选项 */
-.option-default.selected.editable {
-  cursor: text;
+.option-current.editable.selected {
+  border-style: dashed;
+  cursor: default;
 }
 
-/* 选中的不可编辑选项 */
-.option-default.selected.readonly {
-  cursor: not-allowed;
+.option-current.editable.selected .edit-indicator {
+  opacity: 0;
+  font-size: 10px;
+  transition: opacity 0.15s ease;
+  cursor: default;
 }
 
-/* ========== 编辑中状态 ========== */
-.option-default.editing {
+.option-current.editable.selected:hover .edit-indicator {
+  opacity: 0.9;
+}
+
+.option-current.editable.selected:hover {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ref-primary) 15%, transparent);
+}
+
+.option-current.editing {
   background: var(--ref-bg-card);
   border: 2px solid var(--ref-primary);
+  border-style: solid;
   color: var(--ref-text);
-  padding: 5px 10px;
-  cursor: text;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--ref-primary) 15%, transparent);
+  cursor: text;
 }
 
 .edit-input {
@@ -318,23 +339,12 @@ function handleDefaultValueClick(event: MouseEvent) {
   outline: none;
 }
 
-/* 描述文字 */
-.option-desc {
-  font-size: 12px;
-  color: var(--ref-text-muted);
-  line-height: 1.5;
-}
-
-.option-row:hover .option-desc {
-  color: var(--ref-text);
-}
-
 /* 亮色主题调整 */
-[data-theme="light"] .option-default.readonly:not(.selected) {
-  background: rgba(0, 0, 0, 0.02);
+[data-theme="light"] .option-default-val {
+  background: rgba(0, 0, 0, 0.03);
 }
 
-[data-theme="light"] .option-default.readonly:not(.selected):hover {
-  background: rgba(0, 0, 0, 0.05);
+[data-theme="light"] .option-current:not(.selected) {
+  border-color: rgba(0, 0, 0, 0.1);
 }
 </style>
