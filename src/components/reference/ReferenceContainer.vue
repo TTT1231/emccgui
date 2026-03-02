@@ -23,15 +23,17 @@ const filteredCategories = computed(() => {
   const query = store.refSearchQuery
   const activeCategory = store.refActiveCategory
 
-  // 已选模式：只显示已选中的选项
+  // 已选模式：只显示已选中的选项（手动选中 + 编译面板贡献）
   if (activeCategory === '__selected__') {
-    const selectedOptions = Object.keys(store.refSelectedOptions)
-    if (selectedOptions.length === 0) return []
+    const manualKeys = new Set(Object.keys(store.refSelectedOptions))
+    const compileKeys = store.compileContributedRefKeys
 
     return refConfigData.categories
       .map((category): RefCategory | null => {
         const filteredOptions = category.options.filter(
-          (opt) => selectedOptions.includes(opt.option) && matchesSearch(opt, query)
+          (opt) =>
+            (manualKeys.has(opt.option) || compileKeys.has(opt.option)) &&
+            matchesSearch(opt, query)
         )
         if (filteredOptions.length === 0) return null
         return { ...category, options: filteredOptions }
