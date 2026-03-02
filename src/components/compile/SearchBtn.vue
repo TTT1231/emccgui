@@ -543,43 +543,79 @@ const handleFocus = () => {
   transition: all 0.15s ease;
 }
 
+/* ===== Action Buttons ===== */
 .add-btn {
+  position: relative;
   display: flex;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
   justify-content: center;
-  padding: 10px 16px;
+  padding: 11px 18px;
   font-size: 0.9em;
-  font-weight: 600;
+  font-weight: 500;
   color: white;
   white-space: nowrap;
   cursor: pointer;
-  background: var(--accent);
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
-  transition: all 0.2s ease;
+  background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 85%, black) 100%);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px color-mix(in srgb, black 10%, transparent),
+    0 4px 12px color-mix(in srgb, var(--accent) 25%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 20%, transparent);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.add-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, color-mix(in srgb, white 15%, transparent) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
 .add-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, var(--accent-hover) 0%, color-mix(in srgb, var(--accent-hover) 80%, black) 100%);
+  box-shadow:
+    0 2px 4px color-mix(in srgb, black 15%, transparent),
+    0 8px 20px color-mix(in srgb, var(--accent) 35%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 25%, transparent);
+  transform: translateY(-2px);
+}
+
+.add-btn:hover:not(:disabled)::before {
+  opacity: 1;
 }
 
 .add-btn:active:not(:disabled) {
   transform: translateY(0);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, black 10%, transparent),
+    0 2px 8px color-mix(in srgb, var(--accent) 20%, transparent),
+    inset 0 1px 2px color-mix(in srgb, black 10%, transparent);
 }
 
 .add-btn:disabled {
   cursor: not-allowed;
-  box-shadow: none;
-  opacity: 0.5;
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, black 5%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 5%, transparent);
+  opacity: 0.6;
+}
+
+[data-theme='light'] .add-btn:disabled {
+  background: color-mix(in srgb, var(--border) 30%, white);
+  border-color: var(--border);
 }
 
 .add-btn .btn-icon {
-  font-size: 1.1em;
+  font-size: 1.15em;
   line-height: 1;
+  font-weight: 300;
 }
 
 .add-btn .btn-text {
@@ -587,30 +623,51 @@ const handleFocus = () => {
 }
 
 .undo-btn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 12px;
-  font-size: 0.9em;
-  color: var(--text-primary);
+  width: 42px;
+  padding: 0;
+  font-size: 1.1em;
+  color: var(--text-secondary);
   cursor: pointer;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px color-mix(in srgb, black 5%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 5%, transparent);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme='light'] .undo-btn {
+  background: white;
+  box-shadow:
+    0 1px 3px color-mix(in srgb, black 8%, transparent),
+    inset 0 1px 0 white;
 }
 
 .undo-btn:hover {
+  color: var(--accent);
   background: var(--bg-tertiary);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  box-shadow:
+    0 2px 6px color-mix(in srgb, black 8%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 8%, transparent);
+  transform: translateY(-1px);
+}
+
+[data-theme='light'] .undo-btn:hover {
+  background: color-mix(in srgb, var(--accent) 8%, white);
   border-color: var(--accent);
 }
 
 .undo-btn:active {
-  transform: scale(0.95);
+  transform: translateY(0) scale(0.95);
 }
 
 .undo-btn .btn-icon {
-  font-size: 1.1em;
   line-height: 1;
 }
 
