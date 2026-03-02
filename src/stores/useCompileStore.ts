@@ -10,14 +10,12 @@ import type {
   CompileOptionState,
   RuntimeMethodState,
   CommandLine,
-  ConflictInfo,
 } from '@/types'
-import { compileOptionsData, runtimeMethodsData, refConfigData, optionConflicts } from '@/data'
+import { compileOptionsData, runtimeMethodsData, refConfigData } from '@/data'
 import {
   isOptionReallyEnabled,
   resolveEnabledValue,
   formatCommandLine,
-  getActiveConflicts,
 } from '@/utils/compileUtils'
 
 // 预建 option key → radioGroup 映射表（模块级常量，数据是静态的）
@@ -105,16 +103,6 @@ export const useCompileStore = defineStore('compile', () => {
       return !opt.jsWasmOnly || isJsWasm
     })
   })
-
-  /** 当前活跃的冲突列表（统一来源） */
-  const activeConflicts = computed<ConflictInfo[]>(() =>
-    getActiveConflicts(outputFormat.value, compileOptions, optionConflicts)
-  )
-
-  /** 冲突选项 key 集合（供 chip 快速查找） */
-  const conflictedKeySet = computed<Set<string>>(
-    () => new Set(activeConflicts.value.map(c => c.key))
-  )
 
   /**
    * 编译面板当前已激活的完整命令 key 集合（如 `-g3`, `-sEXPORT_ES6`）
@@ -377,7 +365,39 @@ export const useCompileStore = defineStore('compile', () => {
   // Actions
   // =========================================================================
 
+  /** 切换到纯 WASM 时保存的 jsWasmOnly 选项启用快照 */
+  const jsWasmOnlySnapshot = new Map<string, boolean>()
+
   function setOutputFormat(format: OutputFormat) {
+    const current = outputFormat.value
+    if (current === format) return
+
+    if (format === 'wasm-only') {
+      // 保存并禁用所有 jsWasmOnly 选项
+      jsWasmOnlySnapshot.clear()
+      for (const opt of compileOptions) {
+        if (opt.jsWasmOnly) {
+          jsWasmOnlySnapshot.set(opt.key, opt.enabled)
+          opt.enabled = false
+        }
+      }
+    } else {
+      // 恢复之前保存的 jsWasmOnly 选项状态
+      for (const opt of compileOptions) {
+        if (opt.jsWasmOnly && jsWasmOnlySnapshot.has(opt.key)) {
+          opt.enabled = jsWasmOnlySnapshot.get(opt.key)!
+        }
+      }
+      // 恢复 dependsOn 级联（如 exportName 依赖 modularize）
+      for (const opt of compileOptions) {
+        if (opt.jsWasmOnly && opt.dependsOn) {
+          const parent = compileOptions.find(o => o.key === opt.dependsOn)
+          if (parent && !parent.enabled) opt.enabled = false
+        }
+      }
+      jsWasmOnlySnapshot.clear()
+    }
+
     outputFormat.value = format
   }
 
@@ -598,6 +618,13 @@ export const useCompileStore = defineStore('compile', () => {
     // 编译选项重置
     const freshOptions = buildInitialCompileOptions()
     compileOptions.splice(0, compileOptions.length, ...freshOptions)
+    // 若当前处于 wasm-only 模式，重置后立即禁用 jsWasmOnly 选项并清空快照
+    jsWasmOnlySnapshot.clear()
+    if (outputFormat.value === 'wasm-only') {
+      for (const opt of compileOptions) {
+        if (opt.jsWasmOnly) opt.enabled = false
+      }
+    }
     // 运行时方法重置
     const freshMethods = buildInitialRuntimeMethods()
     runtimeMethods.splice(0, runtimeMethods.length, ...freshMethods)
@@ -632,8 +659,6 @@ export const useCompileStore = defineStore('compile', () => {
     refActiveCategory,
     // getters
     availableOptions,
-    activeConflicts,
-    conflictedKeySet,
     compileContributedRefKeys,
     commandLines,
     fullCommand,

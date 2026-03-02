@@ -32,10 +32,6 @@ let hideTooltipTimer: ReturnType<typeof setTimeout> | null = null
 // 根据 key 获取编译选项（本地辅助）
 const getOptionByKey = (key: string) => store.compileOptions.find(opt => opt.key === key)
 
-// 获取单个选项的冲突原因（从 store activeConflicts 中查找）
-const getConflictMessage = (optionKey: string): string | null =>
-  store.activeConflicts.find(c => c.key === optionKey)?.reason ?? null
-
 // Tooltip
 const showTooltip = (name: string, event: MouseEvent) => {
   if (hideTooltipTimer) {
@@ -116,32 +112,9 @@ const handleAddCustomMethod = () => {
             </div>
             <h3 class="card-title">编译选项</h3>
             <span class="options-count">{{ store.enabledAvailableCount }}/{{ store.availableOptions.length }}</span>
-            <!-- 冲突徽章 -->
-            <span v-if="store.activeConflicts.length > 0" class="conflict-badge">⚠ {{ store.activeConflicts.length }}</span>
           </div>
 
           <div class="card-content">
-            <!-- 冲突 Banner -->
-            <Transition name="warning">
-              <div v-if="store.activeConflicts.length > 0" class="conflict-alert">
-                <div class="alert-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
-                    <line x1="12" x2="12" y1="9" y2="13"/>
-                    <line x1="12" x2="12.01" y1="17" y2="17"/>
-                  </svg>
-                </div>
-                <div class="alert-content">
-                  <div class="alert-title">存在 {{ store.activeConflicts.length }} 个选项冲突</div>
-                  <div class="alert-list">
-                    <div v-for="conflict in store.activeConflicts" :key="conflict.key" class="alert-item">
-                      <span class="alert-opt-name">{{ conflict.name }}</span>
-                      <span class="alert-reason">{{ conflict.reason }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Transition>
 
             <!-- 选项网格 -->
             <div class="options-grid">
@@ -151,7 +124,6 @@ const handleAddCustomMethod = () => {
                 class="option-chip"
                 :class="{
                   disabled: opt.dependsOn && !getOptionByKey(opt.dependsOn)?.enabled,
-                  conflicted: store.conflictedKeySet.has(opt.key),
                   active: opt.enabled,
                 }"
                 @mouseenter="showTooltip(opt.name, $event)"
@@ -176,14 +148,6 @@ const handleAddCustomMethod = () => {
                   >
                     <div class="tooltip-content">
                       <span>{{ opt.hint }}</span>
-                      <div v-if="store.conflictedKeySet.has(opt.key)" class="tooltip-conflict">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
-                          <line x1="12" x2="12" y1="9" y2="13"/>
-                          <line x1="12" x2="12.01" y1="17" y2="17"/>
-                        </svg>
-                        <span>{{ getConflictMessage(opt.key) }}</span>
-                      </div>
                     </div>
                     <div class="tooltip-arrow"></div>
                   </div>
@@ -653,22 +617,6 @@ const handleAddCustomMethod = () => {
   border-radius: 20px;
 }
 
-.conflict-badge {
-  padding: 3px 8px;
-  font-family: var(--font-mono);
-  font-size: 0.72em;
-  font-weight: 700;
-  color: white;
-  background: #ef4444;
-  border-radius: 20px;
-  animation: badge-pulse 2s ease-in-out infinite;
-}
-
-@keyframes badge-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.75; }
-}
-
 .card-content {
   flex: 1;
   min-height: 0;
@@ -878,140 +826,11 @@ const handleAddCustomMethod = () => {
   background: var(--bg-primary);
 }
 
-/* Conflicted State */
-.option-chip.conflicted {
-  background: color-mix(in srgb, #f59e0b 10%, var(--bg-primary));
-  border-color: #f59e0b;
-}
-
-.option-chip.conflicted .chip-indicator {
-  border-color: #f59e0b;
-}
-
-.option-chip.conflicted.active .chip-indicator {
-  background: #f59e0b;
-}
-
-.option-chip.conflicted .chip-label {
-  color: #d97706;
-}
-
-.option-chip.conflicted::after {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  font-size: 0.65em;
-  color: white;
-  content: '!';
-  background: #f59e0b;
-  border-radius: 50%;
-}
-
-/* ===== Conflict Alert ===== */
-.conflict-alert {
-  display: flex;
-  gap: 12px;
-  padding: 12px 14px;
-  margin-bottom: 16px;
-  background: color-mix(in srgb, #f59e0b 12%, var(--bg-secondary));
-  border: 1px solid #f59e0b;
-  border-radius: 10px;
-  animation: alert-pulse 2s ease-in-out infinite;
-}
-
-@keyframes alert-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, #f59e0b 20%, transparent);
-  }
-  50% {
-    box-shadow: 0 0 0 4px color-mix(in srgb, #f59e0b 10%, transparent);
-  }
-}
-
-[data-theme='light'] .conflict-alert {
-  background: color-mix(in srgb, #f59e0b 8%, #fff);
-}
-
-.alert-icon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  color: #f59e0b;
-  background: color-mix(in srgb, #f59e0b 20%, transparent);
-  border-radius: 8px;
-}
-
-.alert-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.alert-title {
-  margin-bottom: 8px;
-  font-size: 0.9em;
-  font-weight: 600;
-  color: #d97706;
-}
-
-[data-theme='light'] .alert-title {
-  color: #b45309;
-}
-
-.alert-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.alert-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 6px 10px;
-  background: color-mix(in srgb, #f59e0b 10%, transparent);
-  border-radius: 6px;
-}
-
-.alert-opt-name {
-  font-family: var(--font-mono);
-  font-size: 0.8em;
-  font-weight: 600;
-  color: #d97706;
-}
-
-[data-theme='light'] .alert-opt-name {
-  color: #b45309;
-}
-
-.alert-reason {
-  font-size: 0.75em;
-  color: var(--text-secondary);
-}
-
 /* ===== Dynamic Fields Section ===== */
 .dynamic-fields {
   padding-top: 12px;
   margin-top: 12px;
   border-top: 1px dashed var(--border);
-}
-
-.warning-enter-active,
-.warning-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.warning-enter-from,
-.warning-leave-to {
-  opacity: 0;
-  transform: translateY(-10px) scale(0.98);
 }
 
 .tooltip {
