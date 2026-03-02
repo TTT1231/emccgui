@@ -83,7 +83,7 @@ function selectCategory(categoryName: string) {
         :aria-selected="store.refActiveCategory === 'all'"
         @click="selectCategory('all')"
       >
-        全部
+        All
       </button>
       <button
         v-for="cat in refConfigData.categories"
@@ -105,7 +105,7 @@ function selectCategory(categoryName: string) {
         :aria-selected="store.refActiveCategory === '__selected__'"
         @click="selectCategory('__selected__')"
       >
-        已选({{ selectedCount }})
+        Selected({{ selectedCount }})
       </button>
     </nav>
 
@@ -120,7 +120,7 @@ function selectCategory(categoryName: string) {
       </template>
 
       <div v-else class="ref-no-results">
-        <p>没有找到匹配的选项</p>
+        <p>No matching options found</p>
       </div>
     </div>
   </div>

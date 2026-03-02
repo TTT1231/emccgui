@@ -134,7 +134,7 @@ const editorColors = computed(() => {
 function makeFoldMarker(open: boolean): HTMLElement {
   const el = document.createElement('span')
   el.className = open ? 'cm-fold-open' : 'cm-fold-closed'
-  el.title = open ? '折叠' : '展开'
+  el.title = open ? 'Collapse' : 'Expand'
   // open = 展开状态 → 向下箭头 (▼)，closed = 已折叠 → 向右箭头 (▶)
   el.innerHTML = open
     ? `<svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5 L5 6.5 L8 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`
@@ -394,8 +394,8 @@ onUnmounted(() => {
             <path d="M12 12v6"/>
             <path d="m9 15 3-3 3 3"/>
           </svg>
-          <span class="drop-overlay__title">{{ store.selectedFile ? '松开以替换文件' : '松开以打开文件' }}</span>
-          <span class="drop-overlay__hint">支持 WebAssembly 常用语言</span>
+          <span class="drop-overlay__title">{{ store.selectedFile ? 'Release to replace file' : 'Release to open file' }}</span>
+          <span class="drop-overlay__hint">Supports common WebAssembly languages</span>
         </div>
       </div>
     </Transition>
@@ -427,29 +427,29 @@ onUnmounted(() => {
               <path d="m9 15 3-3 3 3"/>
             </svg>
           </div>
-          <p class="drop-zone__title">拖拽文件到此处，或 <span class="drop-zone__link">点击选择</span></p>
-          <p class="drop-zone__hint">支持 WebAssembly 常用语言 &nbsp;·&nbsp; C/C++/Rust/Go/Java/Python/C# 等</p>
+          <p class="drop-zone__title">Drag files here, or <span class="drop-zone__link">click to select</span></p>
+          <p class="drop-zone__hint">Supports common WebAssembly languages &nbsp;·&nbsp; C/C++/Rust/Go/Java/Python/C#, etc.</p>
         </div>
 
         <!-- 使用步骤 -->
         <div class="steps">
           <div class="step">
             <span class="step-num">1</span>
-            <span class="step-text">选择 WebAssembly 源文件</span>
+            <span class="step-text">Select WebAssembly source file</span>
           </div>
           <div class="step-arrow">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </div>
           <div class="step">
             <span class="step-num">2</span>
-            <span class="step-text">在「编译」页配置选项</span>
+            <span class="step-text">Configure options in "Compile" tab</span>
           </div>
           <div class="step-arrow">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </div>
           <div class="step">
             <span class="step-num">3</span>
-            <span class="step-text">复制 emcc 命令并执行</span>
+            <span class="step-text">Copy and execute emcc command</span>
           </div>
         </div>
       </div>
@@ -472,7 +472,7 @@ onUnmounted(() => {
       <!-- 主标题行 -->
       <div class="editor-header">
         <div class="editor-header__left">
-          <span class="dirty-dot" :class="{ 'dirty-dot--visible': isDirty }" title="有未保存的更改">●</span>
+          <span class="dirty-dot" :class="{ 'dirty-dot--visible': isDirty }" title="Unsaved changes">●</span>
           <span
             class="file-badge"
             :style="getFileBadgeStyle(getFileExt(store.selectedFile!.name))"
@@ -484,14 +484,14 @@ onUnmounted(() => {
           <span class="file-name" :class="{ 'file-name--dirty': isDirty }">{{ store.selectedFile?.name }}</span>
         </div>
         <div class="editor-header__right">
-          <span class="line-count">{{ lineCount }} 行</span>
+          <span class="line-count">{{ lineCount }} lines</span>
 
-          <!-- 保存按钮 -->
+          <!-- Save Button -->
           <button
             class="save-btn"
             :class="{ 'save-btn--dirty': isDirty, 'save-btn--saved': savedFlash }"
             :disabled="!isDirty && !savedFlash"
-            title="保存文件 (Ctrl+S)"
+            title="Save file (Ctrl+S)"
             @click="saveFile"
           >
             <svg v-if="!savedFlash" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -502,11 +502,11 @@ onUnmounted(() => {
             <svg v-else xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            <span>{{ savedFlash ? '已保存' : '保存' }}</span>
+            <span>{{ savedFlash ? 'Saved' : 'Save' }}</span>
           </button>
 
-          <!-- 换文件 -->
-          <button class="icon-btn" title="重新选择文件" @click="fileInput?.click()">
+          <!-- Change File -->
+          <button class="icon-btn" title="Reselect file" @click="fileInput?.click()">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
               <polyline points="17 8 12 3 7 8"/>
@@ -514,8 +514,8 @@ onUnmounted(() => {
             </svg>
           </button>
 
-          <!-- 关闭 -->
-          <button class="icon-btn icon-btn--danger" title="移除文件" @click="clearFile">
+          <!-- Close -->
+          <button class="icon-btn icon-btn--danger" title="Remove file" @click="clearFile">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
             </svg>
@@ -529,7 +529,7 @@ onUnmounted(() => {
           <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/>
           <path d="M14 2v4a2 2 0 0 0 2 2h4"/>
         </svg>
-        <span class="output-bar__label">输出文件名</span>
+        <span class="output-bar__label">Output filename</span>
         <div class="output-bar__input">
           <input
             :value="store.outputFileName"

@@ -4,21 +4,21 @@ export const runtimeMethodsData: RuntimeMethodDef[] = [
   {
     key: 'ccall',
     name: 'ccall',
-    hint: '直接调用 C 函数，自动处理参数和返回值类型转换'
+    hint: 'Directly call C functions with automatic parameter and return value type conversion'
   },
   {
     key: 'cwrap',
     name: 'cwrap',
-    hint: '包装 C 函数为可复用的 JavaScript 函数'
+    hint: 'Wrap C functions as reusable JavaScript functions'
   },
   {
     key: 'getValue',
     name: 'getValue',
-    hint: '从 WASM 内存中读取指定地址的值'
+    hint: 'Read value from specified address in WASM memory'
   },
   {
     key: 'setValue',
     name: 'setValue',
-    hint: '向 WASM 内存中写入值到指定地址'
+    hint: 'Write value to specified address in WASM memory'
   }
 ]

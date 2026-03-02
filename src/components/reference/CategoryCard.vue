@@ -27,7 +27,7 @@ function toggleCollapse() {
       <div class="ref-category-icon" v-html="category.icon"></div>
       <div class="ref-category-info">
         <div class="ref-category-name">{{ category.name }}</div>
-        <div class="ref-category-count">{{ category.options.length }} 个选项</div>
+        <div class="ref-category-count">{{ category.options.length }} options</div>
       </div>
       <div class="ref-category-toggle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -39,11 +39,11 @@ function toggleCollapse() {
     <Transition name="collapse">
       <div v-show="!isCollapsed" class="ref-category-content">
         <div class="ref-table-header">
-          <span>命令</span>
-          <span>说明</span>
-          <span>类型</span>
-          <span>默认值</span>
-          <span>当前值</span>
+          <span>Command</span>
+          <span>Description</span>
+          <span>Type</span>
+          <span>Default</span>
+          <span>Current</span>
         </div>
         <div class="ref-category-inner">
           <OptionRow

@@ -29,13 +29,13 @@ const compileContribDisplayValue = computed(() => {
   const matchedOpt = store.compileOptions.find(
     o => `${o.cmdPrefix}${o.cmdName}` === props.option.option
   )
-  if (!matchedOpt) return '已启用'
+  if (!matchedOpt) return 'Enabled'
   // 有 {value} 占位符的选项，只显示当前值本身，不展示完整命令行
   if (matchedOpt.enabledValue?.includes('{value}')) {
     const raw = String(matchedOpt.currentValue ?? matchedOpt.defaultValue ?? '')
-    return stripOuterQuotes(raw) || '已启用'
+    return stripOuterQuotes(raw) || 'Enabled'
   }
-  return '已启用'
+  return 'Enabled'
 })
 
 /** 两者之一激活即为「高亮」状态 */
@@ -142,12 +142,12 @@ function handleCurrentDblClick(event: MouseEvent) {
       'compile-contrib': isCompileContrib,
       'is-editable': option.editable && !isCompileContrib
     }"
-    :title="isCompileContrib ? '点击可关闭此选项' : undefined"
+    :title="isCompileContrib ? 'Click to disable this option' : undefined"
     @click="handleClick"
   >
     <!-- 命令 -->
     <div class="option-name">
-      <span v-if="isCompileContrib" class="check-icon compile-contrib-icon" title="已在编译面板启用">⊕</span>
+      <span v-if="isCompileContrib" class="check-icon compile-contrib-icon" title="Enabled in compile panel">⊕</span>
       <span v-else-if="isSelected" class="check-icon">✓</span>
       <span class="option-name-text">{{ option.option }}</span>
     </div>
@@ -170,7 +170,7 @@ function handleCurrentDblClick(event: MouseEvent) {
         'compile-contrib': isCompileContrib,
         editing: isEditing
       }"
-      :title="option.editable && isSelected && !isCompileContrib && !isEditing ? '双击编辑值' : isCompileContrib ? '点击可关闭此选项' : undefined"
+      :title="option.editable && isSelected && !isCompileContrib && !isEditing ? 'Double-click to edit value' : isCompileContrib ? 'Click to disable this option' : undefined"
       @click="handleCurrentClick"
       @dblclick="handleCurrentDblClick"
     >
@@ -189,9 +189,9 @@ function handleCurrentDblClick(event: MouseEvent) {
           />
         </template>
         <template v-else>
-          <span v-if="displayValue === ''" class="value-placeholder">双击输入</span>
+          <span v-if="displayValue === ''" class="value-placeholder">Double-click to input</span>
           <span v-else class="value-text" :title="String(displayValue)">{{ displayValue }}</span>
-          <span v-if="option.editable" class="edit-hint">双击编辑</span>
+          <span v-if="option.editable" class="edit-hint">Double-click to edit</span>
         </template>
       </template>
       <template v-else>

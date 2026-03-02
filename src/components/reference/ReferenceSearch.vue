@@ -24,7 +24,7 @@ function clearSearch() {
         type="text"
         class="ref-search-input"
         :value="store.refSearchQuery"
-        placeholder="搜索配置选项..."
+        placeholder="Search configuration options..."
         @input="handleInput"
       />
       <button

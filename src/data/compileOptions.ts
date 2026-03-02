@@ -43,7 +43,7 @@ export const compileOptionsData: CompileOptionDef[] = [
     jsWasmOnly: true,
     defaultEnabled: true,
     enabledValue: '-sEXPORT_ES6',
-    hint: '生成 ES6 模块格式(需配合MODULARIZE)',
+    hint: 'Generate ES6 module format (requires MODULARIZE)',
     category: '模块化'
   },
   {
@@ -57,7 +57,7 @@ export const compileOptionsData: CompileOptionDef[] = [
     jsWasmOnly: true,
     defaultEnabled: true,
     enabledValue: '-sMODULARIZE',
-    hint: '将 JS 代码转化工厂函数(转化为异步)',
+    hint: 'Convert JS code to factory function (becomes async)',
     category: '模块化'
   },
   {
@@ -76,7 +76,7 @@ export const compileOptionsData: CompileOptionDef[] = [
     inputPlaceholder: 'Module',
     defaultEnabled: true,
     enabledValue: '-sEXPORT_NAME="{value}"',
-    hint: '指定导出的模块名称（工厂函数名）',
+    hint: 'Specify exported module name (factory function name)',
     category: '模块化'
   },
   {
@@ -89,7 +89,7 @@ export const compileOptionsData: CompileOptionDef[] = [
     formatType: 'flag',
     jsWasmOnly: true,
     enabledValue: '-sSINGLE_FILE',
-    hint: '将 WASM 以 Base64 嵌入到 JS 文件中，生成单文件输出',
+    hint: 'Embed WASM as Base64 into JS file for single-file output',
     category: '模块化'
   },
 
@@ -104,7 +104,7 @@ export const compileOptionsData: CompileOptionDef[] = [
     formatType: 'flag',
     defaultEnabled: true,
     enabledValue: '-sWASM',
-    hint: '输出 WebAssembly',
+    hint: 'Output WebAssembly',
     category: 'WASM'
   },
   {
@@ -117,7 +117,7 @@ export const compileOptionsData: CompileOptionDef[] = [
     formatType: 'flag',
     defaultEnabled: true,
     enabledValue: '-sALLOW_MEMORY_GROWTH',
-    hint: '(默认16MB)允许 WASM 内存在运行时动态增长扩容',
+    hint: '(Default 16MB) Allow WASM memory to grow dynamically at runtime',
     category: 'WASM'
   },
   {
@@ -129,7 +129,7 @@ export const compileOptionsData: CompileOptionDef[] = [
     defaultValue: 1,
     formatType: 'flag',
     enabledValue: '-sEXPORT_ALL',
-    hint: '导出所有符号（函数和全局变量）',
+    hint: 'Export all symbols (functions and global variables)',
     category: 'WASM'
   },
   {
@@ -142,7 +142,7 @@ export const compileOptionsData: CompileOptionDef[] = [
     formatType: 'flag',
     jsWasmOnly: true,
     enabledValue: '-sSTANDALONE_WASM',
-    hint: '生成一个尽量独立的 WASM，减少对外部依赖（与 wasm-only 冲突）',
+    hint: 'Generate standalone WASM with minimal external dependencies (conflicts with wasm-only)',
     category: 'WASM'
   },
 
@@ -157,11 +157,11 @@ export const compileOptionsData: CompileOptionDef[] = [
     formatType: 'flag',
     jsWasmOnly: true,
     hasInput: true,
-    inputLabel: 'TypeScript 定义文件名',
-    inputPlaceholder: '[文件名].d.ts',
+    inputLabel: 'TypeScript Definition Filename',
+    inputPlaceholder: '[filename].d.ts',
     defaultEnabled: true,
     enabledValue: '--emit-tsd="{value}"',
-    hint: '生成类型定义文件 (.d.ts)',
+    hint: 'Generate TypeScript definition file (.d.ts)',
     category: '类型定义'
   },
   {
@@ -175,7 +175,7 @@ export const compileOptionsData: CompileOptionDef[] = [
     // 注意：SIDE_MODULE 默认不启用，因为它会与其他选项冲突
     // SIDE_MODULE 只在 wasm-only 模式可用
     enabledValue: '-sSIDE_MODULE',
-    hint: '编译纯wasm模块没有main函数',
+    hint: 'Compile pure WASM module without main function',
     category: '类型定义'
   },
 
@@ -190,10 +190,10 @@ export const compileOptionsData: CompileOptionDef[] = [
     currentValue: '_main',
     formatType: 'flag',
     hasInput: true,
-    inputLabel: '导出函数列表',
+    inputLabel: 'Exported Functions List',
     inputPlaceholder: '_main,_myFunc,_anotherFunc',
     enabledValue: '-sEXPORTED_FUNCTIONS="{value}"',
-    hint: '指定要导出的 C/C++ 函数（逗号分隔，函数名需加下划线前缀）',
+    hint: 'Specify C/C++ functions to export (comma-separated, prefix function names with underscore)',
     category: '导出'
   },
 
@@ -206,14 +206,14 @@ export const compileOptionsData: CompileOptionDef[] = [
     valueType: 'boolean',
     formatType: 'arg',
     enabledValue: '--bind',
-    hint: '启用 Embind，用于 C++ 和 JavaScript 之间的绑定',
+    hint: 'Enable Embind for C++ and JavaScript bindings',
     category: '绑定'
   },
 
   // === 调试相关 ===
   {
     key: 'debug',
-    name: '调试级别',
+    name: 'Debug Level',
     cmdPrefix: '-',
     cmdName: 'g',
     valueType: 'select',
@@ -221,13 +221,13 @@ export const compileOptionsData: CompileOptionDef[] = [
     currentValue: '3',
     formatType: 'arg',
     selectOptions: [
-      { value: '1', label: '-g1 (保留空白)' },
-      { value: '2', label: '-g2 (保留函数名)' },
-      { value: '3', label: '-g3 (保留 DWARF)' },
-      { value: '4', label: '-g4 (包含源码)' }
+      { value: '1', label: '-g1 (Preserve whitespace)' },
+      { value: '2', label: '-g2 (Preserve function names)' },
+      { value: '3', label: '-g3 (Preserve DWARF)' },
+      { value: '4', label: '-g4 (Include source code)' }
     ],
     enabledValue: '-g{value}',
-    hint: '生成调试信息：-g1 保留空白、-g2 保留函数名、-g3 保留 DWARF、-g4 包含源码',
+    hint: 'Generate debug info: -g1 preserve whitespace, -g2 preserve function names, -g3 preserve DWARF, -g4 include source code',
     category: '调试'
   },
   {
@@ -238,7 +238,7 @@ export const compileOptionsData: CompileOptionDef[] = [
     valueType: 'boolean',
     formatType: 'arg',
     enabledValue: '-gsource-map',
-    hint: '生成 Source Map 文件，便于浏览器调试',
+    hint: 'Generate Source Map file for browser debugging',
     category: '调试'
   },
   {
@@ -251,11 +251,11 @@ export const compileOptionsData: CompileOptionDef[] = [
     currentValue: '1',
     formatType: 'flag',
     selectOptions: [
-      { value: '1', label: '=1 (基础断言)' },
-      { value: '2', label: '=2 (详细断言)' }
+      { value: '1', label: '=1 (Basic assertions)' },
+      { value: '2', label: '=2 (Detailed assertions)' }
     ],
     enabledValue: '-sASSERTIONS={value}',
-    hint: '启用运行时断言检查：=1 基础、=2 详细（会增加体积）',
+    hint: 'Enable runtime assertion checks: =1 basic, =2 detailed (increases size)',
     category: '调试'
   },
 
@@ -268,7 +268,7 @@ export const compileOptionsData: CompileOptionDef[] = [
     valueType: 'boolean',
     formatType: 'arg',
     enabledValue: '-pthread',
-    hint: '启用多线程支持（需要 SharedArrayBuffer）',
+    hint: 'Enable multi-threading support (requires SharedArrayBuffer)',
     category: '高级'
   },
   {
@@ -279,17 +279,17 @@ export const compileOptionsData: CompileOptionDef[] = [
     valueType: 'boolean',
     formatType: 'arg',
     enabledValue: '-fexceptions',
-    hint: '启用 C++ 异常处理支持',
+    hint: 'Enable C++ exception handling support',
     category: '高级'
   }
 ]
 
-// 优化级别选项
+// Optimization level options
 export const optimizationLevels: OptimizationLevelOption[] = [
-  { value: 'O0', label: '-O0 (默认值，无优化)' },
-  { value: 'O1', label: '-O1 (基础优化)' },
-  { value: 'O2', label: '-O2 (标准优化)' },
-  { value: 'O3', label: '-O3 (最大优化)' },
-  { value: 'Os', label: '-Os (体积优化)' },
-  { value: 'Oz', label: '-Oz (极限体积优化)' }
+  { value: 'O0', label: '-O0 (Default, no optimization)' },
+  { value: 'O1', label: '-O1 (Basic optimization)' },
+  { value: 'O2', label: '-O2 (Standard optimization)' },
+  { value: 'O3', label: '-O3 (Maximum optimization)' },
+  { value: 'Os', label: '-Os (Size optimization)' },
+  { value: 'Oz', label: '-Oz (Extreme size optimization)' }
 ]

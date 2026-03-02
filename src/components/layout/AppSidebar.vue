@@ -4,9 +4,9 @@ import { useCompileStore } from '@/stores/useCompileStore'
 const store = useCompileStore()
 
 const navItems = [
-  { tab: 'file' as const, icon: '📁', label: '文件' },
-  { tab: 'compile' as const, icon: '⚙️', label: '编译' },
-  { tab: 'reference' as const, icon: '📖', label: '参考' }
+  { tab: 'file' as const, icon: '📁', label: 'File' },
+  { tab: 'compile' as const, icon: '⚙️', label: 'Compile' },
+  { tab: 'reference' as const, icon: '📖', label: 'Reference' }
 ]
 
 function handleTabClick(tab: 'file' | 'compile' | 'reference') {

@@ -125,12 +125,12 @@ const handleAdd = () => {
 
   // 校验是否为合法 emcc 命令
   if (!isValidEmccCommand(commandToAdd)) {
-    showFeedback('无效命令：emcc 命令必须以 - 开头（如 -sFLAG、--option）', 'error')
+    showFeedback('Invalid command: emcc commands must start with - (e.g., -sFLAG, --option)', 'error')
     return
   }
 
   if (isCommandDuplicate(commandToAdd)) {
-    showFeedback('此命令已存在于当前编译命令中，无需重复添加', 'warn')
+    showFeedback('This command already exists in current compile command, no need to add again', 'warn')
     return
   }
 
@@ -268,7 +268,7 @@ const handleFocus = () => {
         type="text"
         class="search-input"
         :class="{ 'search-input--error': feedbackType === 'error' && feedbackMsg, 'search-input--warn': feedbackType === 'warn' && feedbackMsg }"
-        placeholder="输入 @ 触发选项搜索，或直接输入命令"
+        placeholder="Type @ to search options, or enter command directly"
         @keydown="handleKeyDown"
         @blur="handleBlur"
         @focus="handleFocus"
@@ -281,8 +281,8 @@ const handleFocus = () => {
           :class="`dropdown-${dropdownDirection}`"
         >
           <div class="suggestions-header">
-            <span class="suggestions-count">{{ filteredOptions.length }} 个选项</span>
-            <span class="suggestions-hint">↑↓ 选择 Enter 确认</span>
+            <span class="suggestions-count">{{ filteredOptions.length }} options</span>
+            <span class="suggestions-hint">↑↓ Select Enter Confirm</span>
           </div>
           <div class="suggestions-list">
             <div
@@ -302,7 +302,7 @@ const handleFocus = () => {
                 </div>
                 <div class="suggestion-right">
                   <span class="default-value">{{
-                    option.defaultValDescri === '-' ? '无' : option.defaultValDescri
+                    option.defaultValDescri === '-' ? 'None' : option.defaultValDescri
                   }}</span>
                 </div>
               </div>
@@ -311,11 +311,11 @@ const handleFocus = () => {
         </div>
       </Transition>
     </div>
-    <button class="add-btn" @click="handleAdd" :disabled="!searchValue.trim()" title="添加命令">
+    <button class="add-btn" @click="handleAdd" :disabled="!searchValue.trim()" title="Add command">
       <span class="btn-icon">+</span>
-      <span class="btn-text">添加</span>
+      <span class="btn-text">Add</span>
     </button>
-    <button class="undo-btn" @click="handleUndo" title="撤销上一个 (Ctrl+Z)">
+    <button class="undo-btn" @click="handleUndo" title="Undo last (Ctrl+Z)">
       <span class="btn-icon">↩</span>
     </button>
     <!-- 反馈消息（绝对定位，不占文档流）-->
@@ -604,8 +604,15 @@ const handleFocus = () => {
 }
 
 [data-theme='light'] .add-btn:disabled {
-  background: color-mix(in srgb, var(--border) 30%, white);
-  border-color: var(--border);
+  background: color-mix(in srgb, var(--accent) 15%, color-mix(in srgb, var(--border) 50%, white));
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  color: color-mix(in srgb, var(--accent) 50%, var(--text-secondary));
+  opacity: 0.9;
+}
+
+[data-theme='light'] .add-btn:disabled .btn-text,
+[data-theme='light'] .add-btn:disabled .btn-icon {
+  color: color-mix(in srgb, var(--accent) 50%, var(--text-secondary));
 }
 
 .add-btn .btn-icon {
