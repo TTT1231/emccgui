@@ -82,7 +82,7 @@ export const refConfigData: RefConfigData = {
           description: "指定输出文件名",
           valueType: "string",
           editable: true,
-          enabledValue: "-o {value}"
+          enabledValue: "-o=\"{value}\""
         },
         {
           option: "-sMODULARIZE",
@@ -106,7 +106,7 @@ export const refConfigData: RefConfigData = {
           description: "指定导出的模块名称",
           valueType: "string",
           editable: true,
-          enabledValue: "-sEXPORT_NAME={value}"
+          enabledValue: "-sEXPORT_NAME=\"{value}\""
         },
         {
           option: "-sSINGLE_FILE",
@@ -122,7 +122,7 @@ export const refConfigData: RefConfigData = {
           description: "生成 TypeScript 类型声明文件，参数为输出DTS文件名",
           valueType: "string",
           editable: true,
-          enabledValue: "--emit-tsd {value}"
+          enabledValue: "--emit-tsd=\"{value}\""
         },
         {
           option: "-sENVIRONMENT",
@@ -130,7 +130,7 @@ export const refConfigData: RefConfigData = {
           description: "目标运行环境（多个用逗号分隔）",
           valueType: "string",
           editable: true,
-          enabledValue: "-sENVIRONMENT={value}"
+          enabledValue: "-sENVIRONMENT=\"{value}\""
         },
         {
           option: "-sEXPORTED_FUNCTIONS",
@@ -138,7 +138,7 @@ export const refConfigData: RefConfigData = {
           description: "指定导出的 C/C++ 函数（需加 _ 前缀，如 _main）",
           valueType: "string-array",
           editable: true,
-          enabledValue: "-sEXPORTED_FUNCTIONS={value}"
+          enabledValue: "-sEXPORTED_FUNCTIONS=\"{value}\""
         },
         {
           option: "-sEXPORTED_RUNTIME_METHODS",
@@ -146,7 +146,7 @@ export const refConfigData: RefConfigData = {
           description: "导出运行时辅助方法（如 ccall, cwrap）",
           valueType: "string-array",
           editable: true,
-          enabledValue: "-sEXPORTED_RUNTIME_METHODS={value}"
+          enabledValue: "-sEXPORTED_RUNTIME_METHODS=\"{value}\""
         }
       ]
     },
@@ -268,7 +268,7 @@ export const refConfigData: RefConfigData = {
           description: "预加载文件到虚拟文件系统（生成 .data 文件）",
           valueType: "string",
           editable: true,
-          enabledValue: "--preload-file {value}"
+          enabledValue: "--preload-file=\"{value}\""
         },
         {
           option: "--embed-file",
@@ -276,7 +276,7 @@ export const refConfigData: RefConfigData = {
           description: "嵌入文件到 JS/wasm 中（不生成额外文件）",
           valueType: "string",
           editable: true,
-          enabledValue: "--embed-file {value}"
+          enabledValue: "--embed-file=\"{value}\""
         }
       ]
     },
@@ -428,7 +428,7 @@ export const refConfigData: RefConfigData = {
           description: "传递参数给 Closure Compiler",
           valueType: "string",
           editable: true,
-          enabledValue: "--closure-args={value}"
+          enabledValue: "--closure-args=\"{value}\""
         },
         {
           option: "-sIGNORE_MISSING_MAIN",
@@ -445,7 +445,7 @@ export const refConfigData: RefConfigData = {
           description: "内存分配器（dlmalloc 默认，emmalloc 更小但慢，mimalloc 多线程更好）",
           valueType: "string",
           editable: true,
-          enabledValue: "-sMALLOC={value}"
+          enabledValue: "-sMALLOC=\"{value}\""
         },
         {
           option: "-sEVAL_CTORS",
@@ -543,7 +543,7 @@ export const refConfigData: RefConfigData = {
           description: "WebSocket 连接 URL",
           valueType: "string",
           editable: true,
-          enabledValue: "-sWEBSOCKET_URL={value}"
+          enabledValue: "-sWEBSOCKET_URL=\"{value}\""
         },
         {
           option: "-sPROXY_POSIX_SOCKETS",
@@ -682,7 +682,7 @@ export const refConfigData: RefConfigData = {
           description: "指定导入的 Module 属性（空表示不使用任何Module属性）",
           valueType: "string-array",
           editable: true,
-          enabledValue: "-sINCOMING_MODULE_JS_API={value}"
+enabledValue: "-sINCOMING_MODULE_JS_API=\"{value}\""
         },
         {
           option: "-sAUTO_JS_LIBRARIES",
