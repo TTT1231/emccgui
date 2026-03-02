@@ -134,6 +134,23 @@ function selectCategory(categoryName: string) {
   max-width: 1200px;
 }
 
+.reference-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+.reference-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.reference-container::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.reference-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
 /* 分类导航 */
 .ref-category-nav {
   display: flex;
