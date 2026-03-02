@@ -6,7 +6,11 @@
       "Bash(agent-browser snapshot -i)",
       "Bash(agent-browser click @e5)",
       "Bash(agent-browser click @e1)",
-      "Bash(pnpm remove @codemirror/lang-javascript)"
+      "Bash(pnpm remove @codemirror/lang-javascript)",
+      "Bash(pnpm run build)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "Skill(commit-commands:commit)"
     ]
   }
 }

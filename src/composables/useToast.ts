@@ -1,4 +1,4 @@
-import { ref, type Ref } from 'vue'
+import { ref } from 'vue'
 import { useTimer } from './useTimer'
 
 export interface ToastOptions {

@@ -1,4 +1,4 @@
-import { ref, onUnmounted } from 'vue'
+import { onUnmounted } from 'vue'
 
 /**
  * 可复用的 Timer 管理 composable

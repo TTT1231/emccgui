@@ -1,7 +1,5 @@
-import type { CompileOptionState, CommandLine, OptionConflict, OutputFormat, ConflictInfo } from '@/types'
+import type { CompileOptionState, OptionConflict, OutputFormat, ConflictInfo } from '@/types'
 import { isOptionReallyEnabled } from './commandUtils'
-
-import { extractCommandName } from './commandUtils'
 
 // 注：此函数已被 getActiveConflicts 替代
 export function getConflictedOptions(

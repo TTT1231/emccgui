@@ -35,17 +35,21 @@ export function resolveEnabledValue(template: string, value: string): string {
 }
 
 /**
- * 格式化命令行为 CommandLine 对象
+ * 格式化命令行为字符串
  */
-export function formatCommandLine(cmd: string): { name: string; value?: string } {
-  const eqIndex = cmd.indexOf('=')
-  if (eqIndex > 0) {
-    return {
-      name: cmd.substring(0, eqIndex),
-      value: cmd.substring(eqIndex + 1),
+export function formatCommandLine(cmd: string | { name: string; value?: string }): string {
+  if (typeof cmd === 'string') {
+    const eqIndex = cmd.indexOf('=')
+    if (eqIndex > 0) {
+      return cmd
     }
+    return cmd
   }
-  return { name: cmd }
+  // CommandLine 对象
+  if (cmd.value !== undefined) {
+    return `${cmd.name}=${cmd.value}`
+  }
+  return cmd.name
 }
 
 /**
