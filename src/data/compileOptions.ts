@@ -164,6 +164,7 @@ export const compileOptionsData: CompileOptionDef[] = [
     defaultValue: 1,
     formatType: 'flag',
     // 注意：SIDE_MODULE 默认不启用，因为它会与其他选项冲突
+    // SIDE_MODULE 只在 wasm-only 模式可用
     hint: '编译纯wasm模块没有main函数',
     category: '类型定义'
   },

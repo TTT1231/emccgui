@@ -7,7 +7,7 @@ import { getConflictedOptions, getConflictReason, formatCommandLine, isOptionRea
 import type { CommandLine } from '@/types'
 import SearchBtn from './SearchBtn.vue'
 
-const { state, setDtsFileName, setOptimizationLevel, updateOption, updateOptionValue, toggleRuntimeMethod, addCustomOption, revokeCustomOption, addCustomRuntimeMethod, removeCustomRuntimeMethod } = useAppState()
+const { state, setOptimizationLevel, updateOption, updateOptionValue, toggleRuntimeMethod, addCustomOption, revokeCustomOption, addCustomRuntimeMethod, removeCustomRuntimeMethod } = useAppState()
 
 // Tooltip 状态
 const activeTooltip = ref<string | null>(null)
@@ -15,8 +15,21 @@ const tooltipDirection = ref<'up' | 'down'>('down')
 const tooltipPosition = ref({ left: '0px', top: '0px' })
 let hideTooltipTimer: ReturnType<typeof setTimeout> | null = null
 
-// 获取 emitTsd 选项
-const emitTsdOption = computed(() => state.compileOptions.find(opt => opt.key === 'emitTsd'))
+// 根据当前输出格式计算可用选项
+const availableOptions = computed(() => {
+  const isJsWasm = state.outputFormat === 'js-wasm'
+  return state.compileOptions.filter(opt => {
+    // SIDE_MODULE 只在 wasm-only 模式可用
+    if (opt.key === 'SIDE_MODULE') return !isJsWasm
+    // 其他选项：jsWasmOnly 的只在 js-wasm 模式可用
+    return !opt.jsWasmOnly || isJsWasm
+  })
+})
+
+// 计算可用且已启用的选项数量
+const enabledAvailableCount = computed(() =>
+  availableOptions.value.filter(opt => opt.enabled).length
+)
 
 // 有输入框的已启用选项
 const optionsWithInput = computed(() =>
@@ -87,11 +100,8 @@ const commandLines = computed(() => {
       case 'flag':
         let value = String(option.currentValue ?? option.defaultValue)
         if (option.key === 'emitTsd') {
-          if (state.dtsFileName) {
-            value = `${state.dtsFileName}.d.ts`
-          } else if (value) {
-            value = value.endsWith('.d.ts') ? value : `${value}.d.ts`
-          }
+          // 直接使用输出文件名作为 .d.ts 文件名
+          value = `${state.outputFileName}.d.ts`
         }
         lines.push({
           name: cmdName,
@@ -262,16 +272,15 @@ const handleAddCustomMethod = () => {
               </svg>
             </div>
             <h3 class="card-title">编译选项</h3>
-            <span class="options-count">{{ state.compileOptions.filter(o => o.enabled).length }}/{{ state.compileOptions.length }}</span>
+            <span class="options-count">{{ enabledAvailableCount }}/{{ availableOptions.length }}</span>
           </div>
 
           <div class="card-content">
             <!-- 选项网格 -->
             <div class="options-grid">
               <label
-                v-for="opt in state.compileOptions"
+                v-for="opt in availableOptions"
                 :key="opt.key"
-                v-show="opt.key !== 'SIDE_MODULE' || state.outputFormat === 'wasm-only'"
                 class="option-chip"
                 :class="{
                   disabled: opt.dependsOn && !getOptionByKey(opt.dependsOn)?.enabled,
@@ -346,24 +355,6 @@ const handleAddCustomMethod = () => {
                   />
                 </div>
               </template>
-            </div>
-
-            <!-- TypeScript 定义文件名 -->
-            <div v-if="emitTsdOption?.enabled" class="dynamic-fields">
-              <div class="form-field form-field-compact">
-                <label class="field-label">{{ emitTsdOption?.inputLabel }}</label>
-                <div class="input-with-suffix">
-                  <input
-                    :value="state.dtsFileName"
-                    type="text"
-                    class="field-input"
-                    :placeholder="emitTsdOption?.inputPlaceholder"
-                    spellcheck="false"
-                    @input="setDtsFileName(($event.target as HTMLInputElement).value)"
-                  />
-                  <span class="input-suffix">.d.ts</span>
-                </div>
-              </div>
             </div>
 
             <!-- 动态下拉选择 -->
