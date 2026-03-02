@@ -1,198 +1,24 @@
 ﻿<script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
-import { useAppState } from '@/stores'
-import { optionConflicts, optimizationLevels } from '@/data'
-import { getConflictedOptions, getConflictReason, formatCommandLine, isOptionReallyEnabled, resolveEnabledValue } from '@/utils/compileUtils'
-import type { CommandLine } from '@/types'
+import { useCompileStore } from '@/stores/useCompileStore'
+import { optimizationLevels } from '@/data'
 import SearchBtn from './SearchBtn.vue'
 
-const { state, setOptimizationLevel, updateOption, updateOptionValue, toggleRuntimeMethod, addCustomOption, revokeCustomOption, addCustomRuntimeMethod, removeCustomRuntimeMethod } = useAppState()
+const store = useCompileStore()
 
-// Tooltip 状态
+// ===== 纯 UI tooltip 状态（仅此组件使用）=====
 const activeTooltip = ref<string | null>(null)
 const tooltipDirection = ref<'up' | 'down'>('down')
 const tooltipPosition = ref({ left: '0px', top: '0px' })
 let hideTooltipTimer: ReturnType<typeof setTimeout> | null = null
 
-// 根据当前输出格式计算可用选项
-const availableOptions = computed(() => {
-  const isJsWasm = state.outputFormat === 'js-wasm'
-  return state.compileOptions.filter(opt => {
-    // SIDE_MODULE 只在 wasm-only 模式可用
-    if (opt.key === 'SIDE_MODULE') return !isJsWasm
-    // 其他选项：jsWasmOnly 的只在 js-wasm 模式可用
-    return !opt.jsWasmOnly || isJsWasm
-  })
-})
+// 根据 key 获取编译选项（本地辅助）
+const getOptionByKey = (key: string) => store.compileOptions.find(opt => opt.key === key)
 
-// 计算可用且已启用的选项数量
-const enabledAvailableCount = computed(() =>
-  availableOptions.value.filter(opt => opt.enabled).length
-)
-
-// 有输入框的已启用选项
-const optionsWithInput = computed(() =>
-  state.compileOptions.filter(
-    opt => opt.hasInput && opt.key !== 'emitTsd' && isOptionReallyEnabled(opt, state.compileOptions)
-  )
-)
-
-// 有下拉选项的已启用选项
-const optionsWithSelect = computed(() =>
-  state.compileOptions.filter(
-    opt => opt.valueType === 'select' && opt.selectOptions && opt.enabled
-  )
-)
-
-// 当前有冲突的选项 keys
-const conflictedKeys = computed(() =>
-  getConflictedOptions(state.outputFormat, state.compileOptions, optionConflicts)
-)
-
-// 检查单个选项是否有冲突
-const hasConflict = (optionKey: string): boolean => conflictedKeys.value.has(optionKey)
-
-// 获取单个选项的冲突原因
+// 获取单个选项的冲突原因（从 store activeConflicts 中查找）
 const getConflictMessage = (optionKey: string): string | null =>
-  getConflictReason(optionKey, state.outputFormat, state.compileOptions, optionConflicts)
-
-// 根据 key 获取编译选项
-const getOptionByKey = (key: string) => state.compileOptions.find(opt => opt.key === key)
-
-// 生成命令行数组
-const commandLines = computed(() => {
-  const lines: CommandLine[] = []
-  const isJsWasm = state.outputFormat === 'js-wasm'
-
-  // emcc 命令 + 输入文件
-  const inputFile = state.selectedFile?.name || 'input.cpp'
-  lines.push({ name: 'emcc', value: inputFile, type: 'command' })
-
-  // 输出文件
-  const outputExt = isJsWasm ? '.js' : '.wasm'
-  lines.push({ name: '-o', value: `${state.outputFileName}${outputExt}`, type: 'output' })
-
-  // 遍历所有编译选项
-  for (const option of state.compileOptions) {
-    if (!isOptionReallyEnabled(option, state.compileOptions)) continue
-    if (option.jsWasmOnly && !isJsWasm) continue
-
-    // 使用 enabledValue 模板生成命令
-    const template = option.enabledValue
-    if (!template) continue
-
-    // 获取当前值
-    let currentValue = String(option.currentValue ?? option.defaultValue)
-
-    // emitTsd 特殊处理：使用输出文件名作为 .d.ts 文件名
-    if (option.key === 'emitTsd') {
-      currentValue = `${state.outputFileName}.d.ts`
-    }
-
-    // 解析模板，生成最终命令字符串
-    const resolvedCmd = resolveEnabledValue(template, currentValue)
-
-    // 解析命令名称和值（用于显示）
-    const eqIndex = resolvedCmd.indexOf('=')
-    if (eqIndex > 0) {
-      // 有值的情况：-sOPTION="value" 或 -sOPTION=value
-      lines.push({
-        name: resolvedCmd.substring(0, eqIndex),
-        value: resolvedCmd.substring(eqIndex + 1),
-        type: 'flag',
-        rawCommand: resolvedCmd
-      })
-    } else {
-      // 无值的情况：-sOPTION
-      lines.push({
-        name: resolvedCmd,
-        type: 'flag',
-        rawCommand: resolvedCmd
-      })
-    }
-  }
-
-  // 优化级别
-  lines.push({ name: `-${state.optimizationLevel}`, type: 'flag' })
-
-  // 手动添加的编译选项
-  for (const customCmd of state.addOptionsStack) {
-    const eqIndex = customCmd.indexOf('=')
-    if (eqIndex > 0) {
-      const name = customCmd.substring(0, eqIndex)
-      const value = customCmd.substring(eqIndex + 1)
-      lines.push({ name, value, type: 'flag', isCustom: true })
-    } else {
-      lines.push({ name: customCmd, type: 'flag', isCustom: true })
-    }
-  }
-
-  // 导出的运行时方法（使用官方推荐的逗号分隔格式）
-  const enabledMethods = [
-    ...state.runtimeMethods.filter(m => m.enabled).map(m => m.name),
-    ...state.customRuntimeMethods,
-  ]
-  if (enabledMethods.length > 0 && isJsWasm) {
-    const methodsValue = enabledMethods.join(',')
-    lines.push({
-      name: '-sEXPORTED_RUNTIME_METHODS',
-      value: methodsValue,
-      type: 'flag',
-      isRuntimeMethods: true,
-      methods: enabledMethods,
-      rawCommand: `-sEXPORTED_RUNTIME_METHODS="${methodsValue}"`
-    })
-  }
-
-  return lines
-})
-
-// 生成完整命令字符串
-const fullCommand = computed(() =>
-  commandLines.value.map(line => formatCommandLine(line)).join(' ')
-)
-
-// 获取所有已存在的编译选项命令名称
-const getAllExistingCommandNames = computed(() => {
-  const commandNames: string[] = []
-  const isJsWasm = state.outputFormat === 'js-wasm'
-
-  for (const option of state.compileOptions) {
-    if (!isOptionReallyEnabled(option, state.compileOptions)) continue
-    if (option.jsWasmOnly && !isJsWasm) continue
-
-    if (option.valueType === 'select') {
-      const selectValue = option.currentValue || option.defaultValue
-      if (option.formatType === 'arg') {
-        commandNames.push(`-${selectValue}`)
-      } else {
-        commandNames.push(`${option.cmdPrefix}${option.cmdName}`)
-      }
-      continue
-    }
-
-    const cmdName = `${option.cmdPrefix}${option.cmdName}`
-    commandNames.push(cmdName)
-  }
-
-  commandNames.push(`-${state.optimizationLevel}`)
-
-  const enabledMethods = [
-    ...state.runtimeMethods.filter(m => m.enabled).map(m => m.name),
-    ...state.customRuntimeMethods,
-  ]
-  if (enabledMethods.length > 0 && isJsWasm) {
-    commandNames.push('-sEXPORTED_RUNTIME_METHODS')
-  }
-
-  for (const customCmd of state.addOptionsStack) {
-    const eqIndex = customCmd.indexOf('=')
-    commandNames.push(eqIndex > 0 ? customCmd.substring(0, eqIndex) : customCmd)
-  }
-
-  return commandNames
-})
+  store.activeConflicts.find(c => c.key === optionKey)?.reason ?? null
 
 // Tooltip
 const showTooltip = (name: string, event: MouseEvent) => {
@@ -209,7 +35,6 @@ const showTooltip = (name: string, event: MouseEvent) => {
 
   tooltipDirection.value = spaceBelow < 80 ? 'up' : 'down'
 
-  // 防止 tooltip 溢出视口右侧（max-width: 280px + 8px margin）
   const TOOLTIP_MAX_W = 288
   const clampedLeft = Math.min(rect.left, window.innerWidth - TOOLTIP_MAX_W - 8)
 
@@ -222,9 +47,7 @@ const showTooltip = (name: string, event: MouseEvent) => {
 }
 
 const hideTooltip = () => {
-  if (hideTooltipTimer) {
-    clearTimeout(hideTooltipTimer)
-  }
+  if (hideTooltipTimer) clearTimeout(hideTooltipTimer)
   hideTooltipTimer = setTimeout(() => {
     activeTooltip.value = null
     hideTooltipTimer = null
@@ -233,7 +56,7 @@ const hideTooltip = () => {
 
 // 命令处理
 const copyCommand = async () => {
-  await navigator.clipboard.writeText(fullCommand.value)
+  await navigator.clipboard.writeText(store.fullCommand)
 }
 
 const executeCommand = () => {
@@ -241,11 +64,11 @@ const executeCommand = () => {
 }
 
 const handleAddCompileOptions = (value: string) => {
-  addCustomOption(value)
+  store.addCustomOption(value)
 }
 
 const handleRevokeCompileOptions = () => {
-  revokeCustomOption()
+  store.revokeCustomOption()
 }
 
 // 自定义运行时方法
@@ -253,7 +76,7 @@ const customMethodInput = ref('')
 const handleAddCustomMethod = () => {
   const name = customMethodInput.value.trim()
   if (!name) return
-  addCustomRuntimeMethod(name)
+  store.addCustomRuntimeMethod(name)
   customMethodInput.value = ''
 }
 </script>
@@ -275,19 +98,43 @@ const handleAddCustomMethod = () => {
               </svg>
             </div>
             <h3 class="card-title">编译选项</h3>
-            <span class="options-count">{{ enabledAvailableCount }}/{{ availableOptions.length }}</span>
+            <span class="options-count">{{ store.enabledAvailableCount }}/{{ store.availableOptions.length }}</span>
+            <!-- 冲突徽章 -->
+            <span v-if="store.activeConflicts.length > 0" class="conflict-badge">⚠ {{ store.activeConflicts.length }}</span>
           </div>
 
           <div class="card-content">
+            <!-- 冲突 Banner -->
+            <Transition name="warning">
+              <div v-if="store.activeConflicts.length > 0" class="conflict-alert">
+                <div class="alert-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+                    <line x1="12" x2="12" y1="9" y2="13"/>
+                    <line x1="12" x2="12.01" y1="17" y2="17"/>
+                  </svg>
+                </div>
+                <div class="alert-content">
+                  <div class="alert-title">存在 {{ store.activeConflicts.length }} 个选项冲突</div>
+                  <div class="alert-list">
+                    <div v-for="conflict in store.activeConflicts" :key="conflict.key" class="alert-item">
+                      <span class="alert-opt-name">{{ conflict.name }}</span>
+                      <span class="alert-reason">{{ conflict.reason }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+
             <!-- 选项网格 -->
             <div class="options-grid">
               <label
-                v-for="opt in availableOptions"
+                v-for="opt in store.availableOptions"
                 :key="opt.key"
                 class="option-chip"
                 :class="{
                   disabled: opt.dependsOn && !getOptionByKey(opt.dependsOn)?.enabled,
-                  conflicted: hasConflict(opt.key),
+                  conflicted: store.conflictedKeySet.has(opt.key),
                   active: opt.enabled,
                 }"
                 @mouseenter="showTooltip(opt.name, $event)"
@@ -297,7 +144,7 @@ const handleAddCustomMethod = () => {
                   type="checkbox"
                   :checked="opt.enabled"
                   :disabled="!!(opt.dependsOn && !getOptionByKey(opt.dependsOn)?.enabled)"
-                  @change="updateOption(opt.key, ($event.target as HTMLInputElement).checked)"
+                  @change="store.updateOption(opt.key, ($event.target as HTMLInputElement).checked)"
                 />
                 <span class="chip-indicator"></span>
                 <span class="chip-label">{{ opt.name }}</span>
@@ -312,7 +159,7 @@ const handleAddCustomMethod = () => {
                   >
                     <div class="tooltip-content">
                       <span>{{ opt.hint }}</span>
-                      <div v-if="hasConflict(opt.key)" class="tooltip-conflict">
+                      <div v-if="store.conflictedKeySet.has(opt.key)" class="tooltip-conflict">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                           <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
                           <line x1="12" x2="12" y1="9" y2="13"/>
@@ -331,7 +178,7 @@ const handleAddCustomMethod = () => {
             <div class="dynamic-fields">
               <div class="form-field form-field-compact">
                 <label class="field-label">优化级别</label>
-                <select :value="state.optimizationLevel" class="field-select" @change="setOptimizationLevel(($event.target as HTMLSelectElement).value as any)">
+                <select :value="store.optimizationLevel" class="field-select" @change="store.setOptimizationLevel(($event.target as HTMLSelectElement).value as any)">
                   <option
                     v-for="level in optimizationLevels"
                     :key="level.value"
@@ -344,8 +191,8 @@ const handleAddCustomMethod = () => {
             </div>
 
             <!-- 动态输入框 -->
-            <div v-if="optionsWithInput.length > 0" class="dynamic-fields">
-              <template v-for="opt in optionsWithInput" :key="opt.key + '-input'">
+            <div v-if="store.optionsWithInput.length > 0" class="dynamic-fields">
+              <template v-for="opt in store.optionsWithInput" :key="opt.key + '-input'">
                 <div class="form-field form-field-compact">
                   <label class="field-label">{{ opt.inputLabel || opt.name }}</label>
                   <input
@@ -354,18 +201,18 @@ const handleAddCustomMethod = () => {
                     class="field-input"
                     :placeholder="opt.inputPlaceholder"
                     spellcheck="false"
-                    @input="updateOptionValue(opt.key, ($event.target as HTMLInputElement).value)"
+                    @input="store.updateOptionValue(opt.key, ($event.target as HTMLInputElement).value)"
                   />
                 </div>
               </template>
             </div>
 
             <!-- 动态下拉选择 -->
-            <div v-if="optionsWithSelect.length > 0" class="dynamic-fields">
-              <template v-for="opt in optionsWithSelect" :key="opt.key + '-select'">
+            <div v-if="store.optionsWithSelect.length > 0" class="dynamic-fields">
+              <template v-for="opt in store.optionsWithSelect" :key="opt.key + '-select'">
                 <div class="form-field form-field-compact">
                   <label class="field-label">{{ opt.name }}</label>
-                  <select :value="opt.currentValue" class="field-select" @change="updateOptionValue(opt.key, ($event.target as HTMLSelectElement).value)">
+                  <select :value="opt.currentValue" class="field-select" @change="store.updateOptionValue(opt.key, ($event.target as HTMLSelectElement).value)">
                     <option
                       v-for="selectOpt in opt.selectOptions"
                       :key="selectOpt.value"
@@ -396,7 +243,7 @@ const handleAddCustomMethod = () => {
           </div>
           <div class="code-block-content">
             <div
-              v-for="(line, index) in commandLines"
+              v-for="(line, index) in store.commandLines"
               :key="index"
               class="command-line"
               :class="[
@@ -404,6 +251,7 @@ const handleAddCustomMethod = () => {
                 `line-type-${line.type}`,
                 { 'line-runtime-methods': line.isRuntimeMethods },
                 { 'line-custom': line.isCustom },
+                { 'line-ref-contrib': line.isRefContrib },
               ]"
             >
               <span class="line-name">{{ line.name }}</span>
@@ -427,7 +275,7 @@ const handleAddCustomMethod = () => {
           </div>
         </div>
         <SearchBtn
-          :existing-commands="getAllExistingCommandNames"
+          :existing-commands="store.existingCommandNames"
           @handle-add="handleAddCompileOptions"
           @handle-revoke="handleRevokeCompileOptions"
         />
@@ -442,18 +290,18 @@ const handleAddCustomMethod = () => {
               </svg>
             </div>
             <h3 class="card-title">导出运行时方法</h3>
-            <span class="options-count">{{ state.runtimeMethods.filter(m => m.enabled).length }}/{{ state.runtimeMethods.length }}</span>
+            <span class="options-count">{{ store.runtimeMethods.filter(m => m.enabled).length }}/{{ store.runtimeMethods.length }}</span>
           </div>
 
           <div class="card-content">
             <div class="methods-grid">
               <label
-                v-for="method in state.runtimeMethods"
+                v-for="method in store.runtimeMethods"
                 :key="method.key"
                 class="method-chip"
                 :class="{
                   active: method.enabled,
-                  conflicted: state.outputFormat === 'wasm-only',
+                  conflicted: store.outputFormat === 'wasm-only',
                 }"
                 @mouseenter="showTooltip(method.name, $event)"
                 @mouseleave="hideTooltip"
@@ -461,8 +309,8 @@ const handleAddCustomMethod = () => {
                 <input
                   type="checkbox"
                   :checked="method.enabled"
-                  :disabled="state.outputFormat === 'wasm-only'"
-                  @change="toggleRuntimeMethod(method.key)"
+                  :disabled="store.outputFormat === 'wasm-only'"
+                  @change="store.toggleRuntimeMethod(method.key)"
                 />
                 <span class="chip-indicator"></span>
                 <span class="chip-label">{{ method.name }}</span>
@@ -477,7 +325,7 @@ const handleAddCustomMethod = () => {
                   >
                     <div class="tooltip-content">
                       <span>{{ method.hint }}</span>
-                      <div v-if="state.outputFormat === 'wasm-only'" class="tooltip-conflict">
+                      <div v-if="store.outputFormat === 'wasm-only'" class="tooltip-conflict">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                           <circle cx="12" cy="12" r="10"/>
                           <path d="M12 16v-4"/>
@@ -493,13 +341,13 @@ const handleAddCustomMethod = () => {
 
               <!-- 自定义方法 chips -->
               <span
-                v-for="name in state.customRuntimeMethods"
+                v-for="name in store.customRuntimeMethods"
                 :key="name"
                 class="method-chip active custom-method-chip"
               >
                 <span class="chip-indicator"></span>
                 <span class="chip-label">{{ name }}</span>
-                <button class="remove-method-btn" @click.stop="removeCustomRuntimeMethod(name)" title="移除">×</button>
+                <button class="remove-method-btn" @click.stop="store.removeCustomRuntimeMethod(name)" title="移除">×</button>
               </span>
             </div>
 
@@ -773,6 +621,22 @@ const handleAddCustomMethod = () => {
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 15%, transparent);
   border-radius: 20px;
+}
+
+.conflict-badge {
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  font-weight: 700;
+  color: white;
+  background: #ef4444;
+  border-radius: 20px;
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
 }
 
 .card-content {
@@ -1580,6 +1444,31 @@ const handleAddCustomMethod = () => {
 
 [data-theme='light'] .command-line.line-custom .line-value {
   color: #b45309;
+}
+
+.command-line.line-ref-contrib {
+  background: rgb(59 130 246 / 8%);
+  border-left-color: #3b82f6 !important;
+}
+
+[data-theme='light'] .command-line.line-ref-contrib {
+  background: rgb(59 130 246 / 5%);
+}
+
+.command-line.line-ref-contrib .line-name {
+  color: #60a5fa;
+}
+
+[data-theme='light'] .command-line.line-ref-contrib .line-name {
+  color: #2563eb;
+}
+
+.command-line.line-ref-contrib .line-value {
+  color: #93c5fd;
+}
+
+[data-theme='light'] .command-line.line-ref-contrib .line-value {
+  color: #1d4ed8;
 }
 
 .line-name {

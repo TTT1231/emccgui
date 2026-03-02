@@ -1,19 +1,45 @@
 ﻿<script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { RefOption } from '@/types'
-import { useAppState } from '@/stores'
+import { useCompileStore } from '@/stores/useCompileStore'
 
 const props = defineProps<{
   option: RefOption
 }>()
 
-const { state, toggleRefOption } = useAppState()
+const store = useCompileStore()
 const isEditing = ref(false)
 const editValue = ref('')
 
-const isSelected = computed(() => {
-  return props.option.option in state.refSelectedOptions
+/** 用户在参考面板手动选中 */
+const isSelected = computed(() => props.option.option in store.refSelectedOptions)
+
+/** 该选项已由编译面板接管（已在编译命令中激活），参考面板应同步显示为激活状态 */
+const isCompileContrib = computed(() =>
+  store.compileContributedRefKeys.has(props.option.option) && !isSelected.value
+)
+
+/**
+ * 当 isCompileContrib 时，显示编译面板实际生成的命令值
+ * 例如 `-g` 选项由 debug 选项激活，currentValue='3' → 显示 `-g3`
+ */
+const compileContribDisplayValue = computed(() => {
+  if (!isCompileContrib.value) return '已启用'
+  // 找到对应的 compileOption（cmdPrefix+cmdName 匹配 option 字段）
+  const matchedOpt = store.compileOptions.find(
+    o => `${o.cmdPrefix}${o.cmdName}` === props.option.option
+  )
+  if (!matchedOpt) return '已启用'
+  // 有 {value} 占位符的选项，只显示当前值本身，不展示完整命令行
+  if (matchedOpt.enabledValue?.includes('{value}')) {
+    const raw = String(matchedOpt.currentValue ?? matchedOpt.defaultValue ?? '')
+    return stripOuterQuotes(raw) || '已启用'
+  }
+  return '已启用'
 })
+
+/** 两者之一激活即为「高亮」状态 */
+const isActive = computed(() => isSelected.value || isCompileContrib.value)
 
 /** 去除 '' 或 "" 外层引号，用于 string 类型值的展示和编辑初始化 */
 function stripOuterQuotes(val: string): string {
@@ -25,7 +51,7 @@ function stripOuterQuotes(val: string): string {
 }
 
 const displayValue = computed(() => {
-  const selected = state.refSelectedOptions[props.option.option]
+  const selected = store.refSelectedOptions[props.option.option]
   if (selected !== undefined && selected !== true) {
     const raw = String(selected)
     return (props.option.valueType === 'string' || props.option.valueType === 'string-array')
@@ -42,7 +68,7 @@ const displayValue = computed(() => {
 // dynamicDefault 优先级高于静态 default，用于依赖外部状态的选项（如 -sASSERTIONS 随优化级别变化）
 const displayDefault = computed(() => {
   if (props.option.dynamicDefault) {
-    return props.option.dynamicDefault(state.optimizationLevel)
+    return props.option.dynamicDefault(store.optimizationLevel)
   }
   if (props.option.valueType === 'boolean') {
     if (props.option.default === 'false' || props.option.default === '0') return '0'
@@ -53,6 +79,11 @@ const displayDefault = computed(() => {
 
 function handleClick() {
   if (isEditing.value) return
+  // 已由编译面板接管 → 点击则关闭编译面板对应选项（双向可操作）
+  if (isCompileContrib.value) {
+    store.disableCompileContrib(props.option.option)
+    return
+  }
   // 非 boolean 类型首次选中时，使用 initialValue（如有）或 default 作为初始值
   // string 类型去除外层引号，避免存入 '' 这样的字面量
   if (!isSelected.value && props.option.valueType !== 'boolean') {
@@ -60,15 +91,15 @@ function handleClick() {
     const initVal = (props.option.valueType === 'string' || props.option.valueType === 'string-array')
       ? stripOuterQuotes(raw)
       : raw
-    toggleRefOption(props.option.option, props.option.valueType, initVal, props.option.radioGroup)
+    store.toggleRefOption(props.option.option, props.option.valueType, initVal, props.option.radioGroup)
   } else {
-    toggleRefOption(props.option.option, props.option.valueType, undefined, props.option.radioGroup)
+    store.toggleRefOption(props.option.option, props.option.valueType, undefined, props.option.radioGroup)
   }
 }
 
 function handleBlur() {
   if (editValue.value) {
-    toggleRefOption(props.option.option, props.option.valueType, editValue.value)
+    store.toggleRefOption(props.option.option, props.option.valueType, editValue.value)
   }
   isEditing.value = false
 }
@@ -83,17 +114,17 @@ function handleKeydown(event: KeyboardEvent) {
 
 function handleCurrentClick(event: MouseEvent) {
   // 已选中且可编辑时，阻止 click 冒泡到行，避免双击时两次 click 反复 toggle 选中状态
-  if (isSelected.value && props.option.editable) {
+  if (isActive.value && props.option.editable && !isCompileContrib.value) {
     event.stopPropagation()
   }
 }
 
 function handleCurrentDblClick(event: MouseEvent) {
-  // 已选中且可编辑 → 双击进入编辑模式
-  if (isSelected.value && props.option.editable) {
+  // 已选中且可编辑 → 双击进入编辑模式（编译面板接管的不可编辑）
+  if (isSelected.value && props.option.editable && !isCompileContrib.value) {
     event.stopPropagation()
     isEditing.value = true
-    const selected = state.refSelectedOptions[props.option.option]
+    const selected = store.refSelectedOptions[props.option.option]
     const raw = String(selected !== undefined && selected !== true ? selected : props.option.default)
     // string 类型去除外层引号，用户直接看到干净的值
     editValue.value = (props.option.valueType === 'string' || props.option.valueType === 'string-array')
@@ -107,14 +138,17 @@ function handleCurrentDblClick(event: MouseEvent) {
   <div
     class="option-row"
     :class="{
-      selected: isSelected,
-      'is-editable': option.editable
+      selected: isActive,
+      'compile-contrib': isCompileContrib,
+      'is-editable': option.editable && !isCompileContrib
     }"
+    :title="isCompileContrib ? '点击可关闭此选项' : undefined"
     @click="handleClick"
   >
     <!-- 命令 -->
     <div class="option-name">
-      <span v-if="isSelected" class="check-icon">✓</span>
+      <span v-if="isCompileContrib" class="check-icon compile-contrib-icon" title="已在编译面板启用">⊕</span>
+      <span v-else-if="isSelected" class="check-icon">✓</span>
       <span class="option-name-text">{{ option.option }}</span>
     </div>
 
@@ -131,15 +165,19 @@ function handleCurrentDblClick(event: MouseEvent) {
     <div
       class="option-current"
       :class="{
-        editable: option.editable && isSelected,
-        selected: isSelected,
+        editable: option.editable && isSelected && !isCompileContrib,
+        selected: isActive,
+        'compile-contrib': isCompileContrib,
         editing: isEditing
       }"
-      :title="option.editable && isSelected && !isEditing ? '双击编辑值' : undefined"
+      :title="option.editable && isSelected && !isCompileContrib && !isEditing ? '双击编辑值' : isCompileContrib ? '点击可关闭此选项' : undefined"
       @click="handleCurrentClick"
       @dblclick="handleCurrentDblClick"
     >
-      <template v-if="isSelected">
+      <template v-if="isCompileContrib">
+        <span class="value-text">{{ compileContribDisplayValue }}</span>
+      </template>
+      <template v-else-if="isSelected">
         <template v-if="isEditing">
           <input
             v-model="editValue"
@@ -152,7 +190,7 @@ function handleCurrentDblClick(event: MouseEvent) {
         </template>
         <template v-else>
           <span v-if="displayValue === ''" class="value-placeholder">双击输入</span>
-          <span v-else class="value-text">{{ displayValue }}</span>
+          <span v-else class="value-text" :title="String(displayValue)">{{ displayValue }}</span>
           <span v-if="option.editable" class="edit-hint">双击编辑</span>
         </template>
       </template>
@@ -205,8 +243,8 @@ function handleCurrentDblClick(event: MouseEvent) {
   background: color-mix(in srgb, var(--ref-primary) 40%, transparent);
 }
 
-/* 选中状态 */
-.option-row.selected {
+/* 选中状态（手动选中） */
+.option-row.selected:not(.compile-contrib) {
   background: color-mix(in srgb, var(--ref-primary) 8%, transparent);
 }
 
@@ -215,8 +253,38 @@ function handleCurrentDblClick(event: MouseEvent) {
 }
 
 /* 选中 hover 状态 */
-.option-row.selected:hover {
+.option-row.selected:not(.compile-contrib):hover {
   background: color-mix(in srgb, var(--ref-primary) 12%, transparent);
+}
+
+/* 由编译面板贡献的高亮状态（绿色调，区分手动选中） */
+.option-row.compile-contrib {
+  background: color-mix(in srgb, #22c55e 6%, transparent);
+  cursor: pointer;
+}
+
+.option-row.compile-contrib::before {
+  transform: scaleY(1);
+  background: #22c55e;
+}
+
+.option-row.compile-contrib:hover {
+  background: color-mix(in srgb, #22c55e 9%, transparent);
+}
+
+.option-row.compile-contrib .option-name-text {
+  background: color-mix(in srgb, #22c55e 12%, transparent);
+  border-color: color-mix(in srgb, #22c55e 40%, transparent);
+  color: #22c55e;
+}
+
+.option-row.compile-contrib .option-name {
+  transform: translateX(4px);
+}
+
+.check-icon.compile-contrib-icon {
+  background: #22c55e;
+  font-size: 12px;
 }
 
 /* 选项名称 */
@@ -330,12 +398,29 @@ function handleCurrentDblClick(event: MouseEvent) {
   gap: 4px;
   transition: all 0.2s ease;
   min-width: 70px;
+  max-width: 100%;
+  overflow: hidden;
   cursor: default;
 }
 
 .option-current .empty-dash {
   color: var(--ref-text-muted);
   opacity: 0.4;
+}
+
+.option-current.compile-contrib {
+  background: #22c55e;
+  border-color: #22c55e;
+  border-style: solid;
+  color: white;
+  font-weight: 600;
+  cursor: default;
+  box-shadow: 0 2px 8px color-mix(in srgb, #22c55e 30%, transparent);
+}
+
+.option-current.compile-contrib:hover {
+  transform: none;
+  box-shadow: 0 2px 8px color-mix(in srgb, #22c55e 30%, transparent);
 }
 
 .option-current.selected {
@@ -367,6 +452,10 @@ function handleCurrentDblClick(event: MouseEvent) {
 }
 .option-current .value-text {
   transition: opacity 0.15s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 /* 空值占位提示 */
 .option-current .value-placeholder {

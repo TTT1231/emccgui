@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useAppState } from '@/stores'
+import { useCompileStore } from '@/stores/useCompileStore'
 import { refConfigData } from '@/data'
 import ReferenceSearch from './ReferenceSearch.vue'
 import CategoryCard from './CategoryCard.vue'
 import type { RefCategory, RefOption } from '@/types'
 
-const { state, setRefActiveCategory } = useAppState()
+const store = useCompileStore()
 
 // 已选数量
-const selectedCount = computed(() => Object.keys(state.refSelectedOptions).length)
+const selectedCount = computed(() => Object.keys(store.refSelectedOptions).length)
 
 // 搜索匹配函数
 function matchesSearch(opt: RefOption, query: string): boolean {
@@ -20,12 +20,12 @@ function matchesSearch(opt: RefOption, query: string): boolean {
 
 // 过滤后的分类
 const filteredCategories = computed(() => {
-  const query = state.refSearchQuery
-  const activeCategory = state.refActiveCategory
+  const query = store.refSearchQuery
+  const activeCategory = store.refActiveCategory
 
   // 已选模式：只显示已选中的选项
   if (activeCategory === '__selected__') {
-    const selectedOptions = Object.keys(state.refSelectedOptions)
+    const selectedOptions = Object.keys(store.refSelectedOptions)
     if (selectedOptions.length === 0) return []
 
     return refConfigData.categories
@@ -62,7 +62,7 @@ const hasResults = computed(() => filteredCategories.value.length > 0)
 
 // 选择分类
 function selectCategory(categoryName: string) {
-  setRefActiveCategory(categoryName)
+  store.setRefActiveCategory(categoryName)
 }
 </script>
 
@@ -75,9 +75,9 @@ function selectCategory(categoryName: string) {
     <nav class="ref-category-nav" role="tablist" aria-label="配置分类导航">
       <button
         class="ref-category-chip"
-        :class="{ active: state.refActiveCategory === 'all' }"
+        :class="{ active: store.refActiveCategory === 'all' }"
         role="tab"
-        :aria-selected="state.refActiveCategory === 'all'"
+        :aria-selected="store.refActiveCategory === 'all'"
         @click="selectCategory('all')"
       >
         全部
@@ -86,9 +86,9 @@ function selectCategory(categoryName: string) {
         v-for="cat in refConfigData.categories"
         :key="cat.name"
         class="ref-category-chip"
-        :class="{ active: state.refActiveCategory === cat.name }"
+        :class="{ active: store.refActiveCategory === cat.name }"
         role="tab"
-        :aria-selected="state.refActiveCategory === cat.name"
+        :aria-selected="store.refActiveCategory === cat.name"
         @click="selectCategory(cat.name)"
       >
         {{ cat.name }}
@@ -97,9 +97,9 @@ function selectCategory(categoryName: string) {
       <!-- 已选导航 -->
       <button
         class="ref-category-chip ref-selected-chip"
-        :class="{ active: state.refActiveCategory === '__selected__' }"
+        :class="{ active: store.refActiveCategory === '__selected__' }"
         role="tab"
-        :aria-selected="state.refActiveCategory === '__selected__'"
+        :aria-selected="store.refActiveCategory === '__selected__'"
         @click="selectCategory('__selected__')"
       >
         已选({{ selectedCount }})

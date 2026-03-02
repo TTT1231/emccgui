@@ -61,6 +61,16 @@ export interface OptionConflict {
   reason: string
 }
 
+// 运行时活跃冲突信息（用于 UI 展示）
+export interface ConflictInfo {
+  /** 冲突选项的 key */
+  key: string
+  /** 冲突选项的显示名称 */
+  name: string
+  /** 冲突原因说明 */
+  reason: string
+}
+
 // 命令行类型
 export interface CommandLine {
   name: string
@@ -69,6 +79,8 @@ export interface CommandLine {
   isRuntimeMethods?: boolean
   methods?: string[]
   isCustom?: boolean
+  /** 来自参考面板选中项的贡献 */
+  isRefContrib?: boolean
   rawCommand?: string // 原始命令字符串（用于显示完整的启用值模板格式）
 }
 

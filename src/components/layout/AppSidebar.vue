@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useAppState } from '@/stores'
+import { useCompileStore } from '@/stores/useCompileStore'
 
-const { state, setActiveTab } = useAppState()
+const store = useCompileStore()
 
 const navItems = [
   { tab: 'file' as const, icon: '📁', label: '文件' },
@@ -10,7 +10,7 @@ const navItems = [
 ]
 
 function handleTabClick(tab: 'file' | 'compile' | 'reference') {
-  setActiveTab(tab)
+  store.setActiveTab(tab)
 }
 </script>
 
@@ -21,7 +21,7 @@ function handleTabClick(tab: 'file' | 'compile' | 'reference') {
         v-for="item in navItems"
         :key="item.tab"
         class="nav-item"
-        :class="{ active: state.activeTab === item.tab }"
+        :class="{ active: store.activeTab === item.tab }"
         @click="handleTabClick(item.tab)"
       >
         <span class="icon">{{ item.icon }}</span>

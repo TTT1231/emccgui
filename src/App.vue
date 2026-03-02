@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { provideAppState } from '@/stores'
+import { useCompileStore } from '@/stores/useCompileStore'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import FileSelector from '@/components/file/FileSelector.vue'
@@ -8,8 +8,8 @@ import ReferenceContainer from '@/components/reference/ReferenceContainer.vue'
 import Toast from '@/components/common/Toast.vue'
 import { computed } from 'vue'
 
-const appState = provideAppState()
-appState.initTheme()
+const store = useCompileStore()
+store.initTheme()
 
 const tabComponents = {
   file: FileSelector,
@@ -17,7 +17,7 @@ const tabComponents = {
   reference: ReferenceContainer
 } as const
 
-const currentTab = computed(() => appState.state.activeTab)
+const currentTab = computed(() => store.activeTab)
 </script>
 
 <template>

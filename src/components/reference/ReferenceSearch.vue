@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { useAppState } from '@/stores'
+import { useCompileStore } from '@/stores/useCompileStore'
 
-const { state, setRefSearchQuery } = useAppState()
+const store = useCompileStore()
 
 function handleInput(event: Event) {
   const target = event.target as HTMLInputElement
-  setRefSearchQuery(target.value)
+  store.setRefSearchQuery(target.value)
 }
 
 function clearSearch() {
-  setRefSearchQuery('')
+  store.setRefSearchQuery('')
 }
 </script>
 
@@ -23,12 +23,12 @@ function clearSearch() {
       <input
         type="text"
         class="ref-search-input"
-        :value="state.refSearchQuery"
+        :value="store.refSearchQuery"
         placeholder="搜索配置选项..."
         @input="handleInput"
       />
       <button
-        v-if="state.refSearchQuery"
+        v-if="store.refSearchQuery"
         class="ref-search-clear"
         @click="clearSearch"
       >

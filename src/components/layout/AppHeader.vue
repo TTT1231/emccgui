@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { useAppState } from '@/stores'
+import { useCompileStore } from '@/stores/useCompileStore'
 
-const { state, setOutputFormat, toggleTheme } = useAppState()
+const store = useCompileStore()
 
 function handleOutputModeChange(mode: 'js-wasm' | 'wasm-only') {
-  setOutputFormat(mode)
+  store.setOutputFormat(mode)
 }
 
 function handleThemeToggle() {
-  toggleTheme()
+  store.toggleTheme()
 }
 </script>
 
@@ -23,13 +23,13 @@ function handleThemeToggle() {
       <!-- Output Mode Toggle -->
       <div class="output-mode-toggle">
         <button
-          :class="{ active: state.outputFormat === 'js-wasm' }"
+          :class="{ active: store.outputFormat === 'js-wasm' }"
           @click="handleOutputModeChange('js-wasm')"
         >
           JS + WASM
         </button>
         <button
-          :class="{ active: state.outputFormat === 'wasm-only' }"
+          :class="{ active: store.outputFormat === 'wasm-only' }"
           @click="handleOutputModeChange('wasm-only')"
         >
           纯 WASM
@@ -38,7 +38,7 @@ function handleThemeToggle() {
 
       <!-- Theme Toggle -->
       <button class="theme-toggle" @click="handleThemeToggle" title="切换主题">
-        <span v-if="state.theme === 'dark'">🌙</span>
+        <span v-if="store.theme === 'dark'">🌙</span>
         <span v-else>☀️</span>
       </button>
     </div>

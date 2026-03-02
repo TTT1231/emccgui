@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted, onActivated, onDeactivated, watch, nextTick } from 'vue'
-import { useAppState } from '@/stores'
+import { useCompileStore } from '@/stores/useCompileStore'
 import { EditorView, keymap, lineNumbers, highlightActiveLine,
   highlightActiveLineGutter, drawSelection, dropCursor,
   rectangularSelection, crosshairCursor, highlightSpecialChars } from '@codemirror/view'
@@ -16,7 +16,7 @@ import { cpp } from '@codemirror/lang-cpp'
 import { rust } from '@codemirror/lang-rust'
 import { oneDark } from '@codemirror/theme-one-dark'
 
-const { state, setSelectedFile, setOutputFileName } = useAppState()
+const store = useCompileStore()
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const editorContainer = ref<HTMLElement | null>(null)
@@ -37,7 +37,7 @@ const ACCEPTED_EXTS = new Set(['c', 'cpp', 'cc', 'cxx', 'h', 'hpp', 'rs'])
 
 // ===== 主题色板 =====
 const editorColors = computed(() => {
-  const dark = state.theme === 'dark'
+  const dark = store.theme === 'dark'
   return {
     // 编辑器本体
     editorBg:           dark ? '#1e1e2e' : '#ffffff',
@@ -145,7 +145,7 @@ function initEditor(content: string, filename: string) {
       doc: content,
       extensions: [
         buildExtensions(filename),
-        themeCompartment.of(state.theme === 'dark' ? oneDark : []),
+        themeCompartment.of(store.theme === 'dark' ? oneDark : []),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             const current = update.state.doc.toString()
@@ -169,7 +169,10 @@ async function processFile(file: File) {
     savedContent = content
     isDirty.value = false
     lineCount.value = content.split('\n').length
-    setSelectedFile({ name: file.name, path: file.webkitRelativePath || file.name })
+    store.setSelectedFile({ name: file.name, path: file.webkitRelativePath || file.name })
+    // 自动从源文件名派生输出文件名（去掉扩展名）
+    const baseName = file.name.replace(/\.[^.]+$/, '')
+    store.setOutputFileName(baseName)
     await nextTick()
     initEditor(content, file.name)
   } catch (error) {
@@ -184,7 +187,7 @@ function handleFileSelect(event: Event) {
 }
 
 function clearFile() {
-  setSelectedFile(null)
+  store.setSelectedFile(null)
   fileContent.value = ''
   savedContent = ''
   isDirty.value = false
@@ -197,11 +200,11 @@ function clearFile() {
 
 // ===== 保存逻辑 =====
 async function saveFile() {
-  if (!editorView || !state.selectedFile || isSaving.value) return
+  if (!editorView || !store.selectedFile || isSaving.value) return
   isSaving.value = true
 
   const content = editorView.state.doc.toString()
-  const filename = state.selectedFile.name
+  const filename = store.selectedFile.name
   const mimeType = 'text/plain'
 
   try {
@@ -278,7 +281,7 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 watch(
-  () => state.theme,
+  () => store.theme,
   (newTheme) => {
     if (!editorView) return
     editorView.dispatch({
@@ -403,12 +406,12 @@ onUnmounted(() => {
       <div class="editor-header">
         <div class="editor-header__left">
           <span class="dirty-dot" :class="{ 'dirty-dot--visible': isDirty }" title="有未保存的更改">●</span>
-          <span class="file-badge">{{ getFileExt(state.selectedFile!.name).toUpperCase() }}</span>
+          <span class="file-badge">{{ getFileExt(store.selectedFile!.name).toUpperCase() }}</span>
           <svg class="code-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="16 18 22 12 16 6"/>
             <polyline points="8 6 2 12 8 18"/>
           </svg>
-          <span class="file-name" :class="{ 'file-name--dirty': isDirty }">{{ state.selectedFile?.name }}</span>
+          <span class="file-name" :class="{ 'file-name--dirty': isDirty }">{{ store.selectedFile?.name }}</span>
         </div>
         <div class="editor-header__right">
           <span class="line-count">{{ lineCount }} 行</span>
@@ -459,14 +462,14 @@ onUnmounted(() => {
         <span class="output-bar__label">输出文件名</span>
         <div class="output-bar__input">
           <input
-            :value="state.outputFileName"
+            :value="store.outputFileName"
             type="text"
             class="output-bar__field"
             placeholder="hello"
             spellcheck="false"
-            @input="setOutputFileName(($event.target as HTMLInputElement).value)"
+            @input="store.setOutputFileName(($event.target as HTMLInputElement).value)"
           />
-          <span class="output-bar__suffix">{{ state.outputFormat === 'wasm-only' ? '.wasm' : '.js' }}</span>
+          <span class="output-bar__suffix">{{ store.outputFormat === 'wasm-only' ? '.wasm' : '.js' }}</span>
         </div>
       </div>
 
