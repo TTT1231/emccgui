@@ -7,6 +7,22 @@ import SearchBtn from './SearchBtn.vue'
 
 const store = useCompileStore()
 
+// ===== Toast 通知状态 =====
+const showToast = ref(false)
+const toastMessage = ref('')
+let toastTimer: ReturnType<typeof setTimeout> | null = null
+
+// 显示 Toast 通知
+const showNotification = (message: string) => {
+  toastMessage.value = message
+  showToast.value = true
+
+  if (toastTimer) clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => {
+    showToast.value = false
+  }, 700)
+}
+
 // ===== 纯 UI tooltip 状态（仅此组件使用）=====
 const activeTooltip = ref<string | null>(null)
 const tooltipDirection = ref<'up' | 'down'>('down')
@@ -56,11 +72,12 @@ const hideTooltip = () => {
 
 // 命令处理
 const copyCommand = async () => {
-  await navigator.clipboard.writeText(store.fullCommand)
-}
-
-const executeCommand = () => {
-  // TODO: 实现编译执行功能
+  try {
+    await navigator.clipboard.writeText(store.fullCommand)
+    showNotification('✓ 命令已复制到剪贴板')
+  } catch (err) {
+    showNotification('✕ 复制失败，请手动复制')
+  }
 }
 
 const handleAddCompileOptions = (value: string) => {
@@ -370,16 +387,29 @@ const handleAddCustomMethod = () => {
           </div>
         </section>
 
-        <!-- 执行按钮 -->
+        <!-- 复制命令按钮 -->
         <button
-          class="execute-btn"
-          @click="executeCommand"
+          class="execute-btn copy-command-btn"
+          @click="copyCommand"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="6 3 20 12 6 21 6 3"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
           </svg>
-          <span class="btn-text">执行编译</span>
+          <span class="btn-text">复制命令</span>
         </button>
+
+        <!-- Toast 通知 -->
+        <Teleport to="body">
+          <Transition name="toast">
+            <div v-if="showToast" class="toast-notification">
+              <svg class="toast-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span class="toast-message">{{ toastMessage }}</span>
+            </div>
+          </Transition>
+        </Teleport>
       </div>
     </div>
   </div>
@@ -1579,4 +1609,81 @@ const handleAddCustomMethod = () => {
 .link-span:active {
   text-decoration-thickness: 1.5px;
 }
+
+/* ===== 复制命令按钮样式 ===== */
+.copy-command-btn {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.copy-command-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--accent-hover) 0%, color-mix(in srgb, var(--accent-hover) 85%, black) 100%);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.copy-command-btn:active:not(:disabled) {
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* ===== Toast 通知样式 ===== */
+.toast-notification {
+  position: fixed;
+  z-index: 9999;
+  top: 24px;
+  left: 50%;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 20px;
+  font-size: 0.9em;
+  font-weight: 500;
+  color: white;
+  white-space: nowrap;
+  background: var(--accent);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 40%, transparent), 0 0 0 1px color-mix(in srgb, white 15%, transparent);
+  transform: translateX(-50%);
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  color: white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.toast-message {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* 明亮模式优化 */
+[data-theme='light'] .toast-notification {
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--accent) 35%, transparent), 0 0 0 1px color-mix(in srgb, white 25%, transparent);
+}
+
+[data-theme='light'] .toast-icon {
+  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--accent) 40%, transparent));
+}
+
+[data-theme='light'] .toast-message {
+  text-shadow: 0 1px 2px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* Toast 进入/退出动画 */
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-16px);
+}
+
+.toast-enter-to,
+.toast-leave-from {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 </style>
