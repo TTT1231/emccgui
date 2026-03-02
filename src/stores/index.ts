@@ -158,7 +158,7 @@ export function createAppState() {
 
   function toggleRefOption(
     option: string,
-    valueType: 'boolean' | 'string' | 'number',
+    valueType: 'boolean' | 'string' | 'number' | 'string-array',
     value?: string,
     radioGroup?: string
   ) {

@@ -77,7 +77,7 @@ export const refConfigData: RefConfigData = {
       icon: icons.modular,
       options: [
         {
-          option: "-o <fileName>",
+          option: "-o",
           default: "-",
           description: "指定输出文件名",
           valueType: "string",
@@ -102,7 +102,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sEXPORT_NAME",
-          default: "'Module'",
+          default: "Module",
           description: "指定导出的模块名称",
           valueType: "string",
           editable: true,
@@ -117,16 +117,16 @@ export const refConfigData: RefConfigData = {
           enabledValue: "-sSINGLE_FILE"
         },
         {
-          option: "--emit-tsd <file>",
-          default: "不生成",
-          description: "生成 TypeScript 类型声明文件",
+          option: "--emit-tsd",
+          default: "''",
+          description: "生成 TypeScript 类型声明文件，参数为输出DTS文件名",
           valueType: "string",
           editable: true,
           enabledValue: "--emit-tsd {value}"
         },
         {
           option: "-sENVIRONMENT",
-          default: "'web,webview,worker,node'",
+          default: "web,webview,worker,node",
           description: "目标运行环境（多个用逗号分隔）",
           valueType: "string",
           editable: true,
@@ -136,7 +136,7 @@ export const refConfigData: RefConfigData = {
           option: "-sEXPORTED_FUNCTIONS",
           default: "[]",
           description: "指定导出的 C/C++ 函数（需加 _ 前缀，如 _main）",
-          valueType: "string",
+          valueType: "string-array",
           editable: true,
           enabledValue: "-sEXPORTED_FUNCTIONS={value}"
         },
@@ -144,7 +144,7 @@ export const refConfigData: RefConfigData = {
           option: "-sEXPORTED_RUNTIME_METHODS",
           default: "[]",
           description: "导出运行时辅助方法（如 ccall, cwrap）",
-          valueType: "string",
+          valueType: "string-array",
           editable: true,
           enabledValue: "-sEXPORTED_RUNTIME_METHODS={value}"
         }
@@ -174,27 +174,30 @@ export const refConfigData: RefConfigData = {
         {
           option: "-sASSERTIONS",
           default: "1",
-          description: "启用运行时断言检查（1 基础，2 详细，-O1+ 时默认为 0）",
+          description: "启用运行时断言检查（0 关闭，1 基础，2 详细，默认值根据优化级别自动调整，-O0默认为1，其他默认为0）",
           valueType: "number",
           editable: true,
-          enabledValue: "-sASSERTIONS={value}"
+          enabledValue: "-sASSERTIONS={value}",
+          dynamicDefault: (optimizationLevel: string) => optimizationLevel === 'O0' ? '1' : '0'
         },
         {
           option: "-sSAFE_HEAP",
           default: "0",
-          description: "检测内存访问错误（1 启用，2 更详细，性能开销大）",
+          description: "检测内存访问错误（0 关闭，1 启用，2 更详细，性能开销大）",
           valueType: "number",
           editable: true,
           enabledValue: "-sSAFE_HEAP={value}",
+          initialValue: "1"
 
         },
         {
           option: "-sSTACK_OVERFLOW_CHECK",
           default: "0",
-          description: "栈溢出检测（1 启用，2 更严格，ASSERTIONS=1 时默认为 1）",
+          description: "栈溢出检测（0 关闭，1 启用，2 更严格，ASSERTIONS=1 时默认为 1）",
           valueType: "number",
           editable: true,
           enabledValue: "-sSTACK_OVERFLOW_CHECK={value}",
+          initialValue:"1"
 
         }
       ]
@@ -244,7 +247,7 @@ export const refConfigData: RefConfigData = {
         {
           option: "-sFILESYSTEM",
           default: "1",
-          description: "文件系统支持（0 禁用，1 启用）",
+          description: "文件系统支持（0 禁用，1 启用。不加该命令时，编译器自动根据代码进行优化因此默认值会发生变化除非显示指定。）",
           valueType: "number",
           editable: true,
           enabledValue: "-sFILESYSTEM={value}",
@@ -256,6 +259,7 @@ export const refConfigData: RefConfigData = {
           valueType: "number",
           editable: true,
           enabledValue: "-sFORCE_FILESYSTEM={value}",
+          initialValue:"1"
 
         },
         {
@@ -535,7 +539,7 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sWEBSOCKET_URL",
-          default: "'ws://'",
+          default: "ws://",
           description: "WebSocket 连接 URL",
           valueType: "string",
           editable: true,
@@ -675,8 +679,8 @@ export const refConfigData: RefConfigData = {
         {
           option: "-sINCOMING_MODULE_JS_API",
           default: "[]",
-          description: "指定导入的 Module 属性（空=使用默认）",
-          valueType: "string",
+          description: "指定导入的 Module 属性（空表示不使用任何Module属性）",
+          valueType: "string-array",
           editable: true,
           enabledValue: "-sINCOMING_MODULE_JS_API={value}"
         },

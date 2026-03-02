@@ -15,10 +15,22 @@ const isSelected = computed(() => {
   return props.option.option in state.refSelectedOptions
 })
 
+/** 去除 '' 或 "" 外层引号，用于 string 类型值的展示和编辑初始化 */
+function stripOuterQuotes(val: string): string {
+  if ((val.startsWith("'") && val.endsWith("'")) ||
+      (val.startsWith('"') && val.endsWith('"'))) {
+    return val.slice(1, -1)
+  }
+  return val
+}
+
 const displayValue = computed(() => {
   const selected = state.refSelectedOptions[props.option.option]
   if (selected !== undefined && selected !== true) {
-    return String(selected)
+    const raw = String(selected)
+    return (props.option.valueType === 'string' || props.option.valueType === 'string-array')
+      ? stripOuterQuotes(raw)
+      : raw
   }
   if (selected === true && props.option.valueType === 'boolean') {
     return '1'
@@ -27,7 +39,11 @@ const displayValue = computed(() => {
 })
 
 // boolean 默认值统一用 0/1 展示（与 emcc -s 惯例保持一致）
+// dynamicDefault 优先级高于静态 default，用于依赖外部状态的选项（如 -sASSERTIONS 随优化级别变化）
 const displayDefault = computed(() => {
+  if (props.option.dynamicDefault) {
+    return props.option.dynamicDefault(state.optimizationLevel)
+  }
   if (props.option.valueType === 'boolean') {
     if (props.option.default === 'false' || props.option.default === '0') return '0'
     if (props.option.default === 'true'  || props.option.default === '1')  return '1'
@@ -38,8 +54,12 @@ const displayDefault = computed(() => {
 function handleClick() {
   if (isEditing.value) return
   // 非 boolean 类型首次选中时，使用 initialValue（如有）或 default 作为初始值
+  // string 类型去除外层引号，避免存入 '' 这样的字面量
   if (!isSelected.value && props.option.valueType !== 'boolean') {
-    const initVal = props.option.initialValue ?? props.option.default
+    const raw = props.option.initialValue ?? props.option.default
+    const initVal = (props.option.valueType === 'string' || props.option.valueType === 'string-array')
+      ? stripOuterQuotes(raw)
+      : raw
     toggleRefOption(props.option.option, props.option.valueType, initVal, props.option.radioGroup)
   } else {
     toggleRefOption(props.option.option, props.option.valueType, undefined, props.option.radioGroup)
@@ -61,13 +81,24 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
+function handleCurrentClick(event: MouseEvent) {
+  // 已选中且可编辑时，阻止 click 冒泡到行，避免双击时两次 click 反复 toggle 选中状态
+  if (isSelected.value && props.option.editable) {
+    event.stopPropagation()
+  }
+}
+
 function handleCurrentDblClick(event: MouseEvent) {
   // 已选中且可编辑 → 双击进入编辑模式
   if (isSelected.value && props.option.editable) {
     event.stopPropagation()
     isEditing.value = true
     const selected = state.refSelectedOptions[props.option.option]
-    editValue.value = String(selected !== undefined && selected !== true ? selected : props.option.default)
+    const raw = String(selected !== undefined && selected !== true ? selected : props.option.default)
+    // string 类型去除外层引号，用户直接看到干净的值
+    editValue.value = (props.option.valueType === 'string' || props.option.valueType === 'string-array')
+      ? stripOuterQuotes(raw)
+      : raw
   }
 }
 </script>
@@ -91,10 +122,10 @@ function handleCurrentDblClick(event: MouseEvent) {
     <div class="option-desc">{{ option.description }}</div>
 
     <!-- 类型 -->
-    <div class="option-type" :class="`type-${option.valueType}`">{{ option.valueType }}</div>
+    <div class="option-type" :class="`type-${option.valueType}`">{{ option.valueType === 'string-array' ? 'string | []' : option.valueType }}</div>
 
     <!-- 默认值 -->
-    <div class="option-default-val">{{ displayDefault }}</div>
+    <div class="option-default-val" :title="displayDefault">{{ displayDefault }}</div>
 
     <!-- 当前值 -->
     <div
@@ -105,6 +136,7 @@ function handleCurrentDblClick(event: MouseEvent) {
         editing: isEditing
       }"
       :title="option.editable && isSelected && !isEditing ? '双击编辑值' : undefined"
+      @click="handleCurrentClick"
       @dblclick="handleCurrentDblClick"
     >
       <template v-if="isSelected">
@@ -119,7 +151,8 @@ function handleCurrentDblClick(event: MouseEvent) {
           />
         </template>
         <template v-else>
-          <span class="value-text">{{ displayValue }}</span>
+          <span v-if="displayValue === ''" class="value-placeholder">双击输入</span>
+          <span v-else class="value-text">{{ displayValue }}</span>
           <span v-if="option.editable" class="edit-hint">双击编辑</span>
         </template>
       </template>
@@ -260,6 +293,12 @@ function handleCurrentDblClick(event: MouseEvent) {
   background: color-mix(in srgb, #fa8c16 12%, transparent);
 }
 
+.option-type.type-string-array {
+  color: #722ed1;
+  background: color-mix(in srgb, #722ed1 12%, transparent);
+  white-space: nowrap;
+}
+
 /* 默认值 */
 .option-default-val {
   font-family: var(--font-mono);
@@ -322,10 +361,18 @@ function handleCurrentDblClick(event: MouseEvent) {
 }
 
 /* hover 时将值文字淮化 */
-.option-current.editable.selected:hover .value-text {
+.option-current.editable.selected:hover .value-text,
+.option-current.editable.selected:hover .value-placeholder {
   opacity: 0.25;
 }
 .option-current .value-text {
+  transition: opacity 0.15s ease;
+}
+/* 空值占位提示 */
+.option-current .value-placeholder {
+  font-style: italic;
+  font-size: 10px;
+  opacity: 0.4;
   transition: opacity 0.15s ease;
 }
 /* 双击编辑提示覆盖层 */

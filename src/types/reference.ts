@@ -1,5 +1,6 @@
 // 配置参考选项值类型
-export type RefOptionValueType = 'boolean' | 'string' | 'number'
+// string-array: 值为数组格式，允许逗号分隔字符串或 JS 数组语法 (e.g. _func1,_func2 or ['_func1','_func2'])
+export type RefOptionValueType = 'boolean' | 'string' | 'number' | 'string-array'
 
 // 配置参考选项
 export interface RefOption {
@@ -27,6 +28,12 @@ export interface RefOption {
    * 例：优化级别 -O0/-O1/-O2/-O3/-Os/-Oz 同属 'optimization' 组
    */
   radioGroup?: string
+  /**
+   * 动态默认值函数，当默认值依赖外部状态时使用（优先级高于 default）
+   * 参数为当前优化级别，返回对应的默认值字符串
+   * 例：-sASSERTIONS 在 -O0 时默认为 1，其他优化级别默认为 0
+   */
+  dynamicDefault?: (optimizationLevel: string) => string
 }
 
 // 配置参考分类
