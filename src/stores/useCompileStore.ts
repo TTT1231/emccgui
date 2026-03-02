@@ -573,6 +573,48 @@ export const useCompileStore = defineStore('compile', () => {
     }
   }
 
+  /**
+   * 参考面板「已选」总数：用户手动选中 + 编译面板贡献的去重合并
+   */
+  const totalRefActiveCount = computed<number>(() => {
+    let count = 0
+    for (const category of refConfigData.categories) {
+      for (const opt of category.options) {
+        if (
+          opt.option in refSelectedOptions ||
+          compileContributedRefKeys.value.has(opt.option)
+        ) {
+          count++
+        }
+      }
+    }
+    return count
+  })
+
+  /**
+   * 重置所有状态（保留主题 & 输出格式）
+   */
+  function resetAll() {
+    // 编译选项重置
+    const freshOptions = buildInitialCompileOptions()
+    compileOptions.splice(0, compileOptions.length, ...freshOptions)
+    // 运行时方法重置
+    const freshMethods = buildInitialRuntimeMethods()
+    runtimeMethods.splice(0, runtimeMethods.length, ...freshMethods)
+    // 优化级别
+    optimizationLevel.value = 'O0'
+    // 自定义参数栏
+    addOptionsStack.splice(0)
+    customRuntimeMethods.splice(0)
+    // 参考面板
+    for (const key of Object.keys(refSelectedOptions)) delete refSelectedOptions[key]
+    refSearchQuery.value = ''
+    refActiveCategory.value = 'all'
+    // 文件
+    selectedFile.value = null
+    outputFileName.value = 'hello'
+  }
+
   return {
     // state
     outputFormat,
@@ -600,6 +642,7 @@ export const useCompileStore = defineStore('compile', () => {
     optionsWithInput,
     optionsWithSelect,
     refContribLines,
+    totalRefActiveCount,
     // actions
     setOutputFormat,
     setSelectedFile,
@@ -619,5 +662,6 @@ export const useCompileStore = defineStore('compile', () => {
     setRefSearchQuery,
     setRefActiveCategory,
     initTheme,
+    resetAll,
   }
 })

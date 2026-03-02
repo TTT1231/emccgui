@@ -8,8 +8,8 @@ import type { RefCategory, RefOption } from '@/types'
 
 const store = useCompileStore()
 
-// 已选数量
-const selectedCount = computed(() => Object.keys(store.refSelectedOptions).length)
+// 已选数量：手动选中 + 编译面板贡献的去重合并
+const selectedCount = computed(() => store.totalRefActiveCount)
 
 // 搜索匹配函数
 function matchesSearch(opt: RefOption, query: string): boolean {
