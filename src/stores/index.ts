@@ -46,7 +46,7 @@ export function createAppState() {
   const state = reactive<AppState>({
     outputFormat: 'js-wasm',
     selectedFile: null,
-    optimizationLevel: 'O3',
+    optimizationLevel: 'O0',
     theme: 'dark',
     activeTab: 'file',
     compileOptions: compileOptionsData.map((opt): CompileOptionState => {
