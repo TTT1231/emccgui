@@ -5,7 +5,8 @@
       "Bash(agent-browser click @e2)",
       "Bash(agent-browser snapshot -i)",
       "Bash(agent-browser click @e5)",
-      "Bash(agent-browser click @e1)"
+      "Bash(agent-browser click @e1)",
+      "Bash(pnpm remove @codemirror/lang-javascript)"
     ]
   }
 }
