@@ -37,7 +37,7 @@ function handleReset() {
           :class="{ active: store.outputFormat === 'wasm-only' }"
           @click="handleOutputModeChange('wasm-only')"
         >
-          纯 WASM
+          WASM
         </button>
       </div>
 
