@@ -36,22 +36,24 @@ function toggleCollapse() {
       </div>
     </div>
 
-    <div class="ref-category-content">
-      <div class="ref-table-header">
-        <span>命令</span>
-        <span>说明</span>
-        <span>类型</span>
-        <span>默认值</span>
-        <span>当前值</span>
+    <Transition name="collapse">
+      <div v-show="!isCollapsed" class="ref-category-content">
+        <div class="ref-table-header">
+          <span>命令</span>
+          <span>说明</span>
+          <span>类型</span>
+          <span>默认值</span>
+          <span>当前值</span>
+        </div>
+        <div class="ref-category-inner">
+          <OptionRow
+            v-for="(option, index) in category.options"
+            :key="index"
+            :option="option"
+          />
+        </div>
       </div>
-      <div class="ref-category-inner">
-        <OptionRow
-          v-for="(option, index) in category.options"
-          :key="index"
-          :option="option"
-        />
-      </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -143,17 +145,28 @@ function toggleCollapse() {
   transform: rotate(-90deg);
 }
 
+/* Vue Transition 折叠动画 */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  opacity: 1;
+  max-height: 2000px;
+}
+
 .ref-category-content {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition: grid-template-rows 0.25s ease;
-}
-
-.ref-category-card.collapsed .ref-category-content {
-  grid-template-rows: 0fr;
-}
-
-.ref-category-inner {
   overflow: hidden;
 }
 
