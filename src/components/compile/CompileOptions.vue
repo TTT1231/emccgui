@@ -682,6 +682,38 @@ const handleAddCustomMethod = () => {
   overflow-y: auto;
 }
 
+/* ===== 统一滚动条样式（明暗主题自适应）===== */
+.config-panel::-webkit-scrollbar,
+.preview-panel::-webkit-scrollbar,
+.card-content::-webkit-scrollbar,
+.code-block-content::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.config-panel::-webkit-scrollbar-track,
+.preview-panel::-webkit-scrollbar-track,
+.card-content::-webkit-scrollbar-track,
+.code-block-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.config-panel::-webkit-scrollbar-thumb,
+.preview-panel::-webkit-scrollbar-thumb,
+.card-content::-webkit-scrollbar-thumb,
+.code-block-content::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.config-panel::-webkit-scrollbar-thumb:hover,
+.preview-panel::-webkit-scrollbar-thumb:hover,
+.card-content::-webkit-scrollbar-thumb:hover,
+.code-block-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
 /* ===== Config Cards ===== */
 .config-card {
   display: flex;
