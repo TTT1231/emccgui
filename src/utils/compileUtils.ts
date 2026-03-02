@@ -61,6 +61,9 @@ export function getConflictReason(
 
 // 生成完整命令字符串辅助函数
 export function formatCommandLine(line: CommandLine): string {
+  // 如果有 rawCommand（使用 enabledValue 模板生成的），直接返回
+  if (line.rawCommand) return line.rawCommand
+
   if (!line.value) return line.name
   // -o 和 emcc 后面用空格
   if (line.type === 'command' || line.type === 'output') {

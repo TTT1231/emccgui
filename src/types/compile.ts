@@ -32,6 +32,7 @@ export interface CompileOptionDef {
   hint: string
   category: string
   defaultEnabled?: boolean // 是否默认启用
+  enabledValue?: string // 命令行模板（遵循 refConfigData 格式标准）
 }
 
 // 编译选项状态（运行时）
@@ -68,6 +69,7 @@ export interface CommandLine {
   isRuntimeMethods?: boolean
   methods?: string[]
   isCustom?: boolean
+  rawCommand?: string // 原始命令字符串（用于显示完整的启用值模板格式）
 }
 
 // 搜索选项（用于 SearchBtn）

@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 
 import { useAppState } from '@/stores'
 import { optionConflicts, optimizationLevels } from '@/data'
-import { getConflictedOptions, getConflictReason, formatCommandLine, isOptionReallyEnabled } from '@/utils/compileUtils'
+import { getConflictedOptions, getConflictReason, formatCommandLine, isOptionReallyEnabled, resolveEnabledValue } from '@/utils/compileUtils'
 import type { CommandLine } from '@/types'
 import SearchBtn from './SearchBtn.vue'
 
@@ -78,37 +78,38 @@ const commandLines = computed(() => {
     if (!isOptionReallyEnabled(option, state.compileOptions)) continue
     if (option.jsWasmOnly && !isJsWasm) continue
 
-    // 处理 select 类型
-    if (option.valueType === 'select') {
-      const selectValue = option.currentValue || option.defaultValue
-      if (option.formatType === 'arg') {
-        lines.push({ name: `-${selectValue}`, type: 'flag' })
-      } else {
-        const cmdName = `${option.cmdPrefix}${option.cmdName}`
-        lines.push({ name: cmdName, value: String(selectValue), type: 'flag' })
-      }
-      continue
+    // 使用 enabledValue 模板生成命令
+    const template = option.enabledValue
+    if (!template) continue
+
+    // 获取当前值
+    let currentValue = String(option.currentValue ?? option.defaultValue)
+
+    // emitTsd 特殊处理：使用输出文件名作为 .d.ts 文件名
+    if (option.key === 'emitTsd') {
+      currentValue = `${state.outputFileName}.d.ts`
     }
 
-    const cmdName = `${option.cmdPrefix}${option.cmdName}`
+    // 解析模板，生成最终命令字符串
+    const resolvedCmd = resolveEnabledValue(template, currentValue)
 
-    switch (option.formatType) {
-      case 'arg':
-        lines.push({ name: cmdName, type: 'flag' })
-        break
-      case 'setting':
-      case 'flag':
-        let value = String(option.currentValue ?? option.defaultValue)
-        if (option.key === 'emitTsd') {
-          // 直接使用输出文件名作为 .d.ts 文件名
-          value = `${state.outputFileName}.d.ts`
-        }
-        lines.push({
-          name: cmdName,
-          value: value,
-          type: 'flag',
-        })
-        break
+    // 解析命令名称和值（用于显示）
+    const eqIndex = resolvedCmd.indexOf('=')
+    if (eqIndex > 0) {
+      // 有值的情况：-sOPTION="value" 或 -sOPTION=value
+      lines.push({
+        name: resolvedCmd.substring(0, eqIndex),
+        value: resolvedCmd.substring(eqIndex + 1),
+        type: 'flag',
+        rawCommand: resolvedCmd
+      })
+    } else {
+      // 无值的情况：-sOPTION
+      lines.push({
+        name: resolvedCmd,
+        type: 'flag',
+        rawCommand: resolvedCmd
+      })
     }
   }
 
@@ -127,18 +128,20 @@ const commandLines = computed(() => {
     }
   }
 
-  // 导出的运行时方法
+  // 导出的运行时方法（使用官方推荐的逗号分隔格式）
   const enabledMethods = [
     ...state.runtimeMethods.filter(m => m.enabled).map(m => m.name),
     ...state.customRuntimeMethods,
   ]
   if (enabledMethods.length > 0 && isJsWasm) {
+    const methodsValue = enabledMethods.join(',')
     lines.push({
       name: '-sEXPORTED_RUNTIME_METHODS',
-      value: enabledMethods.join(','),
+      value: methodsValue,
       type: 'flag',
       isRuntimeMethods: true,
       methods: enabledMethods,
+      rawCommand: `-sEXPORTED_RUNTIME_METHODS="${methodsValue}"`
     })
   }
 

@@ -134,16 +134,16 @@ export const refConfigData: RefConfigData = {
         },
         {
           option: "-sEXPORTED_FUNCTIONS",
-          default: "[]",
-          description: "指定导出的 C/C++ 函数（需加 _ 前缀，如 _main）",
+          default: "_main",
+          description: "指定导出的 C/C++ 函数（逗号分隔，需加 _ 前缀，如 _main,_hello）",
           valueType: "string-array",
           editable: true,
           enabledValue: "-sEXPORTED_FUNCTIONS=\"{value}\""
         },
         {
           option: "-sEXPORTED_RUNTIME_METHODS",
-          default: "[]",
-          description: "导出运行时辅助方法（如 ccall, cwrap）",
+          default: "ccall,cwrap",
+          description: "导出运行时辅助方法（逗号分隔，如 ccall,cwrap）",
           valueType: "string-array",
           editable: true,
           enabledValue: "-sEXPORTED_RUNTIME_METHODS=\"{value}\""
