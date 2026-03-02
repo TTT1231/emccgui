@@ -16,7 +16,7 @@ const isSelected = computed(() => props.option.option in store.refSelectedOption
 
 /** 该选项已由编译面板接管（已在编译命令中激活），参考面板应同步显示为激活状态 */
 const isCompileContrib = computed(() =>
-  store.compileContributedRefKeys.has(props.option.option) && !isSelected.value
+  store.compileContributedRefKeysSet.has(props.option.option) && !isSelected.value
 )
 
 /**

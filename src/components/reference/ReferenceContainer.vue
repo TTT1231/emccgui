@@ -26,7 +26,8 @@ const filteredCategories = computed(() => {
   // 已选模式：只显示已选中的选项（手动选中 + 编译面板贡献）
   if (activeCategory === '__selected__') {
     const manualKeys = new Set(Object.keys(store.refSelectedOptions))
-    const compileKeys = store.compileContributedRefKeys
+    // 直接使用 store 提供的 Set，获得 O(1) 查找性能
+    const compileKeys = store.compileContributedRefKeysSet
 
     return refConfigData.categories
       .map((category): RefCategory | null => {

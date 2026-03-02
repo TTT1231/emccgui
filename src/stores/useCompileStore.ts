@@ -105,11 +105,12 @@ export const useCompileStore = defineStore('compile', () => {
   })
 
   /**
-   * 编译面板当前已激活的完整命令 key 集合（如 `-g3`, `-sEXPORT_ES6`）
+   * 编译面板当前已激活的完整命令 key 列表（如 `-g3`, `-sEXPORT_ES6`）
    * 用于参考面板实时同步：只要该命令在编译面板启用，参考面板对应行就高亮
    * 使用完整解析命令（如 `-g3`），避免 `-g` vs `-g3` 无法匹配的问题
+   * 注意：返回数组而非 Set，确保 Vue 响应式系统能正确追踪依赖
    */
-  const compileContributedRefKeys = computed<Set<string>>(() => {
+  const compileContributedRefKeys = computed<string[]>(() => {
     const keys = new Set<string>()
     const isJsWasm = outputFormat.value === 'js-wasm'
 
@@ -142,7 +143,15 @@ export const useCompileStore = defineStore('compile', () => {
       keys.add('-sEXPORTED_RUNTIME_METHODS')
     }
 
-    return keys
+    return Array.from(keys)
+  })
+
+  /**
+   * 编译面板贡献的命令 key Set（用于 O(1) 高效查找）
+   * 依赖 compileContributedRefKeys 数组，确保响应式追踪正常工作
+   */
+  const compileContributedRefKeysSet = computed<Set<string>>(() => {
+    return new Set(compileContributedRefKeys.value)
   })
 
   /** 参考面板贡献的命令行 CommandLine[]（去重后） */
@@ -598,11 +607,12 @@ export const useCompileStore = defineStore('compile', () => {
    */
   const totalRefActiveCount = computed<number>(() => {
     let count = 0
+    const compileKeysSet = compileContributedRefKeysSet.value
     for (const category of refConfigData.categories) {
       for (const opt of category.options) {
         if (
           opt.option in refSelectedOptions ||
-          compileContributedRefKeys.value.has(opt.option)
+          compileKeysSet.has(opt.option)
         ) {
           count++
         }
@@ -660,6 +670,7 @@ export const useCompileStore = defineStore('compile', () => {
     // getters
     availableOptions,
     compileContributedRefKeys,
+    compileContributedRefKeysSet,
     commandLines,
     fullCommand,
     existingCommandNames,
