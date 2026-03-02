@@ -24,6 +24,31 @@ const triggerChar = '@'
 // 建议列表显示位置（向上或向下）
 const dropdownDirection = ref<'up' | 'down'>('down')
 
+// 反馈消息
+type FeedbackType = 'error' | 'warn'
+const feedbackMsg = ref('')
+const feedbackType = ref<FeedbackType>('error')
+let feedbackTimer: ReturnType<typeof setTimeout> | null = null
+
+function showFeedback(msg: string, type: FeedbackType = 'error') {
+  if (feedbackTimer) clearTimeout(feedbackTimer)
+  feedbackMsg.value = msg
+  feedbackType.value = type
+  feedbackTimer = setTimeout(() => {
+    feedbackMsg.value = ''
+    feedbackTimer = null
+  }, 2800)
+}
+
+/**
+ * 校验是否为合法 emcc 命令（必须以 - 开头且长度 >= 2）
+ * 合法前缀：--xxx / -sXXX / -Ox / -gx / -fxxx / -pthread / -I / -L / -l / -D / -W 等
+ */
+function isValidEmccCommand(cmd: string): boolean {
+  const name = cmd.indexOf('=') > 0 ? cmd.substring(0, cmd.indexOf('=')) : cmd
+  return name.length >= 2 && name.startsWith('-')
+}
+
 // 从 options.json 加载选项数据
 const allOptions = ref<SearchOption[]>(optionsData as SearchOption[])
 
@@ -102,13 +127,21 @@ const handleAdd = () => {
 
   const commandToAdd = searchValue.value.trim()
 
+  // 校验是否为合法 emcc 命令
+  if (!isValidEmccCommand(commandToAdd)) {
+    showFeedback('无效命令：emcc 命令必须以 - 开头（如 -sFLAG、--option）', 'error')
+    return
+  }
+
   if (isCommandDuplicate(commandToAdd)) {
+    showFeedback('此命令已存在于当前编译命令中，无需重复添加', 'warn')
     return
   }
 
   emit('handleAdd', commandToAdd)
   searchValue.value = ''
   showSuggestions.value = false
+  feedbackMsg.value = ''
 }
 
 // 撤销
@@ -238,6 +271,7 @@ const handleFocus = () => {
         v-model="searchValue"
         type="text"
         class="search-input"
+        :class="{ 'search-input--error': feedbackType === 'error' && feedbackMsg, 'search-input--warn': feedbackType === 'warn' && feedbackMsg }"
         placeholder="输入 @ 触发选项搜索，或直接输入命令"
         @keydown="handleKeyDown"
         @blur="handleBlur"
@@ -288,6 +322,17 @@ const handleFocus = () => {
     <button class="undo-btn" @click="handleUndo" title="撤销上一个 (Ctrl+Z)">
       <span class="btn-icon">↩</span>
     </button>
+    <!-- 反馈消息（绝对定位，不占文档流）-->
+    <Transition name="feedback">
+      <div
+        v-if="feedbackMsg"
+        class="feedback-message"
+        :class="`feedback-${feedbackType}`"
+      >
+        <span class="feedback-icon">{{ feedbackType === 'error' ? '✕' : '⚠' }}</span>
+        <span>{{ feedbackMsg }}</span>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -297,6 +342,7 @@ const handleFocus = () => {
   display: flex;
   gap: 10px;
   align-items: stretch;
+  /* 反馈消息绝对定位的参照 */
 }
 
 .input-wrapper {
@@ -586,5 +632,76 @@ const handleFocus = () => {
 .dropdown-up .suggestions-enter-from,
 .dropdown-up .suggestions-leave-to {
   transform: scaleY(0.95) translateY(8px);
+}
+
+/* ===== 反馈消息 ===== */
+.search-input--error {
+  color: #ef4444;
+}
+
+.search-input--warn {
+  color: #f59e0b;
+}
+
+.input-wrapper:has(.search-input--error) {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #ef4444 20%, transparent) !important;
+}
+
+.input-wrapper:has(.search-input--warn) {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #f59e0b 20%, transparent) !important;
+}
+
+.feedback-message {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 900;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding: 7px 12px;
+  font-size: 0.8em;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.feedback-error {
+  color: #ef4444;
+  background: color-mix(in srgb, #ef4444 12%, var(--bg-secondary));
+  border: 1px solid color-mix(in srgb, #ef4444 40%, transparent);
+}
+
+.feedback-warn {
+  color: #d97706;
+  background: color-mix(in srgb, #f59e0b 12%, var(--bg-secondary));
+  border: 1px solid color-mix(in srgb, #f59e0b 40%, transparent);
+}
+
+[data-theme='light'] .feedback-error {
+  background: color-mix(in srgb, #ef4444 8%, #fff);
+}
+
+[data-theme='light'] .feedback-warn {
+  background: color-mix(in srgb, #f59e0b 8%, #fff);
+  color: #b45309;
+}
+
+.feedback-icon {
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+.feedback-enter-active,
+.feedback-leave-active {
+  transition: all 0.25s ease;
+}
+
+.feedback-enter-from,
+.feedback-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 </style>
