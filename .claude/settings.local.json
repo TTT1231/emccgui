@@ -10,7 +10,8 @@
       "Bash(pnpm run build)",
       "mcp__plugin_playwright_playwright__browser_navigate",
       "mcp__plugin_playwright_playwright__browser_click",
-      "Skill(commit-commands:commit)"
+      "Skill(commit-commands:commit)",
+      "mcp__zai-mcp-server__analyze_image"
     ]
   }
 }
