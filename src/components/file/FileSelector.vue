@@ -14,6 +14,8 @@ import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete'
 import { cpp } from '@codemirror/lang-cpp'
 import { rust } from '@codemirror/lang-rust'
+import { python } from '@codemirror/lang-python'
+import { java } from '@codemirror/lang-java'
 import { oneDark } from '@codemirror/theme-one-dark'
 
 const store = useCompileStore()
@@ -30,10 +32,61 @@ const savedFlash = ref(false)
 // 保存原始内容用于对比
 let savedContent = ''
 
+// ===== 文件类型颜色映射 =====
+const LANGUAGE_COLORS = {
+  // C/C++ 系 - 蓝色系
+  c: { bg: 'rgba(66, 153, 225, 0.15)', color: '#4299e1', label: 'C' },
+  cpp: { bg: 'rgba(66, 153, 225, 0.15)', color: '#4299e1', label: 'C++' },
+  cc: { bg: 'rgba(66, 153, 225, 0.15)', color: '#4299e1', label: 'C++' },
+  cxx: { bg: 'rgba(66, 153, 225, 0.15)', color: '#4299e1', label: 'C++' },
+  h: { bg: 'rgba(66, 153, 225, 0.15)', color: '#4299e1', label: 'H' },
+  hpp: { bg: 'rgba(66, 153, 225, 0.15)', color: '#4299e1', label: 'H++' },
+  hxx: { bg: 'rgba(66, 153, 225, 0.15)', color: '#4299e1', label: 'H++' },
+  // Rust - 橙红色系
+  rs: { bg: 'rgba(230, 126, 34, 0.15)', color: '#e67e22', label: 'RS' },
+  // Go - 青色系
+  go: { bg: 'rgba(26, 188, 156, 0.15)', color: '#1abc9c', label: 'GO' },
+  // Java - 红色系
+  java: { bg: 'rgba(231, 76, 60, 0.15)', color: '#e74c3c', label: 'JAVA' },
+  // Python - 黄绿色系
+  py: { bg: 'rgba(241, 196, 15, 0.15)', color: '#f1c40f', label: 'PY' },
+  // C# - 紫色系
+  cs: { bg: 'rgba(155, 89, 182, 0.15)', color: '#9b59b6', label: 'C#' },
+} as const
+
+// 获取文件类型样式
+function getFileBadgeStyle(ext: string) {
+  const style = LANGUAGE_COLORS[ext as keyof typeof LANGUAGE_COLORS]
+  return {
+    background: style?.bg || 'var(--accent-light)',
+    color: style?.color || 'var(--accent)',
+  }
+}
+
+// 获取文件类型标签文本
+function getFileBadgeLabel(ext: string) {
+  return LANGUAGE_COLORS[ext as keyof typeof LANGUAGE_COLORS]?.label || ext.toUpperCase()
+}
+
 let editorView: EditorView | null = null
 const themeCompartment = new Compartment()
 
-const ACCEPTED_EXTS = new Set(['c', 'cpp', 'cc', 'cxx', 'h', 'hpp', 'rs'])
+// WebAssembly 常用编译语言文件扩展名
+// 参考: https://wasmlang.org/
+const ACCEPTED_EXTS = new Set([
+  // C / C++ (Emscripten)
+  'c', 'cpp', 'cc', 'cxx', 'h', 'hpp', 'hxx',
+  // Rust
+  'rs',
+  // Go (TinyGo)
+  'go',
+  // Java (TeVM, JWebAssembly)
+  'java',
+  // Python (Pyodide)
+  'py',
+  // C#
+  'cs',
+])
 
 // ===== 主题色板 =====
 const editorColors = computed(() => {
@@ -128,7 +181,17 @@ function getFileExt(filename: string) {
 
 function getLanguageExtension(filename: string) {
   const ext = getFileExt(filename)
+
+  // Rust
   if (ext === 'rs') return rust()
+
+  // Python
+  if (ext === 'py') return python()
+
+  // Java
+  if (ext === 'java') return java()
+
+  // 其他语言使用 C++ 作为 fallback（C, C++, Go, C# 等）
   return cpp()
 }
 
@@ -183,7 +246,11 @@ async function processFile(file: File) {
 function handleFileSelect(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  if (file) processFile(file)
+  if (file) {
+    processFile(file)
+    // 重置 input，允许重复选择同一个文件
+    target.value = ''
+  }
 }
 
 function clearFile() {
@@ -327,20 +394,20 @@ onUnmounted(() => {
             <path d="M12 12v6"/>
             <path d="m9 15 3-3 3 3"/>
           </svg>
-          <span class="drop-overlay__title">{{ fileContent ? '松开以替换文件' : '松开以打开文件' }}</span>
-          <span class="drop-overlay__hint">支持 C / C++ / Rust</span>
+          <span class="drop-overlay__title">{{ store.selectedFile ? '松开以替换文件' : '松开以打开文件' }}</span>
+          <span class="drop-overlay__hint">支持 WebAssembly 常用语言</span>
         </div>
       </div>
     </Transition>
 
     <!-- ===== 无文件：上传区 ===== -->
-    <template v-if="!fileContent">
+    <template v-if="!store.selectedFile">
       <!-- 隐藏 input，统一由 js 触发 -->
       <input
         ref="fileInput"
         type="file"
         class="file-input-hidden"
-        accept=".c,.cpp,.cc,.cxx,.h,.hpp,.rs"
+        accept=".c,.cpp,.cc,.cxx,.h,.hpp,.hxx,.rs,.go,.java,.py,.cs"
         @change="handleFileSelect"
       />
 
@@ -361,14 +428,14 @@ onUnmounted(() => {
             </svg>
           </div>
           <p class="drop-zone__title">拖拽文件到此处，或 <span class="drop-zone__link">点击选择</span></p>
-          <p class="drop-zone__hint">支持 C / C++ / Rust &nbsp;·&nbsp; .c &nbsp;.cpp &nbsp;.cc &nbsp;.cxx &nbsp;.h &nbsp;.hpp &nbsp;.rs</p>
+          <p class="drop-zone__hint">支持 WebAssembly 常用语言 &nbsp;·&nbsp; C/C++/Rust/Go/Java/Python/C# 等</p>
         </div>
 
         <!-- 使用步骤 -->
         <div class="steps">
           <div class="step">
             <span class="step-num">1</span>
-            <span class="step-text">选择 C / C++ / Rust 源文件</span>
+            <span class="step-text">选择 WebAssembly 源文件</span>
           </div>
           <div class="step-arrow">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -398,7 +465,7 @@ onUnmounted(() => {
         ref="fileInput"
         type="file"
         class="file-input-hidden"
-        accept=".c,.cpp,.cc,.cxx,.h,.hpp,.rs"
+        accept=".c,.cpp,.cc,.cxx,.h,.hpp,.hxx,.rs,.go,.java,.py,.cs"
         @change="handleFileSelect"
       />
 
@@ -406,7 +473,10 @@ onUnmounted(() => {
       <div class="editor-header">
         <div class="editor-header__left">
           <span class="dirty-dot" :class="{ 'dirty-dot--visible': isDirty }" title="有未保存的更改">●</span>
-          <span class="file-badge">{{ getFileExt(store.selectedFile!.name).toUpperCase() }}</span>
+          <span
+            class="file-badge"
+            :style="getFileBadgeStyle(getFileExt(store.selectedFile!.name))"
+          >{{ getFileBadgeLabel(getFileExt(store.selectedFile!.name)) }}</span>
           <svg class="code-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="16 18 22 12 16 6"/>
             <polyline points="8 6 2 12 8 18"/>
