@@ -52,11 +52,7 @@ function isValidEmccCommand(cmd: string): boolean {
 // 从 options.json 加载选项数据
 const allOptions = ref<SearchOption[]>(optionsData as SearchOption[])
 
-// 提取命令名称（去除等号及后面的值）
-const extractCommandName = (command: string): string => {
-  const eqIndex = command.indexOf('=')
-  return eqIndex > 0 ? command.substring(0, eqIndex) : command
-}
+import { extractCommandName } from '@/utils/commandUtils'
 
 // 检查命令是否已存在
 const isCommandDuplicate = (newCommand: string): boolean => {

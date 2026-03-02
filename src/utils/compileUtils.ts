@@ -1,6 +1,9 @@
 import type { CompileOptionState, CommandLine, OptionConflict, OutputFormat, ConflictInfo } from '@/types'
+import { isOptionReallyEnabled } from './commandUtils'
 
-// 根据输出格式和当前选项状态获取应禁用的选项 keys
+import { extractCommandName } from './commandUtils'
+
+// 注：此函数已被 getActiveConflicts 替代
 export function getConflictedOptions(
   outputFormat: OutputFormat,
   options: readonly CompileOptionState[],
@@ -20,12 +23,11 @@ export function getConflictedOptions(
   // 2. 检查启用的选项是否触发冲突规则
   for (const conflict of optionConflicts) {
     const triggerOpt = options.find(opt => opt.key === conflict.triggerKey)
-    if (triggerOpt?.enabled) {
-      for (const conflictKey of conflict.conflictsWith) {
-        const conflictOpt = options.find(opt => opt.key === conflictKey)
-        if (conflictOpt && isOptionReallyEnabled(conflictOpt, options)) {
-          conflictedKeys.add(conflictKey)
-        }
+    if (!triggerOpt?.enabled) continue
+    for (const conflictKey of conflict.conflictsWith) {
+      const conflictOpt = options.find(opt => opt.key === conflictKey)
+      if (conflictOpt && isOptionReallyEnabled(conflictOpt, options)) {
+        conflictedKeys.add(conflictKey)
       }
     }
   }
@@ -33,7 +35,9 @@ export function getConflictedOptions(
   return conflictedKeys
 }
 
-// 获取冲突描述信息
+/**
+ * 获取冲突描述信息
+ */
 export function getConflictReason(
   optionKey: string,
   outputFormat: OutputFormat,
@@ -60,52 +64,14 @@ export function getConflictReason(
 }
 
 // 生成完整命令字符串辅助函数
-export function formatCommandLine(line: CommandLine): string {
-  // 如果有 rawCommand（使用 enabledValue 模板生成的），直接返回
-  if (line.rawCommand) return line.rawCommand
-
-  if (!line.value) return line.name
-  // -o 和 emcc 后面用空格
-  if (line.type === 'command' || line.type === 'output') {
-    return `${line.name} ${line.value}`
-  }
-  // 所有 flag 类型都用等号连接
-  return `${line.name}=${line.value}`
-}
+export { formatCommandLine } from './commandUtils'
 
 // 辅助函数：根据 key 获取编译选项（导出供其他模块使用）
-export function getOptionByKey(options: readonly CompileOptionState[], key: string): CompileOptionState | undefined {
-  return options.find(opt => opt.key === key)
-}
+export { getOptionByKey } from './commandUtils'
 
-/**
- * 将 enabledValue 模板中的 {value} 占位符替换为用户实际输入的值。
- *
- * 规则：
- * - 含 {value} → 替换为 userValue（若 userValue 为空则保留占位符原样）
- * - 不含 {value} → 直接返回 enabledValue（boolean 开关类，如 -sMODULARIZE）
- *
- * @example
- * resolveEnabledValue("-o {value}", "qwe.out.js")  // → "-o qwe.out.js"
- * resolveEnabledValue("-sEXPORT_NAME={value}", "MyModule")  // → "-sEXPORT_NAME=MyModule"
- * resolveEnabledValue("-sMODULARIZE", "")  // → "-sMODULARIZE"
- * resolveEnabledValue("-g{value}", "2")  // → "-g2"
- */
-export function resolveEnabledValue(enabledValue: string, userValue: string): string {
-  if (!enabledValue.includes('{value}')) return enabledValue
-  const v = userValue.trim()
-  return v ? enabledValue.replace('{value}', v) : enabledValue
-}
+export { resolveEnabledValue } from './commandUtils'
 
-// 辅助函数：检查选项是否真正启用（包括依赖检查）
-export function isOptionReallyEnabled(option: CompileOptionState, allOptions: readonly CompileOptionState[]): boolean {
-  if (!option.enabled) return false
-  if (option.dependsOn) {
-    const dep = getOptionByKey(allOptions, option.dependsOn)
-    if (!dep?.enabled) return false
-  }
-  return true
-}
+export { isOptionReallyEnabled } from './commandUtils'
 
 /**
  * 统一冲突检测——返回结构化 ConflictInfo[] 列表。
@@ -134,7 +100,7 @@ export function getActiveConflicts(
   if (outputFormat === 'wasm-only') {
     for (const opt of options) {
       if (opt.jsWasmOnly && isOptionReallyEnabled(opt, options)) {
-        add(opt, '此选项需要 JavaScript glue 代码，纯 WASM 模式下不生成 JS 文件')
+        add(opt, '此选项需要 JavaScript glue 代码,纯 WASM 模式下不生成 JS 文件')
       }
     }
   }
