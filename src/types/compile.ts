@@ -90,6 +90,8 @@ export interface SearchOption {
   descri: string
   defaultVal: string
   defaultValDescri: string
+  // 用户选择时应该使用的值（如果为空则使用 defaultVal）
+  enabledVal?: string
 }
 
 // 优化级别选项

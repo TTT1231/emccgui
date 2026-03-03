@@ -3,306 +3,343 @@
     "option": "-sENVIRONMENT",
     "descri": "Runtime environment (increases size)",
     "defaultVal": "web,worker",
-    "defaultValDescri": "web,worker"
+    "defaultValDescri": "web,worker",
+    "enabledVal": "-sENVIRONMENT=\"{value}\""
   },
   {
     "option": "-sASSERTIONS",
-    "descri": "Enable runtime assertion checks (1=basic, 2=verbose)",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "descri": "Enable runtime assertion checks",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sASSERTIONS=2"
   },
   {
     "option": "-sSAFE_HEAP",
-    "descri": "Detect memory access errors (high performance overhead)",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "descri": "Detect memory access errors (disabled by default)",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sSAFE_HEAP=1"
   },
   {
     "option": "-sSTACK_OVERFLOW_CHECK",
     "descri": "Stack overflow detection",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sSTACK_OVERFLOW_CHECK=1"
   },
   {
     "option": "-sINITIAL_MEMORY",
     "descri": "Initial memory size (must be multiple of 64KB)",
     "defaultVal": "16777216",
-    "defaultValDescri": "16MB"
+    "defaultValDescri": "16777216",
+    "enabledVal": "-sINITIAL_MEMORY={value}"
   },
   {
     "option": "-sMAXIMUM_MEMORY",
-    "descri": "Maximum memory limit",
-    "defaultVal": "-",
-    "defaultValDescri": "Unlimited"
+    "descri": "Maximum memory limit (requires ALLOW_MEMORY_GROWTH), in bytes",
+    "defaultVal": "2147483648",
+    "defaultValDescri": "2147483648",
+    "enabledVal": "-sMAXIMUM_MEMORY={value}"
   },
   {
     "option": "-sALLOW_MEMORY_GROWTH",
     "descri": "Allow dynamic memory growth",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sALLOW_MEMORY_GROWTH"
   },
   {
     "option": "-sSTACK_SIZE",
     "descri": "Set stack size",
-    "defaultVal": "524288",
-    "defaultValDescri": "512KB"
-  },
-  {
-    "option": "-sTOTAL_STACK",
-    "descri": "Legacy size setting",
-    "defaultVal": "512000",
-    "defaultValDescri": "512KB"
+    "defaultVal": "65536",
+    "defaultValDescri": "65536",
+    "enabledVal": "-sSTACK_SIZE={value}"
   },
   {
     "option": "-sFilesystem",
-    "descri": "Enable filesystem support",
-    "defaultVal": "-",
-    "defaultValDescri": "Auto-enable on demand"
+    "descri": "Filesystem support",
+    "defaultVal": "enabled",
+    "defaultValDescri": "Enabled",
+    "enabledVal": "-sFILESYSTEM=1"
   },
   {
     "option": "-sNO_FILESYSTEM",
-    "descri": "Disable filesystem (reduces ~120KB)",
-    "defaultVal": "0",
-    "defaultValDescri": "Not disabled"
+    "descri": "Disable filesystem support (reduces ~120KB)",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sNO_FILESYSTEM=1"
   },
   {
     "option": "-sFORCE_FILESYSTEM",
     "descri": "Force include filesystem",
-    "defaultVal": "0",
-    "defaultValDescri": "Not forced"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sFORCE_FILESYSTEM=1"
   },
   {
     "option": "--preload-file",
-    "descri": "Preload files to virtual filesystem",
-    "defaultVal": "-",
-    "defaultValDescri": "None"
+    "descri": "Preload files into virtual filesystem (generates .data file)",
+    "defaultVal": "none",
+    "defaultValDescri": "None",
+    "enabledVal": "--preload-file=\"{value}\""
   },
   {
     "option": "--embed-file",
-    "descri": "Embed files into JS/wasm",
-    "defaultVal": "-",
-    "defaultValDescri": "None"
+    "descri": "Embed files into JS/wasm (no additional files generated)",
+    "defaultVal": "none",
+    "defaultValDescri": "None",
+    "enabledVal": "--embed-file=\"{value}\""
   },
   {
     "option": "-lembind",
-    "descri": "Same as above, link Embind library",
-    "defaultVal": "-",
-    "defaultValDescri": "None, manual specification required"
+    "descri": "Link Embind library (C++ to JS binding)",
+    "defaultVal": "none",
+    "defaultValDescri": "None",
+    "enabledVal": "-lembind"
   },
   {
     "option": "-sWASM_BIGINT",
-    "descri": "Support JS BigInt and i64 interoperability (requires Node 10.4+)",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "descri": "Support JS BigInt and i64 interoperability",
+    "defaultVal": "enabled",
+    "defaultValDescri": "Enabled",
+    "enabledVal": "-sWASM_BIGINT=1"
   },
   {
     "option": "-sWASM_ASYNC_COMPILATION",
     "descri": "Asynchronous wasm compilation",
-    "defaultVal": "1",
-    "defaultValDescri": "Enabled"
+    "defaultVal": "enabled",
+    "defaultValDescri": "Enabled",
+    "enabledVal": "-sWASM_ASYNC_COMPILATION=1"
   },
   {
     "option": "-sSTANDALONE_WASM",
-    "descri": "Generate standalone wasm",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "descri": "Generate standalone WASM file (minimize JS dependencies)",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sSTANDALONE_WASM"
   },
   {
     "option": "-sIMPORT_MEMORY",
     "descri": "Import memory from external source",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sIMPORT_MEMORY"
   },
   {
     "option": "-sEXPORT_ALL",
-    "descri": "Export all functions (for debugging)",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "descri": "Export all symbols to Module object (for debugging)",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sEXPORT_ALL"
   },
   {
     "option": "-sPTHREAD_POOL_SIZE",
-    "descri": "Thread pool size",
+    "descri": "Thread pool size (0 means create on demand)",
     "defaultVal": "0",
-    "defaultValDescri": "Create on demand"
+    "defaultValDescri": "0",
+    "enabledVal": "-sPTHREAD_POOL_SIZE={value}"
   },
   {
     "option": "-sPROXY_TO_PTHREAD",
-    "descri": "Run main thread execution in pthread",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "descri": "Run main() in a pthread worker",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sPROXY_TO_PTHREAD"
   },
   {
     "option": "-sUSE_PTHREADS",
-    "descri": "Same as -pthread",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "descri": "Enable Pthreads multithreading support (alias for -pthread)",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sUSE_PTHREADS"
   },
   {
     "option": "-sDISABLE_EXCEPTION_CATCHING",
     "descri": "Disable exception catching (0 enables JS implementation)",
-    "defaultVal": "0",
-    "defaultValDescri": "Enabled"
+    "defaultVal": "enabled",
+    "defaultValDescri": "Enabled",
+    "enabledVal": "-sDISABLE_EXCEPTION_CATCHING=1"
   },
   {
     "option": "-sEXCEPTION_STACK_TRACES",
-    "descri": "Show stack traces on exception",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "descri": "Show stack trace on exceptions",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sEXCEPTION_STACK_TRACES"
   },
   {
-    "option": "--closure 1",
-    "descri": "Use Closure Compiler to minify JS (requires Java installed)",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "option": "--closure",
+    "descri": "Use Closure Compiler to minify JS",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "--closure"
   },
   {
-    "option": "--closure-args <args>",
-    "descri": "Pass arguments to Closure",
-    "defaultVal": "-",
-    "defaultValDescri": "None, manual specification required"
+    "option": "--closure-args",
+    "descri": "Pass arguments to Closure Compiler",
+    "defaultVal": "none",
+    "defaultValDescri": "None",
+    "enabledVal": "--closure-args=\"{value}\""
   },
   {
     "option": "-sIGNORE_MISSING_MAIN",
-    "descri": "Don't error on missing main function",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled, error on missing main"
+    "descri": "No error when main function is missing",
+    "defaultVal": "enabled",
+    "defaultValDescri": "Enabled",
+    "enabledVal": "-sIGNORE_MISSING_MAIN=1"
   },
   {
     "option": "-sMALLOC",
-    "descri": "Memory allocator ('emmalloc' smaller but slower)",
+    "descri": "Memory allocator (dlmalloc default, emmalloc smaller but slower)",
     "defaultVal": "dlmalloc",
-    "defaultValDescri": "Standard allocator"
+    "defaultValDescri": "dlmalloc",
+    "enabledVal": "-sMALLOC=\"{value}\""
   },
   {
     "option": "-sEVAL_CTORS",
-    "descri": "Execute constructors at compile time",
-    "defaultVal": "1",
-    "defaultValDescri": "Enabled"
+    "descri": "Evaluate constructors at compile time (reduces runtime overhead)",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sEVAL_CTORS"
   },
   {
     "option": "-sAGGRESSIVE_VARIABLE_ELIMINATION",
     "descri": "Aggressive variable elimination",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sAGGRESSIVE_VARIABLE_ELIMINATION"
   },
   {
     "option": "-sFETCH",
     "descri": "Enable Fetch API support",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sFETCH"
   },
   {
     "option": "-sWEBSOCKET_URL",
-    "descri": "WebSocket configuration",
-    "defaultVal": "-",
-    "defaultValDescri": "None, manual URL specification required"
+    "descri": "WebSocket connection URL",
+    "defaultVal": "ws://",
+    "defaultValDescri": "ws://",
+    "enabledVal": "-sWEBSOCKET_URL=\"{value}\""
   },
   {
     "option": "-sPROXY_POSIX_SOCKETS",
     "descri": "Proxy POSIX sockets through WebSocket",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
-  },
-  {
-    "option": "-sWEBGL_VERSION",
-    "descri": "WebGL version",
-    "defaultVal": "1",
-    "defaultValDescri": "WebGL version"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sPROXY_POSIX_SOCKETS"
   },
   {
     "option": "-sUSE_SDL",
     "descri": "Use SDL (2 for SDL2)",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sUSE_SDL=2"
   },
   {
     "option": "-sUSE_ZLIB",
     "descri": "Use zlib",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sUSE_ZLIB"
   },
   {
     "option": "-sUSE_LIBPNG",
     "descri": "Use libpng",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sUSE_LIBPNG"
   },
   {
     "option": "-sUSE_FREETYPE",
     "descri": "Use FreeType",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sUSE_FREETYPE"
   },
   {
     "option": "-sUSE_BOOST_HEADERS",
     "descri": "Use Boost headers",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sUSE_BOOST_HEADERS"
   },
   {
     "option": "-sINVOKE_RUN",
     "descri": "Automatically run main()",
-    "defaultVal": "1",
-    "defaultValDescri": "Enabled"
+    "defaultVal": "enabled",
+    "defaultValDescri": "Enabled",
+    "enabledVal": "-sINVOKE_RUN"
   },
   {
     "option": "-sEXIT_RUNTIME",
-    "descri": "Clean up runtime after main",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "descri": "Clean up runtime after main ends (calls atexit, etc.)",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sEXIT_RUNTIME"
   },
   {
     "option": "-sNO_EXIT_RUNTIME",
-    "descri": "Prevent runtime exit",
-    "defaultVal": "1",
-    "defaultValDescri": "Enabled"
+    "descri": "Prevent runtime exit (keep runtime alive)",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sNO_EXIT_RUNTIME"
   },
   {
     "option": "-sMODULARIZE_INSTANCE",
-    "descri": "Export instance instead of factory function",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "descri": "Export instance instead of factory function (use with MODULARIZE)",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sMODULARIZE_INSTANCE"
   },
   {
     "option": "-sSTRICT",
-    "descri": "Strict mode (check deprecated options)",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "descri": "Strict mode (check deprecated options, forward compatible)",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sSTRICT"
   },
   {
     "option": "-sVERBOSE",
-    "descri": "Verbose output",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "descri": "Verbose output of compilation process",
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sVERBOSE"
   },
   {
     "option": "-sMIN_CHROME_VERSION",
     "descri": "Minimum Chrome version",
-    "defaultVal": "-",
-    "defaultValDescri": "Auto-compatible"
+    "defaultVal": "85",
+    "defaultValDescri": "85",
+    "enabledVal": "-sMIN_CHROME_VERSION={value}"
   },
   {
     "option": "-sMIN_FIREFOX_VERSION",
     "descri": "Minimum Firefox version",
-    "defaultVal": "-",
-    "defaultValDescri": "Auto-compatible"
+    "defaultVal": "79",
+    "defaultValDescri": "79",
+    "enabledVal": "-sMIN_FIREFOX_VERSION={value}"
   },
   {
     "option": "-sINCOMING_MODULE_JS_API",
-    "descri": "Specify exported Module properties (empty=all)",
-    "defaultVal": "-",
-    "defaultValDescri": "Export all properties"
+    "descri": "Specify imported Module properties (empty means no Module properties used)",
+    "defaultVal": "[]",
+    "defaultValDescri": "[]",
+    "enabledVal": "-sINCOMING_MODULE_JS_API=\"{value}\""
   },
   {
     "option": "-sAUTO_JS_LIBRARIES",
     "descri": "Auto-link JS libraries",
-    "defaultVal": "1",
-    "defaultValDescri": "Enabled"
+    "defaultVal": "enabled",
+    "defaultValDescri": "Enabled",
+    "enabledVal": "-sAUTO_JS_LIBRARIES"
   },
   {
     "option": "-sLEGACY_VM_SUPPORT",
     "descri": "Support legacy VMs (before iOS 11.2)",
-    "defaultVal": "0",
-    "defaultValDescri": "Disabled"
+    "defaultVal": "disabled",
+    "defaultValDescri": "Disabled",
+    "enabledVal": "-sLEGACY_VM_SUPPORT"
   }
 ]

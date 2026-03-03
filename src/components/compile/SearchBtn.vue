@@ -152,11 +152,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
       e.preventDefault()
       const selectedOption = filteredOptions.value[activeIndex.value]
       if (selectedOption) {
-        if (selectedOption.defaultVal !== '-') {
-          applySuggestion(`${selectedOption.option}=${selectedOption.defaultVal}`)
-        } else {
-          applySuggestion(selectedOption.option)
-        }
+        handleSuggestionClick(selectedOption)
       }
     } else {
       handleAdd()
@@ -211,9 +207,19 @@ const applySuggestion = (option: string) => {
 
 // 点击建议项
 const handleSuggestionClick = (option: SearchOption) => {
-  if (option.defaultVal !== '-') {
-    applySuggestion(`${option.option}=${option.defaultVal}`)
+  // 如果有 enabledVal，直接使用它作为完整命令
+  if (option.enabledVal) {
+    // 检查是否包含 {value} 占位符（需要用户输入的选项）
+    if (option.enabledVal.includes('{value}')) {
+      // 对于需要用户输入的选项，使用 option 的默认值替换
+      const defaultCmd = option.enabledVal.replace('{value}', option.defaultVal)
+      applySuggestion(defaultCmd)
+    } else {
+      // 布尔选项或固定值选项，直接使用 enabledVal
+      applySuggestion(option.enabledVal)
+    }
   } else {
+    // 没有 enabledVal 的选项，使用 option 本身
     applySuggestion(option.option)
   }
 }
