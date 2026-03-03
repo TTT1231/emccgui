@@ -1,308 +1,308 @@
 [
   {
     "option": "-sENVIRONMENT",
-    "descri": "运行环境(会增加体积)",
+    "descri": "Runtime environment (increases size)",
     "defaultVal": "web,worker",
-    "defaultValDescri": "web、worker"
+    "defaultValDescri": "web,worker"
   },
   {
     "option": "-sASSERTIONS",
-    "descri": "启用运行时断言检查（1 基础，2 详细）",
+    "descri": "Enable runtime assertion checks (1=basic, 2=verbose)",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sSAFE_HEAP",
-    "descri": "检测内存访问错误（性能开销大）",
+    "descri": "Detect memory access errors (high performance overhead)",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sSTACK_OVERFLOW_CHECK",
-    "descri": "栈溢出检测",
+    "descri": "Stack overflow detection",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sINITIAL_MEMORY",
-    "descri": "初始内存大小（必须是 64KB 的倍数）",
+    "descri": "Initial memory size (must be multiple of 64KB)",
     "defaultVal": "16777216",
     "defaultValDescri": "16MB"
   },
   {
     "option": "-sMAXIMUM_MEMORY",
-    "descri": "最大内存限制",
+    "descri": "Maximum memory limit",
     "defaultVal": "-",
-    "defaultValDescri": "无限制"
+    "defaultValDescri": "Unlimited"
   },
   {
     "option": "-sALLOW_MEMORY_GROWTH",
-    "descri": "允许内存动态增长",
+    "descri": "Allow dynamic memory growth",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sSTACK_SIZE",
-    "descri": "设置栈大小",
+    "descri": "Set stack size",
     "defaultVal": "524288",
     "defaultValDescri": "512KB"
   },
   {
     "option": "-sTOTAL_STACK",
-    "descri": "旧版本大小设置",
+    "descri": "Legacy size setting",
     "defaultVal": "512000",
     "defaultValDescri": "512KB"
   },
   {
     "option": "-sFilesystem",
-    "descri": "启用文件系统支持",
+    "descri": "Enable filesystem support",
     "defaultVal": "-",
-    "defaultValDescri": "自动按需启用"
+    "defaultValDescri": "Auto-enable on demand"
   },
   {
     "option": "-sNO_FILESYSTEM",
-    "descri": "禁用文件系统（减小～120KB）",
+    "descri": "Disable filesystem (reduces ~120KB)",
     "defaultVal": "0",
-    "defaultValDescri": "不禁用"
+    "defaultValDescri": "Not disabled"
   },
   {
     "option": "-sFORCE_FILESYSTEM",
-    "descri": "强制包含文件系统",
+    "descri": "Force include filesystem",
     "defaultVal": "0",
-    "defaultValDescri": "不强制"
+    "defaultValDescri": "Not forced"
   },
   {
     "option": "--preload-file",
-    "descri": "预加载文件到虚拟文件系统",
+    "descri": "Preload files to virtual filesystem",
     "defaultVal": "-",
-    "defaultValDescri": "无"
+    "defaultValDescri": "None"
   },
   {
     "option": "--embed-file",
-    "descri": "嵌入文件到JS/wasm中",
+    "descri": "Embed files into JS/wasm",
     "defaultVal": "-",
-    "defaultValDescri": "无"
+    "defaultValDescri": "None"
   },
   {
     "option": "-lembind",
-    "descri": "同上，链接 Embind 库",
+    "descri": "Same as above, link Embind library",
     "defaultVal": "-",
-    "defaultValDescri": "无,需手动指定"
+    "defaultValDescri": "None, manual specification required"
   },
   {
     "option": "-sWASM_BIGINT",
-    "descri": "支持 JS BigInt 与 i64 互操作（需 Node 10.4+）",
+    "descri": "Support JS BigInt and i64 interoperability (requires Node 10.4+)",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sWASM_ASYNC_COMPILATION",
-    "descri": "异步编译 wasm",
+    "descri": "Asynchronous wasm compilation",
     "defaultVal": "1",
-    "defaultValDescri": "启用"
+    "defaultValDescri": "Enabled"
   },
   {
     "option": "-sSTANDALONE_WASM",
-    "descri": "生成独立 wasm",
+    "descri": "Generate standalone wasm",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sIMPORT_MEMORY",
-    "descri": "从外部导入内存",
+    "descri": "Import memory from external source",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sEXPORT_ALL",
-    "descri": "导出所有函数（调试用）",
+    "descri": "Export all functions (for debugging)",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sPTHREAD_POOL_SIZE",
-    "descri": "线程池大小",
+    "descri": "Thread pool size",
     "defaultVal": "0",
-    "defaultValDescri": "按需创建"
+    "defaultValDescri": "Create on demand"
   },
   {
     "option": "-sPROXY_TO_PTHREAD",
-    "descri": "主线程执行在 pthread 中运行",
+    "descri": "Run main thread execution in pthread",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sUSE_PTHREADS",
-    "descri": "同 -pthread",
+    "descri": "Same as -pthread",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sDISABLE_EXCEPTION_CATCHING",
-    "descri": "禁用异常捕获（0 启用 JS 实现）",
+    "descri": "Disable exception catching (0 enables JS implementation)",
     "defaultVal": "0",
-    "defaultValDescri": "启用"
+    "defaultValDescri": "Enabled"
   },
   {
     "option": "-sEXCEPTION_STACK_TRACES",
-    "descri": "异常时显示栈上跟踪",
+    "descri": "Show stack traces on exception",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "--closure 1",
-    "descri": "使用 Closure Compiler 压缩 JS（需安装 Java）",
+    "descri": "Use Closure Compiler to minify JS (requires Java installed)",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "--closure-args <args>",
-    "descri": "传递参数给给 Closure",
+    "descri": "Pass arguments to Closure",
     "defaultVal": "-",
-    "defaultValDescri": "无,需手动指定"
+    "defaultValDescri": "None, manual specification required"
   },
   {
     "option": "-sIGNORE_MISSING_MAIN",
-    "descri": "无 main 函数也不报错",
+    "descri": "Don't error on missing main function",
     "defaultVal": "0",
-    "defaultValDescri": "禁用，无main函数报错"
+    "defaultValDescri": "Disabled, error on missing main"
   },
   {
     "option": "-sMALLOC",
-    "descri": "内存分配器（'emmalloc'更小但慢）",
+    "descri": "Memory allocator ('emmalloc' smaller but slower)",
     "defaultVal": "dlmalloc",
-    "defaultValDescri": "标准分配器"
+    "defaultValDescri": "Standard allocator"
   },
   {
     "option": "-sEVAL_CTORS",
-    "descri": "编译时执行构造函数",
+    "descri": "Execute constructors at compile time",
     "defaultVal": "1",
-    "defaultValDescri": "启用"
+    "defaultValDescri": "Enabled"
   },
   {
     "option": "-sAGGRESSIVE_VARIABLE_ELIMINATION",
-    "descri": "激进的变量消除",
+    "descri": "Aggressive variable elimination",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sFETCH",
-    "descri": "启用 Fetch API 支持",
+    "descri": "Enable Fetch API support",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sWEBSOCKET_URL",
-    "descri": "WebSocket 配置",
+    "descri": "WebSocket configuration",
     "defaultVal": "-",
-    "defaultValDescri": "无,需手动指定URL"
+    "defaultValDescri": "None, manual URL specification required"
   },
   {
     "option": "-sPROXY_POSIX_SOCKETS",
-    "descri": "通过 WebSocket 代理 POSIX socket",
+    "descri": "Proxy POSIX sockets through WebSocket",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sWEBGL_VERSION",
-    "descri": "WebGL 版本",
+    "descri": "WebGL version",
     "defaultVal": "1",
-    "defaultValDescri": "WebGL版本"
+    "defaultValDescri": "WebGL version"
   },
   {
     "option": "-sUSE_SDL",
-    "descri": "使用 SDL（2 表示 SDL2）",
+    "descri": "Use SDL (2 for SDL2)",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sUSE_ZLIB",
-    "descri": "使用 zlib",
+    "descri": "Use zlib",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sUSE_LIBPNG",
-    "descri": "使用 libpng",
+    "descri": "Use libpng",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sUSE_FREETYPE",
-    "descri": "使用 FreeType",
+    "descri": "Use FreeType",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sUSE_BOOST_HEADERS",
-    "descri": "使用 Boost 头文件",
+    "descri": "Use Boost headers",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sINVOKE_RUN",
-    "descri": "自动运行 main()",
+    "descri": "Automatically run main()",
     "defaultVal": "1",
-    "defaultValDescri": "启用"
+    "defaultValDescri": "Enabled"
   },
   {
     "option": "-sEXIT_RUNTIME",
-    "descri": "main 结束后清理运行时",
+    "descri": "Clean up runtime after main",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sNO_EXIT_RUNTIME",
-    "descri": "禁止运行时退出",
+    "descri": "Prevent runtime exit",
     "defaultVal": "1",
-    "defaultValDescri": "启用"
+    "defaultValDescri": "Enabled"
   },
   {
     "option": "-sMODULARIZE_INSTANCE",
-    "descri": "导出实例而非工厂函数",
+    "descri": "Export instance instead of factory function",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sSTRICT",
-    "descri": "严格模式（检查废弃option）",
+    "descri": "Strict mode (check deprecated options)",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sVERBOSE",
-    "descri": "详细输出",
+    "descri": "Verbose output",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   },
   {
     "option": "-sMIN_CHROME_VERSION",
-    "descri": "最低 Chrome 版本",
+    "descri": "Minimum Chrome version",
     "defaultVal": "-",
-    "defaultValDescri": "自动兼容"
+    "defaultValDescri": "Auto-compatible"
   },
   {
     "option": "-sMIN_FIREFOX_VERSION",
-    "descri": "最低 Firefox 版本",
+    "descri": "Minimum Firefox version",
     "defaultVal": "-",
-    "defaultValDescri": "自动兼容"
+    "defaultValDescri": "Auto-compatible"
   },
   {
     "option": "-sINCOMING_MODULE_JS_API",
-    "descri": "指定导出的 Module 属性（空=全部）",
+    "descri": "Specify exported Module properties (empty=all)",
     "defaultVal": "-",
-    "defaultValDescri": "导出全部属性"
+    "defaultValDescri": "Export all properties"
   },
   {
     "option": "-sAUTO_JS_LIBRARIES",
-    "descri": "自动链接 JS 库",
+    "descri": "Auto-link JS libraries",
     "defaultVal": "1",
-    "defaultValDescri": "启用"
+    "defaultValDescri": "Enabled"
   },
   {
     "option": "-sLEGACY_VM_SUPPORT",
-    "descri": "支持旧版 VM（iOS 11.2 前）",
+    "descri": "Support legacy VMs (before iOS 11.2)",
     "defaultVal": "0",
-    "defaultValDescri": "禁用"
+    "defaultValDescri": "Disabled"
   }
 ]
