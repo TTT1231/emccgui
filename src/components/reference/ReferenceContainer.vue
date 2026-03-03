@@ -165,18 +165,20 @@ function selectCategory(categoryName: string) {
   background: var(--ref-bg-card);
   border-radius: 12px;
   border: 1px solid var(--ref-border);
+  /* 防止高度变化导致布局跳动 */
+  min-height: 48px;
 }
 
 .ref-category-chip {
   padding: 8px 16px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   background: transparent;
   border: none;
   border-radius: 8px;
   color: var(--ref-text-muted);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
   white-space: nowrap;
 }
 
@@ -188,7 +190,6 @@ function selectCategory(categoryName: string) {
 .ref-category-chip.active {
   background: var(--ref-primary);
   color: var(--ref-on-primary);
-  font-weight: 600;
 }
 
 /* 已选导航项特殊样式 */
