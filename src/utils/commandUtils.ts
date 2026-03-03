@@ -39,17 +39,9 @@ export function resolveEnabledValue(template: string, value: string): string {
  */
 export function formatCommandLine(cmd: string | { name: string; value?: string }): string {
   if (typeof cmd === 'string') {
-    const eqIndex = cmd.indexOf('=')
-    if (eqIndex > 0) {
-      return cmd
-    }
     return cmd
   }
-  // CommandLine 对象
-  if (cmd.value !== undefined) {
-    return `${cmd.name}=${cmd.value}`
-  }
-  return cmd.name
+  return cmd.value !== undefined ? `${cmd.name}=${cmd.value}` : cmd.name
 }
 
 /**
@@ -76,7 +68,7 @@ export function extractCommandName(command: string): string {
 /**
  * 检查两个命令是否同名（忽略值部分）
  */
-export function isSameCommand(cmd1: string, cmd2: string): boolean{
+export function isSameCommand(cmd1: string, cmd2: string): boolean {
   return extractCommandName(cmd1) === extractCommandName(cmd2)
 }
 
