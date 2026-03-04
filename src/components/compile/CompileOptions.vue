@@ -21,9 +21,12 @@ const localizedAvailableOptions = computed(() => {
 })
 
 const localizedOptionsWithInput = computed(() => {
+  const isZhCN = locale.value === 'zh-CN'
   return store.optionsWithInput.map(opt => ({
     ...opt,
     hint: opt.hintKey ? t(`hints.${opt.hintKey}`) : opt.hint,
+    inputLabel: isZhCN && opt.inputLabelZh ? opt.inputLabelZh : opt.inputLabel,
+    inputPlaceholder: isZhCN && opt.inputPlaceholderZh ? opt.inputPlaceholderZh : opt.inputPlaceholder,
   }))
 })
 
@@ -33,6 +36,12 @@ const localizedOptionsWithSelect = computed(() => {
     hint: opt.hintKey ? t(`hints.${opt.hintKey}`) : opt.hint,
   }))
 })
+
+// Get localized hint for runtime method
+const { locale } = useI18n()
+const getLocalizedHint = (method: { hint: string; hintZh?: string }) => {
+  return locale.value === 'zh-CN' && method.hintZh ? method.hintZh : method.hint
+}
 
 // ===== Toast 通知状态 =====
 const showToast = ref(false)
@@ -332,7 +341,7 @@ const handleAddCustomMethod = () => {
                     :style="{ left: tooltipPosition.left, top: tooltipPosition.top }"
                   >
                     <div class="tooltip-content">
-                      <span>{{ method.hint }}</span>
+                      <span>{{ getLocalizedHint(method) }}</span>
                       <div v-if="store.outputFormat === 'wasm-only'" class="tooltip-conflict">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                           <circle cx="12" cy="12" r="10"/>

@@ -3,9 +3,10 @@ import { ref, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import type { SearchOption } from '@/types'
-import optionsData from '@/data/options.json'
+import { useSearchOptions } from '@/data/useLocalizedData'
 
 const { t } = useI18n()
+const localizedOptions = useSearchOptions()
 
 // 接收已存在的自定义命令列表
 const props = defineProps<{
@@ -52,8 +53,8 @@ function isValidEmccCommand(cmd: string): boolean {
   return name.length >= 2 && name.startsWith('-')
 }
 
-// 从 options.json 加载选项数据
-const allOptions = ref<SearchOption[]>(optionsData as SearchOption[])
+// 从 composable 加载本地化选项数据
+const allOptions = computed(() => localizedOptions.value)
 
 import { extractCommandName } from '@/utils/commandUtils'
 

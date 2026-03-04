@@ -28,7 +28,9 @@ export interface CompileOptionDef {
   dependsOn?: string
   hasInput?: boolean
   inputPlaceholder?: string
+  inputPlaceholderZh?: string // Chinese placeholder
   inputLabel?: string
+  inputLabelZh?: string // Chinese label
   hint: string
   hintKey?: string // i18n key for hint
   category: string
@@ -48,11 +50,13 @@ export interface RuntimeMethodDef {
   key: string
   name: string
   hint: string
+  hintZh?: string // Chinese hint
 }
 
 // 运行时方法状态
 export interface RuntimeMethodState extends RuntimeMethodDef {
   enabled: boolean
+  hintZh?: string // Chinese hint for localization
 }
 
 // 选项冲突规则
@@ -90,8 +94,10 @@ export interface CommandLine {
 export interface SearchOption {
   option: string
   descri: string
+  descriZh?: string // Chinese description
   defaultVal: string
   defaultValDescri: string
+  defaultValDescriZh?: string // Chinese default value description
   // 用户选择时应该使用的值（如果为空则使用 defaultVal）
   enabledVal?: string
 }
