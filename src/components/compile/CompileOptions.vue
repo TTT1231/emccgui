@@ -1,11 +1,38 @@
 ﻿<script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import { useCompileStore } from '@/stores/useCompileStore'
-import { optimizationLevels } from '@/data'
+import { useLocalizedOptimizationLevels } from '@/data/useLocalizedData'
 import SearchBtn from './SearchBtn.vue'
 
+const { t } = useI18n()
 const store = useCompileStore()
+
+// Localized optimization levels
+const optimizationLevels = useLocalizedOptimizationLevels()
+
+// Create localized options by merging store data with translated hints
+const localizedAvailableOptions = computed(() => {
+  return store.availableOptions.map(opt => ({
+    ...opt,
+    hint: opt.hintKey ? t(`hints.${opt.hintKey}`) : opt.hint,
+  }))
+})
+
+const localizedOptionsWithInput = computed(() => {
+  return store.optionsWithInput.map(opt => ({
+    ...opt,
+    hint: opt.hintKey ? t(`hints.${opt.hintKey}`) : opt.hint,
+  }))
+})
+
+const localizedOptionsWithSelect = computed(() => {
+  return store.optionsWithSelect.map(opt => ({
+    ...opt,
+    hint: opt.hintKey ? t(`hints.${opt.hintKey}`) : opt.hint,
+  }))
+})
 
 // ===== Toast 通知状态 =====
 const showToast = ref(false)
@@ -70,9 +97,9 @@ const hideTooltip = () => {
 const copyCommand = async () => {
   try {
     await navigator.clipboard.writeText(store.fullCommand)
-    showNotification('✓ Command copied to clipboard')
+    showNotification(t('compile.copySuccess'))
   } catch (err) {
-    showNotification('✕ Copy failed, please copy manually')
+    showNotification(t('compile.copyFailed'))
   }
 }
 
@@ -110,7 +137,7 @@ const handleAddCustomMethod = () => {
                 <path d="M4 16h16"/>
               </svg>
             </div>
-            <h3 class="card-title">Common Compile Configuration</h3>
+            <h3 class="card-title">{{ t('compile.cardTitle') }}</h3>
             <span class="options-count">{{ store.enabledAvailableCount }}/{{ store.availableOptions.length }}</span>
           </div>
 
@@ -119,7 +146,7 @@ const handleAddCustomMethod = () => {
             <!-- 选项网格 -->
             <div class="options-grid">
               <label
-                v-for="opt in store.availableOptions"
+                v-for="opt in localizedAvailableOptions"
                 :key="opt.key"
                 class="option-chip"
                 :class="{
@@ -158,7 +185,7 @@ const handleAddCustomMethod = () => {
             <!-- 优化级别 - 下拉选择 -->
             <div class="dynamic-fields">
               <div class="form-field form-field-compact">
-                <label class="field-label">Optimization Level</label>
+                <label class="field-label">{{ t('compile.optimizationLevel') }}</label>
                 <select :value="store.optimizationLevel" class="field-select" @change="store.setOptimizationLevel(($event.target as HTMLSelectElement).value as any)">
                   <option
                     v-for="level in optimizationLevels"
@@ -172,8 +199,8 @@ const handleAddCustomMethod = () => {
             </div>
 
             <!-- 动态输入框 -->
-            <div v-if="store.optionsWithInput.length > 0" class="dynamic-fields">
-              <template v-for="opt in store.optionsWithInput" :key="opt.key + '-input'">
+            <div v-if="localizedOptionsWithInput.length > 0" class="dynamic-fields">
+              <template v-for="opt in localizedOptionsWithInput" :key="opt.key + '-input'">
                 <div class="form-field form-field-compact">
                   <label class="field-label">{{ opt.inputLabel || opt.name }}</label>
                   <input
@@ -189,8 +216,8 @@ const handleAddCustomMethod = () => {
             </div>
 
             <!-- 动态下拉选择 -->
-            <div v-if="store.optionsWithSelect.length > 0" class="dynamic-fields">
-              <template v-for="opt in store.optionsWithSelect" :key="opt.key + '-select'">
+            <div v-if="localizedOptionsWithSelect.length > 0" class="dynamic-fields">
+              <template v-for="opt in localizedOptionsWithSelect" :key="opt.key + '-select'">
                 <div class="form-field form-field-compact">
                   <label class="field-label">{{ opt.name }}</label>
                   <select :value="opt.currentValue" class="field-select" @change="store.updateOptionValue(opt.key, ($event.target as HTMLSelectElement).value)">
@@ -215,7 +242,7 @@ const handleAddCustomMethod = () => {
         <div class="code-block">
           <div class="code-block-header">
             <span class="code-lang">emcc</span>
-            <button class="copy-btn" @click="copyCommand" title="Copy command">
+            <button class="copy-btn" @click="copyCommand" :title="t('compile.copyTooltip')">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
                 <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
@@ -270,7 +297,7 @@ const handleAddCustomMethod = () => {
                 <line x1="12" x2="12" y1="22" y2="12"/>
               </svg>
             </div>
-            <h3 class="card-title">Export Runtime Methods</h3>
+            <h3 class="card-title">{{ t('compile.runtimeMethods') }}</h3>
             <span class="options-count">{{ store.runtimeMethods.filter(m => m.enabled).length }}/{{ store.runtimeMethods.length }}</span>
           </div>
 
@@ -312,7 +339,7 @@ const handleAddCustomMethod = () => {
                           <path d="M12 16v-4"/>
                           <path d="M12 8h.01"/>
                         </svg>
-                        <span>Pure WASM mode does not generate JS glue code, this method is invalid</span>
+                        <span>{{ t('compile.pureWasmWarning') }}</span>
                       </div>
                     </div>
                     <div class="tooltip-arrow"></div>
@@ -328,7 +355,7 @@ const handleAddCustomMethod = () => {
               >
                 <span class="chip-indicator"></span>
                 <span class="chip-label">{{ name }}</span>
-                <button class="remove-method-btn" @click.stop="store.removeCustomRuntimeMethod(name)" title="Remove">×</button>
+                <button class="remove-method-btn" @click.stop="store.removeCustomRuntimeMethod(name)" :title="t('compile.removeMethod')">×</button>
               </span>
             </div>
 
@@ -338,7 +365,7 @@ const handleAddCustomMethod = () => {
                 v-model="customMethodInput"
                 type="text"
                 class="field-input custom-method-input"
-                placeholder="Enter method name, e.g., UTF8ToString"
+                :placeholder="t('compile.methodPlaceholder')"
                 spellcheck="false"
                 @keydown.enter="handleAddCustomMethod"
               />
@@ -360,7 +387,7 @@ const handleAddCustomMethod = () => {
             <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
             <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
           </svg>
-          <span class="btn-text">Copy Command</span>
+          <span class="btn-text">{{ t('compile.copyCommand') }}</span>
         </button>
 
         <!-- Toast 通知 -->

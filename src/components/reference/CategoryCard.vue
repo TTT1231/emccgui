@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { RefCategory } from '@/types'
 import OptionRow from './OptionRow.vue'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   category: RefCategory
@@ -39,11 +42,11 @@ function toggleCollapse() {
     <Transition name="collapse">
       <div v-show="!isCollapsed" class="ref-category-content">
         <div class="ref-table-header">
-          <span>Command</span>
-          <span>Description</span>
-          <span>Type</span>
-          <span>Default</span>
-          <span>Current</span>
+          <span>{{ t('reference.command') }}</span>
+          <span>{{ t('reference.description') }}</span>
+          <span>{{ t('reference.type') }}</span>
+          <span>{{ t('reference.default') }}</span>
+          <span>{{ t('reference.current') }}</span>
         </div>
         <div class="ref-category-inner">
           <OptionRow

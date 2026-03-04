@@ -39,6 +39,7 @@ export interface RefOption {
 // 配置参考分类
 export interface RefCategory {
   name: string
+  nameKey?: string // i18n key for name
   icon: string
   options: RefOption[]
 }

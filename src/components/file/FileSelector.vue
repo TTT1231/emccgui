@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted, onActivated, onDeactivated, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useCompileStore } from '@/stores/useCompileStore'
 import { EditorView, keymap, lineNumbers, highlightActiveLine,
   highlightActiveLineGutter, drawSelection, dropCursor,
@@ -18,6 +19,7 @@ import { python } from '@codemirror/lang-python'
 import { java } from '@codemirror/lang-java'
 import { oneDark } from '@codemirror/theme-one-dark'
 
+const { t } = useI18n()
 const store = useCompileStore()
 
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -394,8 +396,8 @@ onUnmounted(() => {
             <path d="M12 12v6"/>
             <path d="m9 15 3-3 3 3"/>
           </svg>
-          <span class="drop-overlay__title">{{ store.selectedFile ? 'Release to replace file' : 'Release to open file' }}</span>
-          <span class="drop-overlay__hint">Supports common WebAssembly languages</span>
+          <span class="drop-overlay__title">{{ store.selectedFile ? t('fileSelector.dropReplace') : t('fileSelector.dropOpen') }}</span>
+          <span class="drop-overlay__hint">{{ t('fileSelector.dropHint') }}</span>
         </div>
       </div>
     </Transition>
@@ -427,29 +429,29 @@ onUnmounted(() => {
               <path d="m9 15 3-3 3 3"/>
             </svg>
           </div>
-          <p class="drop-zone__title">Drag files here, or <span class="drop-zone__link">click to select</span></p>
-          <p class="drop-zone__hint">Supports common WebAssembly languages &nbsp;·&nbsp; C/C++/Rust/Go/Java/Python/C#, etc.</p>
+          <p class="drop-zone__title">{{ t('fileSelector.dragOrClick', { click: '' }) }}<span class="drop-zone__link">{{ t('fileSelector.clickToSelect') }}</span></p>
+          <p class="drop-zone__hint">{{ t('fileSelector.supportedLangs') }}</p>
         </div>
 
         <!-- 使用步骤 -->
         <div class="steps">
           <div class="step">
             <span class="step-num">1</span>
-            <span class="step-text">Select WebAssembly source file</span>
+            <span class="step-text">{{ t('fileSelector.step1') }}</span>
           </div>
           <div class="step-arrow">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </div>
           <div class="step">
             <span class="step-num">2</span>
-            <span class="step-text">Configure options in "Compile" tab</span>
+            <span class="step-text">{{ t('fileSelector.step2') }}</span>
           </div>
           <div class="step-arrow">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </div>
           <div class="step">
             <span class="step-num">3</span>
-            <span class="step-text">Copy and execute emcc command</span>
+            <span class="step-text">{{ t('fileSelector.step3') }}</span>
           </div>
         </div>
       </div>
@@ -472,7 +474,7 @@ onUnmounted(() => {
       <!-- 主标题行 -->
       <div class="editor-header">
         <div class="editor-header__left">
-          <span class="dirty-dot" :class="{ 'dirty-dot--visible': isDirty }" title="Unsaved changes">●</span>
+          <span class="dirty-dot" :class="{ 'dirty-dot--visible': isDirty }" :title="t('fileSelector.unsavedChanges')">●</span>
           <span
             class="file-badge"
             :style="getFileBadgeStyle(getFileExt(store.selectedFile!.name))"
@@ -484,14 +486,14 @@ onUnmounted(() => {
           <span class="file-name" :class="{ 'file-name--dirty': isDirty }">{{ store.selectedFile?.name }}</span>
         </div>
         <div class="editor-header__right">
-          <span class="line-count">{{ lineCount }} lines</span>
+          <span class="line-count">{{ lineCount }} {{ t('fileSelector.lines') }}</span>
 
           <!-- Save Button -->
           <button
             class="save-btn"
             :class="{ 'save-btn--dirty': isDirty, 'save-btn--saved': savedFlash }"
             :disabled="!isDirty && !savedFlash"
-            title="Save file (Ctrl+S)"
+            :title="t('fileSelector.saveTooltip')"
             @click="saveFile"
           >
             <svg v-if="!savedFlash" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -502,11 +504,11 @@ onUnmounted(() => {
             <svg v-else xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            <span>{{ savedFlash ? 'Saved' : 'Save' }}</span>
+            <span>{{ savedFlash ? t('fileSelector.saved') : t('fileSelector.save') }}</span>
           </button>
 
           <!-- Change File -->
-          <button class="icon-btn" title="Reselect file" @click="fileInput?.click()">
+          <button class="icon-btn" :title="t('fileSelector.reselectTooltip')" @click="fileInput?.click()">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
               <polyline points="17 8 12 3 7 8"/>
@@ -515,7 +517,7 @@ onUnmounted(() => {
           </button>
 
           <!-- Close -->
-          <button class="icon-btn icon-btn--danger" title="Remove file" @click="clearFile">
+          <button class="icon-btn icon-btn--danger" :title="t('fileSelector.removeTooltip')" @click="clearFile">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
             </svg>
@@ -529,13 +531,13 @@ onUnmounted(() => {
           <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/>
           <path d="M14 2v4a2 2 0 0 0 2 2h4"/>
         </svg>
-        <span class="output-bar__label">Output filename</span>
+        <span class="output-bar__label">{{ t('fileSelector.outputLabel') }}</span>
         <div class="output-bar__input">
           <input
             :value="store.outputFileName"
             type="text"
             class="output-bar__field"
-            placeholder="hello"
+            :placeholder="t('fileSelector.outputPlaceholder')"
             spellcheck="false"
             @input="store.setOutputFileName(($event.target as HTMLInputElement).value)"
           />

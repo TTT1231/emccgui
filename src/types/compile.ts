@@ -30,7 +30,9 @@ export interface CompileOptionDef {
   inputPlaceholder?: string
   inputLabel?: string
   hint: string
+  hintKey?: string // i18n key for hint
   category: string
+  categoryKey?: string // i18n key for category
   defaultEnabled?: boolean // 是否默认启用
   enabledValue?: string // 命令行模板（遵循 refConfigData 格式标准）
 }
@@ -98,4 +100,5 @@ export interface SearchOption {
 export interface OptimizationLevelOption {
   value: 'O0' | 'O1' | 'O2' | 'O3' | 'Os' | 'Oz'
   label: string
+  labelKey?: string // i18n key for label
 }

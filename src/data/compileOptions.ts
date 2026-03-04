@@ -44,7 +44,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     defaultEnabled: true,
     enabledValue: '-sEXPORT_ES6',
     hint: 'Generate ES6 module format (requires MODULARIZE)',
-    category: '模块化'
+    hintKey: 'exportES6',
+    category: '模块化',
+    categoryKey: 'modular'
   },
   {
     key: 'modularize',
@@ -58,7 +60,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     defaultEnabled: true,
     enabledValue: '-sMODULARIZE',
     hint: 'Convert JS code to factory function (becomes async)',
-    category: '模块化'
+    hintKey: 'modularize',
+    category: '模块化',
+    categoryKey: 'modular'
   },
   {
     key: 'exportName',
@@ -77,7 +81,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     defaultEnabled: true,
     enabledValue: '-sEXPORT_NAME="{value}"',
     hint: 'Specify exported module name (factory function name)',
-    category: '模块化'
+    hintKey: 'exportName',
+    category: '模块化',
+    categoryKey: 'modular'
   },
   {
     key: 'singleFile',
@@ -90,7 +96,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     jsWasmOnly: true,
     enabledValue: '-sSINGLE_FILE',
     hint: 'Embed WASM as Base64 into JS file for single-file output',
-    category: '模块化'
+    hintKey: 'singleFile',
+    category: '模块化',
+    categoryKey: 'modular'
   },
 
   // === WASM 相关 ===
@@ -105,7 +113,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     defaultEnabled: true,
     enabledValue: '-sWASM',
     hint: 'Output WebAssembly',
-    category: 'WASM'
+    hintKey: 'wasm',
+    category: 'WASM',
+    categoryKey: 'wasm'
   },
   {
     key: 'allowMemoryGrowth',
@@ -118,7 +128,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     defaultEnabled: true,
     enabledValue: '-sALLOW_MEMORY_GROWTH',
     hint: '(Default 16MB) Allow WASM memory to grow dynamically at runtime',
-    category: 'WASM'
+    hintKey: 'allowMemoryGrowth',
+    category: 'WASM',
+    categoryKey: 'wasm'
   },
   {
     key: 'exportAll',
@@ -130,7 +142,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     formatType: 'flag',
     enabledValue: '-sEXPORT_ALL',
     hint: 'Export all symbols (functions and global variables)',
-    category: 'WASM'
+    hintKey: 'exportAll',
+    category: 'WASM',
+    categoryKey: 'wasm'
   },
   {
     key: 'standaloneWasm',
@@ -143,7 +157,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     jsWasmOnly: true,
     enabledValue: '-sSTANDALONE_WASM',
     hint: 'Generate standalone WASM with minimal external dependencies (conflicts with wasm-only)',
-    category: 'WASM'
+    hintKey: 'standaloneWasm',
+    category: 'WASM',
+    categoryKey: 'wasm'
   },
 
   // === 类型定义 ===
@@ -162,7 +178,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     defaultEnabled: true,
     enabledValue: '--emit-tsd="{value}"',
     hint: 'Generate TypeScript definition file (.d.ts)',
-    category: '类型定义'
+    hintKey: 'emitTsd',
+    category: '类型定义',
+    categoryKey: 'typeDefinition'
   },
   {
     key: 'SIDE_MODULE',
@@ -172,11 +190,11 @@ export const compileOptionsData: CompileOptionDef[] = [
     valueType: 'boolean',
     defaultValue: 1,
     formatType: 'flag',
-    // 注意：SIDE_MODULE 默认不启用，因为它会与其他选项冲突
-    // SIDE_MODULE 只在 wasm-only 模式可用
     enabledValue: '-sSIDE_MODULE',
     hint: 'Compile pure WASM module without main function',
-    category: '类型定义'
+    hintKey: 'sideModule',
+    category: '类型定义',
+    categoryKey: 'typeDefinition'
   },
 
   // === 导出函数 ===
@@ -194,7 +212,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     inputPlaceholder: '_main,_myFunc,_anotherFunc',
     enabledValue: '-sEXPORTED_FUNCTIONS="{value}"',
     hint: 'Specify C/C++ functions to export (comma-separated, prefix function names with underscore)',
-    category: '导出'
+    hintKey: 'exportedFunctions',
+    category: '导出',
+    categoryKey: 'export'
   },
 
   // === bind相关 ===
@@ -207,7 +227,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     formatType: 'arg',
     enabledValue: '--bind',
     hint: 'Enable Embind for C++ and JavaScript bindings',
-    category: '绑定'
+    hintKey: 'bind',
+    category: '绑定',
+    categoryKey: 'binding'
   },
 
   // === 调试相关 ===
@@ -228,7 +250,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     ],
     enabledValue: '-g{value}',
     hint: 'Generate debug info: -g1 preserve whitespace, -g2 preserve function names, -g3 preserve DWARF, -g4 include source code',
-    category: '调试'
+    hintKey: 'debug',
+    category: '调试',
+    categoryKey: 'debug'
   },
   {
     key: 'sourceMap',
@@ -239,7 +263,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     formatType: 'arg',
     enabledValue: '-gsource-map',
     hint: 'Generate Source Map file for browser debugging',
-    category: '调试'
+    hintKey: 'sourceMap',
+    category: '调试',
+    categoryKey: 'debug'
   },
   {
     key: 'assertions',
@@ -256,7 +282,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     ],
     enabledValue: '-sASSERTIONS={value}',
     hint: 'Enable runtime assertion checks: =1 basic, =2 detailed (increases size)',
-    category: '调试'
+    hintKey: 'assertions',
+    category: '调试',
+    categoryKey: 'debug'
   },
 
   // === 高级特性 ===
@@ -269,7 +297,9 @@ export const compileOptionsData: CompileOptionDef[] = [
     formatType: 'arg',
     enabledValue: '-pthread',
     hint: 'Enable multi-threading support (requires SharedArrayBuffer)',
-    category: '高级'
+    hintKey: 'pthread',
+    category: '高级',
+    categoryKey: 'advanced'
   },
   {
     key: 'fexceptions',
@@ -280,16 +310,18 @@ export const compileOptionsData: CompileOptionDef[] = [
     formatType: 'arg',
     enabledValue: '-fexceptions',
     hint: 'Enable C++ exception handling support',
-    category: '高级'
+    hintKey: 'fexceptions',
+    category: '高级',
+    categoryKey: 'advanced'
   }
 ]
 
 // Optimization level options
 export const optimizationLevels: OptimizationLevelOption[] = [
-  { value: 'O0', label: '-O0 (Default, no optimization)' },
-  { value: 'O1', label: '-O1 (Basic optimization)' },
-  { value: 'O2', label: '-O2 (Standard optimization)' },
-  { value: 'O3', label: '-O3 (Maximum optimization)' },
-  { value: 'Os', label: '-Os (Size optimization)' },
-  { value: 'Oz', label: '-Oz (Extreme size optimization)' }
+  { value: 'O0', label: '-O0 (Default, no optimization)', labelKey: 'O0' },
+  { value: 'O1', label: '-O1 (Basic optimization)', labelKey: 'O1' },
+  { value: 'O2', label: '-O2 (Standard optimization)', labelKey: 'O2' },
+  { value: 'O3', label: '-O3 (Maximum optimization)', labelKey: 'O3' },
+  { value: 'Os', label: '-Os (Size optimization)', labelKey: 'Os' },
+  { value: 'Oz', label: '-Oz (Extreme size optimization)', labelKey: 'Oz' }
 ]

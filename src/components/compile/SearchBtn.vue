@@ -1,8 +1,11 @@
 ﻿<script lang="ts" setup>
 import { ref, computed, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import type { SearchOption } from '@/types'
 import optionsData from '@/data/options.json'
+
+const { t } = useI18n()
 
 // 接收已存在的自定义命令列表
 const props = defineProps<{
@@ -125,12 +128,12 @@ const handleAdd = () => {
 
   // 校验是否为合法 emcc 命令
   if (!isValidEmccCommand(commandToAdd)) {
-    showFeedback('Invalid command: emcc commands must start with - (e.g., -sFLAG, --option)', 'error')
+    showFeedback(t('search.invalidCommand'), 'error')
     return
   }
 
   if (isCommandDuplicate(commandToAdd)) {
-    showFeedback('This command already exists in current compile command, no need to add again', 'warn')
+    showFeedback(t('search.duplicateCommand'), 'warn')
     return
   }
 
@@ -274,7 +277,7 @@ const handleFocus = () => {
         type="text"
         class="search-input"
         :class="{ 'search-input--error': feedbackType === 'error' && feedbackMsg, 'search-input--warn': feedbackType === 'warn' && feedbackMsg }"
-        placeholder="Type @ to search options, or enter command directly"
+        :placeholder="t('search.placeholder')"
         @keydown="handleKeyDown"
         @blur="handleBlur"
         @focus="handleFocus"
@@ -287,8 +290,8 @@ const handleFocus = () => {
           :class="`dropdown-${dropdownDirection}`"
         >
           <div class="suggestions-header">
-            <span class="suggestions-count">{{ filteredOptions.length }} options</span>
-            <span class="suggestions-hint">↑↓ Select Enter Confirm</span>
+            <span class="suggestions-count">{{ filteredOptions.length }} {{ t('search.optionsCount') }}</span>
+            <span class="suggestions-hint">{{ t('search.selectHint') }}</span>
           </div>
           <div class="suggestions-list">
             <div
@@ -308,7 +311,7 @@ const handleFocus = () => {
                 </div>
                 <div class="suggestion-right">
                   <span class="default-value">{{
-                    option.defaultValDescri === '-' ? 'None' : option.defaultValDescri
+                    option.defaultValDescri === '-' ? t('search.none') : option.defaultValDescri
                   }}</span>
                 </div>
               </div>
@@ -317,11 +320,11 @@ const handleFocus = () => {
         </div>
       </Transition>
     </div>
-    <button class="add-btn" @click="handleAdd" :disabled="!searchValue.trim()" title="Add command">
+    <button class="add-btn" @click="handleAdd" :disabled="!searchValue.trim()" :title="t('compile.addCommand')">
       <span class="btn-icon">+</span>
-      <span class="btn-text">Add</span>
+      <span class="btn-text">{{ t('search.addBtn') }}</span>
     </button>
-    <button class="undo-btn" @click="handleUndo" title="Undo last (Ctrl+Z)">
+    <button class="undo-btn" @click="handleUndo" :title="t('compile.undoTooltip')">
       <span class="btn-icon">↩</span>
     </button>
     <!-- 反馈消息（绝对定位，不占文档流）-->

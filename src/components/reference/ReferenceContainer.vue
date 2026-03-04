@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useCompileStore } from '@/stores/useCompileStore'
 import { refConfigData } from '@/data'
 import ReferenceSearch from './ReferenceSearch.vue'
 import CategoryCard from './CategoryCard.vue'
 import type { RefCategory, RefOption } from '@/types'
 
+const { t } = useI18n()
 const store = useCompileStore()
 
 // 已选数量：手动选中 + 编译面板贡献的去重合并
@@ -83,7 +85,7 @@ function selectCategory(categoryName: string) {
         :aria-selected="store.refActiveCategory === 'all'"
         @click="selectCategory('all')"
       >
-        All
+        {{ t('reference.all') }}
       </button>
       <button
         v-for="cat in refConfigData.categories"
@@ -105,7 +107,7 @@ function selectCategory(categoryName: string) {
         :aria-selected="store.refActiveCategory === '__selected__'"
         @click="selectCategory('__selected__')"
       >
-        Selected({{ selectedCount }})
+        {{ t('reference.selected', { count: selectedCount }) }}
       </button>
     </nav>
 
@@ -120,7 +122,7 @@ function selectCategory(categoryName: string) {
       </template>
 
       <div v-else class="ref-no-results">
-        <p>No matching options found</p>
+        <p>{{ t('reference.noResults') }}</p>
       </div>
     </div>
   </div>

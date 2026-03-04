@@ -1,12 +1,14 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { useCompileStore } from '@/stores/useCompileStore'
 
+const { t } = useI18n()
 const store = useCompileStore()
 
 const navItems = [
-  { tab: 'file' as const, icon: '📁', label: 'File' },
-  { tab: 'compile' as const, icon: '⚙️', label: 'Compile' },
-  { tab: 'reference' as const, icon: '📖', label: 'Reference' }
+  { tab: 'file' as const, icon: '📁', labelKey: 'nav.file' },
+  { tab: 'compile' as const, icon: '⚙️', labelKey: 'nav.compile' },
+  { tab: 'reference' as const, icon: '📖', labelKey: 'nav.reference' }
 ]
 
 function handleTabClick(tab: 'file' | 'compile' | 'reference') {
@@ -25,7 +27,7 @@ function handleTabClick(tab: 'file' | 'compile' | 'reference') {
         @click="handleTabClick(item.tab)"
       >
         <span class="icon">{{ item.icon }}</span>
-        <span class="label">{{ item.label }}</span>
+        <span class="label">{{ t(item.labelKey) }}</span>
       </button>
     </nav>
   </aside>
