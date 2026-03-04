@@ -6,7 +6,8 @@ export type RefOptionValueType = 'boolean' | 'string' | 'number' | 'string-array
 export interface RefOption {
   option: string
   default: string
-  description: string
+  description: string // English description
+  descriptionZh?: string // Chinese description
   valueType: RefOptionValueType
   editable: boolean
   /** 选中后生成的命令片段 */
@@ -38,8 +39,8 @@ export interface RefOption {
 
 // 配置参考分类
 export interface RefCategory {
-  name: string
-  nameKey?: string // i18n key for name
+  name: string // English name
+  nameZh?: string // Chinese name
   icon: string
   options: RefOption[]
 }

@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { RefCategory } from '@/types'
+import type { RefCategory, RefOption } from '@/types'
 import { compileOptionsData as rawCompileOptionsData, optimizationLevels as rawOptimizationLevels } from './compileOptions'
 import { refConfigData as rawRefConfigData } from './refConfigData'
 
@@ -34,19 +34,20 @@ export function useLocalizedOptimizationLevels() {
 }
 
 /**
- * Localized reference data with translated categories
+ * Localized reference data with translated categories and descriptions
+ * Uses nameZh/descriptionZh fields when locale is zh-CN
  * MUST be called from within a component setup function
  */
 export function useRefConfigData() {
-  const { t } = useI18n()
+  const { locale } = useI18n()
   return computed(() => {
+    const isZhCN = locale.value === 'zh-CN'
     const localizedCategories: RefCategory[] = rawRefConfigData.categories.map(cat => ({
       ...cat,
-      name: cat.nameKey ? t(`categories.${cat.nameKey}`) : cat.name,
-      options: cat.options.map(opt => ({
+      name: isZhCN && cat.nameZh ? cat.nameZh : cat.name,
+      options: cat.options.map((opt: RefOption) => ({
         ...opt,
-        // Note: description and hint translations would need a separate translation system
-        // For now, keep them as-is since they're extensive
+        description: isZhCN && opt.descriptionZh ? opt.descriptionZh : opt.description,
       }))
     }))
     return { categories: localizedCategories }
