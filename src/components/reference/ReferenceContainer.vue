@@ -2,13 +2,14 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCompileStore } from '@/stores/useCompileStore'
-import { refConfigData } from '@/data'
+import { useRefConfigData } from '@/data/useLocalizedData'
 import ReferenceSearch from './ReferenceSearch.vue'
 import CategoryCard from './CategoryCard.vue'
 import type { RefCategory, RefOption } from '@/types'
 
 const { t } = useI18n()
 const store = useCompileStore()
+const refConfigData = useRefConfigData()
 
 // 已选数量：手动选中 + 编译面板贡献的去重合并
 const selectedCount = computed(() => store.totalRefActiveCount)
@@ -31,7 +32,7 @@ const filteredCategories = computed(() => {
     // 直接使用 store 提供的 Set，获得 O(1) 查找性能
     const compileKeys = store.compileContributedRefKeysSet
 
-    return refConfigData.categories
+    return refConfigData.value.categories
       .map((category): RefCategory | null => {
         const filteredOptions = category.options.filter(
           (opt) =>
@@ -45,7 +46,7 @@ const filteredCategories = computed(() => {
   }
 
   // 正常分类过滤
-  return refConfigData.categories
+  return refConfigData.value.categories
     .map((category): RefCategory | null => {
       if (activeCategory !== 'all' && category.name !== activeCategory) {
         return null

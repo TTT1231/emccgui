@@ -14,7 +14,7 @@ import type { RefConfigData } from '@/types'
  * * [Relationship with compileOptionsData]
  * *   ┌─────────────────────────────────────────────────────────────────────┐
  * *   │ compileOptionsData             │ refConfigData                                  │
- *   ├─────────────────────────────────────────────────────────────────────┤
+ * * ├─────────────────────────────────────────────────────────────────────┤
  * *   │ Curated high-frequency options │ Complete Emscripten options documentation      │
  * *   │ About 20-30 options             │ 100+ options, covering all categories         │
  * *   │ Directly generates commands     │ Currently reference only, requires additional processing to generate commands │
@@ -74,12 +74,14 @@ export const refConfigData: RefConfigData = {
   categories: [
     {
       name: "Output & Modularization",
+      nameZh: "输出与模块化",
       icon: icons.modular,
       options: [
         {
           option: "-o",
           default: "-",
           description: "Specify output file name",
+          descriptionZh: "指定输出文件名",
           valueType: "string",
           editable: true,
           enabledValue: "-o=\"{value}\""
@@ -88,6 +90,7 @@ export const refConfigData: RefConfigData = {
           option: "-sMODULARIZE",
           default: "false",
           description: "Convert JS code to factory function, returns Promise",
+          descriptionZh: "将 JS 代码转化为工厂函数，返回 Promise",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sMODULARIZE"
@@ -96,6 +99,7 @@ export const refConfigData: RefConfigData = {
           option: "-sEXPORT_ES6",
           default: "false",
           description: "Generate ES6 module format (requires MODULARIZE)",
+          descriptionZh: "生成 ES6 模块格式（需配合 MODULARIZE）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sEXPORT_ES6"
@@ -104,6 +108,7 @@ export const refConfigData: RefConfigData = {
           option: "-sEXPORT_NAME",
           default: "Module",
           description: "Specify exported module name",
+          descriptionZh: "指定导出的模块名称",
           valueType: "string",
           editable: true,
           enabledValue: "-sEXPORT_NAME=\"{value}\""
@@ -112,6 +117,7 @@ export const refConfigData: RefConfigData = {
           option: "-sSINGLE_FILE",
           default: "false",
           description: "Embed wasm as base64 into JS file",
+          descriptionZh: "将 wasm 以 base64 内嵌到 JS 文件中",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sSINGLE_FILE"
@@ -120,6 +126,7 @@ export const refConfigData: RefConfigData = {
           option: "--emit-tsd",
           default: "''",
           description: "Generate TypeScript declaration file, parameter is output DTS file name",
+          descriptionZh: "生成 TypeScript 类型声明文件，参数为输出DTS文件名",
           valueType: "string",
           editable: true,
           enabledValue: "--emit-tsd=\"{value}\""
@@ -128,6 +135,7 @@ export const refConfigData: RefConfigData = {
           option: "-sENVIRONMENT",
           default: "web,webview,worker,node",
           description: "Target runtime environment (comma-separated for multiple)",
+          descriptionZh: "目标运行环境（多个用逗号分隔）",
           valueType: "string",
           editable: true,
           enabledValue: "-sENVIRONMENT=\"{value}\""
@@ -136,6 +144,7 @@ export const refConfigData: RefConfigData = {
           option: "-sEXPORTED_FUNCTIONS",
           default: "_main",
           description: "Specify exported C/C++ functions (comma-separated, requires _ prefix, e.g., _main,_hello)",
+          descriptionZh: "指定导出的 C/C++ 函数（逗号分隔，需加 _ 前缀，如 _main,_hello）",
           valueType: "string-array",
           editable: true,
           enabledValue: "-sEXPORTED_FUNCTIONS=\"{value}\""
@@ -144,6 +153,7 @@ export const refConfigData: RefConfigData = {
           option: "-sEXPORTED_RUNTIME_METHODS",
           default: "ccall,cwrap",
           description: "Export runtime helper methods (comma-separated, e.g., ccall,cwrap)",
+          descriptionZh: "导出运行时辅助方法（逗号分隔，如 ccall,cwrap）",
           valueType: "string-array",
           editable: true,
           enabledValue: "-sEXPORTED_RUNTIME_METHODS=\"{value}\""
@@ -152,12 +162,14 @@ export const refConfigData: RefConfigData = {
     },
     {
       name: "Debug Options",
+      nameZh: "调试选项",
       icon: icons.debug,
       options: [
         {
           option: "-g",
           default: "disabled",
           description: "Preserve debug information (-g1 preserves whitespace, -g2 preserves function names, -g3 preserves DWARF, -g4 includes source code)",
+          descriptionZh: "保留调试信息（-g1 保留空白，-g2 保留函数名，-g3 保留 DWARF，-g4 包含源码）",
           valueType: "string",
           editable: true,
           enabledValue: "-g{value}",
@@ -167,6 +179,7 @@ export const refConfigData: RefConfigData = {
           option: "-gsource-map",
           default: "false",
           description: "Generate source map",
+          descriptionZh: "生成 source map",
           valueType: "boolean",
           editable: false,
           enabledValue: "-gsource-map"
@@ -175,6 +188,7 @@ export const refConfigData: RefConfigData = {
           option: "-sASSERTIONS",
           default: "1",
           description: "Enable runtime assertion checks (0 disabled, 1 basic, 2 detailed, default adjusts based on optimization level, -O0 defaults to 1, others default to 0)",
+          descriptionZh: "启用运行时断言检查（0 关闭，1 基础，2 详细，默认值根据优化级别自动调整，-O0默认为1，其他默认为0）",
           valueType: "number",
           editable: true,
           enabledValue: "-sASSERTIONS={value}",
@@ -184,6 +198,7 @@ export const refConfigData: RefConfigData = {
           option: "-sSAFE_HEAP",
           default: "0",
           description: "Detect memory access errors (0 disabled, 1 enabled, 2 more detailed, high performance overhead)",
+          descriptionZh: "检测内存访问错误（0 关闭，1 启用，2 更详细，性能开销大）",
           valueType: "number",
           editable: true,
           enabledValue: "-sSAFE_HEAP={value}",
@@ -194,6 +209,7 @@ export const refConfigData: RefConfigData = {
           option: "-sSTACK_OVERFLOW_CHECK",
           default: "0",
           description: "Stack overflow detection (0 disabled, 1 enabled, 2 stricter, defaults to 1 when ASSERTIONS=1)",
+          descriptionZh: "栈溢出检测（0 关闭，1 启用，2 更严格，ASSERTIONS=1 时默认为 1）",
           valueType: "number",
           editable: true,
           enabledValue: "-sSTACK_OVERFLOW_CHECK={value}",
@@ -204,12 +220,14 @@ export const refConfigData: RefConfigData = {
     },
     {
       name: "Memory Configuration",
+      nameZh: "内存配置",
       icon: icons.memory,
       options: [
         {
           option: "-sINITIAL_MEMORY",
           default: "-1",
           description: "Initial memory size (-1 auto-calculates, otherwise must be a multiple of 64KB)",
+          descriptionZh: "初始内存大小（-1 自动计算，否则必须是 64KB 的倍数）",
           valueType: "number",
           editable: true,
           enabledValue: "-sINITIAL_MEMORY={value}"
@@ -218,6 +236,7 @@ export const refConfigData: RefConfigData = {
           option: "-sMAXIMUM_MEMORY",
           default: "2147483648",
           description: "Maximum memory limit (requires ALLOW_MEMORY_GROWTH), defaults to 2GB, in bytes",
+          descriptionZh: "最大内存限制（需配合 ALLOW_MEMORY_GROWTH），默认2GB，单位字节",
           valueType: "number",
           editable: true,
           enabledValue: "-sMAXIMUM_MEMORY={value}"
@@ -226,6 +245,7 @@ export const refConfigData: RefConfigData = {
           option: "-sALLOW_MEMORY_GROWTH",
           default: "false",
           description: "Allow dynamic memory growth",
+          descriptionZh: "允许内存动态增长",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sALLOW_MEMORY_GROWTH"
@@ -234,6 +254,7 @@ export const refConfigData: RefConfigData = {
           option: "-sSTACK_SIZE",
           default: "65536",
           description: "Set stack size (64KB)",
+          descriptionZh: "设置栈大小（64KB）",
           valueType: "number",
           editable: true,
           enabledValue: "-sSTACK_SIZE={value}"
@@ -242,12 +263,14 @@ export const refConfigData: RefConfigData = {
     },
     {
       name: "Filesystem Configuration",
+      nameZh: "文件系统配置",
       icon: icons.filesystem,
       options: [
         {
           option: "-sFILESYSTEM",
           default: "1",
           description: "Filesystem support (0 disabled, 1 enabled. Without this command, the compiler automatically optimizes based on code, so the default value may change unless explicitly specified.)",
+          descriptionZh: "文件系统支持（0 禁用，1 启用。不加该命令时，编译器自动根据代码进行优化因此默认值会发生变化除非显示指定。）",
           valueType: "number",
           editable: true,
           enabledValue: "-sFILESYSTEM={value}",
@@ -256,6 +279,7 @@ export const refConfigData: RefConfigData = {
           option: "-sFORCE_FILESYSTEM",
           default: "0",
           description: "Force include filesystem (0 disabled, 1 force include)",
+          descriptionZh: "强制包含文件系统（0 关闭，1 强制包含）",
           valueType: "number",
           editable: true,
           enabledValue: "-sFORCE_FILESYSTEM={value}",
@@ -266,6 +290,7 @@ export const refConfigData: RefConfigData = {
           option: "--preload-file",
           default: "''",
           description: "Preload files into virtual filesystem (generates .data file)",
+          descriptionZh: "预加载文件到虚拟文件系统（生成 .data 文件）",
           valueType: "string",
           editable: true,
           enabledValue: "--preload-file=\"{value}\""
@@ -274,6 +299,7 @@ export const refConfigData: RefConfigData = {
           option: "--embed-file",
           default: "''",
           description: "Embed files into JS/wasm (no additional files generated)",
+          descriptionZh: "嵌入文件到 JS/wasm 中（不生成额外文件）",
           valueType: "string",
           editable: true,
           enabledValue: "--embed-file=\"{value}\""
@@ -288,6 +314,7 @@ export const refConfigData: RefConfigData = {
           option: "-lembind",
           default: "false",
           description: "Link Embind library (C++ to JS binding)",
+          descriptionZh: "链接 Embind 库（C++ 与 JS 绑定）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-lembind"
@@ -296,6 +323,7 @@ export const refConfigData: RefConfigData = {
           option: "-sWASM_BIGINT",
           default: "1",
           description: "Support JS BigInt and i64 interoperability (0 disabled, 1 enabled)",
+          descriptionZh: "支持 JS BigInt 与 i64 互操作（0 禁用，1 启用）",
           valueType: "number",
           editable: true,
           enabledValue: "-sWASM_BIGINT={value}",
@@ -305,12 +333,14 @@ export const refConfigData: RefConfigData = {
     },
     {
       name: "WebAssembly Features",
+      nameZh: "WebAssembly 特性",
       icon: icons.wasm,
       options: [
         {
           option: "-sWASM",
           default: "1",
           description: "Output WebAssembly (0 outputs asm.js, 1 outputs wasm)",
+          descriptionZh: "输出 WebAssembly（0 输出 asm.js，1 输出 wasm）",
           valueType: "number",
           editable: true,
           enabledValue: "-sWASM={value}"
@@ -319,6 +349,7 @@ export const refConfigData: RefConfigData = {
           option: "-sWASM_ASYNC_COMPILATION",
           default: "1",
           description: "Asynchronous wasm compilation (0 synchronous, 1 asynchronous)",
+          descriptionZh: "异步编译 wasm（0 同步，1 异步）",
           valueType: "number",
           editable: true,
           enabledValue: "-sWASM_ASYNC_COMPILATION={value}"
@@ -327,6 +358,7 @@ export const refConfigData: RefConfigData = {
           option: "-sSTANDALONE_WASM",
           default: "false",
           description: "Generate standalone WASM file (minimize JS dependencies)",
+          descriptionZh: "生成独立的 WASM 文件（最小化 JS 依赖）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sSTANDALONE_WASM"
@@ -335,6 +367,7 @@ export const refConfigData: RefConfigData = {
           option: "-sIMPORT_MEMORY",
           default: "false",
           description: "Import memory from external source",
+          descriptionZh: "从外部导入内存",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sIMPORT_MEMORY"
@@ -343,6 +376,7 @@ export const refConfigData: RefConfigData = {
           option: "-sEXPORT_ALL",
           default: "false",
           description: "Export all symbols to Module object (for debugging)",
+          descriptionZh: "导出所有符号到 Module 对象（调试用）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sEXPORT_ALL"
@@ -351,12 +385,14 @@ export const refConfigData: RefConfigData = {
     },
     {
       name: "Multithreading Support",
+      nameZh: "多线程支持",
       icon: icons.advanced,
       options: [
         {
           option: "-pthread",
           default: "false",
           description: "Enable Pthreads multithreading (GCC standard flag)",
+          descriptionZh: "启用 Pthreads 多线程（GCC 标准标志）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-pthread"
@@ -365,6 +401,7 @@ export const refConfigData: RefConfigData = {
           option: "-sPTHREAD_POOL_SIZE",
           default: "0",
           description: "Thread pool size (0 means create on demand)",
+          descriptionZh: "线程池大小（0 表示按需创建）",
           valueType: "number",
           editable: true,
           enabledValue: "-sPTHREAD_POOL_SIZE={value}"
@@ -373,6 +410,7 @@ export const refConfigData: RefConfigData = {
           option: "-sPROXY_TO_PTHREAD",
           default: "false",
           description: "Run main() in pthread",
+          descriptionZh: "在 pthread 中运行 main()",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sPROXY_TO_PTHREAD"
@@ -381,12 +419,14 @@ export const refConfigData: RefConfigData = {
     },
     {
       name: "Exception Handling",
+      nameZh: "异常处理",
       icon: icons.exception,
       options: [
         {
           option: "-fexceptions",
           default: "false",
           description: "Enable C++ exceptions (Wasm native exception handling)",
+          descriptionZh: "启用 C++ 异常（Wasm 原生异常处理）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-fexceptions"
@@ -395,6 +435,7 @@ export const refConfigData: RefConfigData = {
           option: "-sDISABLE_EXCEPTION_CATCHING",
           default: "1",
           description: "Disable exception catching control (0 enables JS simulation, 1 disables, defaults to 1)",
+          descriptionZh: "禁用异常捕获控制（0 启用 JS 模拟，1 禁用，默认 1）",
           valueType: "number",
           editable: true,
           enabledValue: "-sDISABLE_EXCEPTION_CATCHING={value}",
@@ -404,6 +445,7 @@ export const refConfigData: RefConfigData = {
           option: "-sEXCEPTION_STACK_TRACES",
           default: "false",
           description: "Show stack trace on exceptions (defaults to true when ASSERTIONS=1)",
+          descriptionZh: "异常时显示堆栈跟踪（ASSERTIONS=1 时默认为 true）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sEXCEPTION_STACK_TRACES"
@@ -412,12 +454,14 @@ export const refConfigData: RefConfigData = {
     },
     {
       name: "Code Size Optimization",
+      nameZh: "代码体积优化",
       icon: icons.codeSize,
       options: [
         {
           option: "--closure",
           default: "0",
           description: "Use Closure Compiler to minify JS (0 disabled, 1 minify support code, 2 minify all)",
+          descriptionZh: "使用 Closure Compiler 压缩 JS（0 关闭，1 压缩支持代码，2 压缩全部）",
           valueType: "number",
           editable: true,
           enabledValue: "--closure {value}"
@@ -426,6 +470,7 @@ export const refConfigData: RefConfigData = {
           option: "--closure-args",
           default: "''",
           description: "Pass arguments to Closure Compiler",
+          descriptionZh: "传递参数给 Closure Compiler",
           valueType: "string",
           editable: true,
           enabledValue: "--closure-args=\"{value}\""
@@ -434,6 +479,7 @@ export const refConfigData: RefConfigData = {
           option: "-sIGNORE_MISSING_MAIN",
           default: "1",
           description: "No error when main function is missing (defaults to 1, pass 0 to explicitly disable)",
+          descriptionZh: "无 main 函数时不报错（默认 1，显式禁用传 0）",
           valueType: "number",
           editable: true,
           enabledValue: "-sIGNORE_MISSING_MAIN={value}",
@@ -443,6 +489,7 @@ export const refConfigData: RefConfigData = {
           option: "-sMALLOC",
           default: "dlmalloc",
           description: "Memory allocator (dlmalloc default, emmalloc smaller but slower, mimalloc better for multithreading)",
+          descriptionZh: "内存分配器（dlmalloc 默认，emmalloc 更小但慢，mimalloc 多线程更好）",
           valueType: "string",
           editable: true,
           enabledValue: "-sMALLOC=\"{value}\""
@@ -451,6 +498,7 @@ export const refConfigData: RefConfigData = {
           option: "-sEVAL_CTORS",
           default: "false",
           description: "Evaluate constructors at compile time (reduces runtime overhead)",
+          descriptionZh: "编译时执行构造函数（减少运行时开销）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sEVAL_CTORS"
@@ -459,6 +507,7 @@ export const refConfigData: RefConfigData = {
           option: "-sAGGRESSIVE_VARIABLE_ELIMINATION",
           default: "false",
           description: "Aggressive variable elimination",
+          descriptionZh: "激进的变量消除",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sAGGRESSIVE_VARIABLE_ELIMINATION"
@@ -467,12 +516,14 @@ export const refConfigData: RefConfigData = {
     },
     {
       name: "Optimization Level",
+      nameZh: "优化级别",
       icon: icons.optimization,
       options: [
         {
           option: "-O0",
           default: "true",
           description: "No optimization, fastest compilation, includes assertions (enabled by default)",
+          descriptionZh: "无优化，编译最快，包含断言（默认启用）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-O0",
@@ -482,6 +533,7 @@ export const refConfigData: RefConfigData = {
           option: "-O1",
           default: "false",
           description: "Basic optimization",
+          descriptionZh: "基础优化",
           valueType: "boolean",
           editable: false,
           enabledValue: "-O1",
@@ -491,6 +543,7 @@ export const refConfigData: RefConfigData = {
           option: "-O2",
           default: "false",
           description: "Standard optimization (recommended for release)",
+          descriptionZh: "标准优化（推荐用于发布）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-O2",
@@ -500,6 +553,7 @@ export const refConfigData: RefConfigData = {
           option: "-O3",
           default: "false",
           description: "Aggressive optimization (may increase code size)",
+          descriptionZh: "激进优化（可能增加代码体积）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-O3",
@@ -509,6 +563,7 @@ export const refConfigData: RefConfigData = {
           option: "-Os",
           default: "false",
           description: "Optimize for code size",
+          descriptionZh: "优化代码体积",
           valueType: "boolean",
           editable: false,
           enabledValue: "-Os",
@@ -518,6 +573,7 @@ export const refConfigData: RefConfigData = {
           option: "-Oz",
           default: "false",
           description: "Extreme code size compression",
+          descriptionZh: "极限压缩代码体积",
           valueType: "boolean",
           editable: false,
           enabledValue: "-Oz",
@@ -527,12 +583,14 @@ export const refConfigData: RefConfigData = {
     },
     {
       name: "Network & Web API",
+      nameZh: "网络与 Web API",
       icon: icons.network,
       options: [
         {
           option: "-sFETCH",
           default: "false",
           description: "Enable Fetch API support",
+          descriptionZh: "启用 Fetch API 支持",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sFETCH"
@@ -541,6 +599,7 @@ export const refConfigData: RefConfigData = {
           option: "-sWEBSOCKET_URL",
           default: "ws://",
           description: "WebSocket connection URL",
+          descriptionZh: "WebSocket 连接 URL",
           valueType: "string",
           editable: true,
           enabledValue: "-sWEBSOCKET_URL=\"{value}\""
@@ -549,6 +608,7 @@ export const refConfigData: RefConfigData = {
           option: "-sPROXY_POSIX_SOCKETS",
           default: "false",
           description: "Proxy POSIX sockets through WebSocket",
+          descriptionZh: "通过 WebSocket 代理 POSIX socket",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sPROXY_POSIX_SOCKETS"
@@ -557,12 +617,14 @@ export const refConfigData: RefConfigData = {
     },
     {
       name: "Library Support",
+      nameZh: "库支持",
       icon: icons.library,
       options: [
         {
           option: "-sUSE_SDL",
           default: "0",
           description: "Use SDL (2 for SDL2)",
+          descriptionZh: "使用 SDL（2 表示 SDL2）",
           valueType: "number",
           editable: true,
           enabledValue: "-sUSE_SDL={value}",
@@ -572,6 +634,7 @@ export const refConfigData: RefConfigData = {
           option: "-sUSE_ZLIB",
           default: "false",
           description: "Use zlib",
+          descriptionZh: "使用 zlib",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sUSE_ZLIB"
@@ -580,6 +643,7 @@ export const refConfigData: RefConfigData = {
           option: "-sUSE_LIBPNG",
           default: "false",
           description: "Use libpng",
+          descriptionZh: "使用 libpng",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sUSE_LIBPNG"
@@ -588,6 +652,7 @@ export const refConfigData: RefConfigData = {
           option: "-sUSE_FREETYPE",
           default: "false",
           description: "Use FreeType",
+          descriptionZh: "使用 FreeType",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sUSE_FREETYPE"
@@ -596,6 +661,7 @@ export const refConfigData: RefConfigData = {
           option: "-sUSE_BOOST_HEADERS",
           default: "false",
           description: "Use Boost headers",
+          descriptionZh: "使用 Boost 头文件",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sUSE_BOOST_HEADERS"
@@ -604,12 +670,14 @@ export const refConfigData: RefConfigData = {
     },
     {
       name: "Runtime Behavior",
+      nameZh: "运行时行为",
       icon: icons.runtime,
       options: [
         {
           option: "-sINVOKE_RUN",
           default: "true",
           description: "Automatically run main()",
+          descriptionZh: "自动运行 main()",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sINVOKE_RUN"
@@ -618,6 +686,7 @@ export const refConfigData: RefConfigData = {
           option: "-sEXIT_RUNTIME",
           default: "false",
           description: "Clean up runtime after main ends (calls atexit, etc.)",
+          descriptionZh: "main 结束后清理运行时（调用 atexit 等）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sEXIT_RUNTIME"
@@ -626,6 +695,7 @@ export const refConfigData: RefConfigData = {
           option: "-sNO_EXIT_RUNTIME",
           default: "false",
           description: "Prevent runtime exit (keep runtime alive)",
+          descriptionZh: "禁止运行时退出（保持运行时活跃）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sNO_EXIT_RUNTIME"
@@ -634,6 +704,7 @@ export const refConfigData: RefConfigData = {
           option: "-sMODULARIZE_INSTANCE",
           default: "false",
           description: "Export instance instead of factory function (use with MODULARIZE)",
+          descriptionZh: "导出实例而非工厂函数（配合 MODULARIZE）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sMODULARIZE_INSTANCE"
@@ -642,12 +713,14 @@ export const refConfigData: RefConfigData = {
     },
     {
       name: "Other Advanced Options",
+      nameZh: "其他高级选项",
       icon: icons.other,
       options: [
         {
           option: "-sSTRICT",
           default: "false",
           description: "Strict mode (check deprecated options, forward compatible)",
+          descriptionZh: "严格模式（检查废弃选项，向前兼容）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sSTRICT"
@@ -656,6 +729,7 @@ export const refConfigData: RefConfigData = {
           option: "-sVERBOSE",
           default: "false",
           description: "Verbose output of compilation process",
+          descriptionZh: "详细输出编译过程",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sVERBOSE"
@@ -664,6 +738,7 @@ export const refConfigData: RefConfigData = {
           option: "-sMIN_CHROME_VERSION",
           default: "85",
           description: "Minimum Chrome version (85 = released 2020-08)",
+          descriptionZh: "最低 Chrome 版本（85 = 2020-08 发布）",
           valueType: "number",
           editable: true,
           enabledValue: "-sMIN_CHROME_VERSION={value}"
@@ -672,6 +747,7 @@ export const refConfigData: RefConfigData = {
           option: "-sMIN_FIREFOX_VERSION",
           default: "79",
           description: "Minimum Firefox version (79 = released 2020-07)",
+          descriptionZh: "最低 Firefox 版本（79 = 2020-07 发布）",
           valueType: "number",
           editable: true,
           enabledValue: "-sMIN_FIREFOX_VERSION={value}"
@@ -680,6 +756,7 @@ export const refConfigData: RefConfigData = {
           option: "-sINCOMING_MODULE_JS_API",
           default: "[]",
           description: "Specify imported Module properties (empty means no Module properties used)",
+          descriptionZh: "指定导入的 Module 属性（空表示不使用任何Module属性）",
           valueType: "string-array",
           editable: true,
 enabledValue: "-sINCOMING_MODULE_JS_API=\"{value}\""
@@ -688,6 +765,7 @@ enabledValue: "-sINCOMING_MODULE_JS_API=\"{value}\""
           option: "-sAUTO_JS_LIBRARIES",
           default: "true",
           description: "Automatically link JS libraries",
+          descriptionZh: "自动链接 JS 库",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sAUTO_JS_LIBRARIES"
@@ -696,6 +774,7 @@ enabledValue: "-sINCOMING_MODULE_JS_API=\"{value}\""
           option: "-sLEGACY_VM_SUPPORT",
           default: "false",
           description: "Support legacy VMs (before iOS 11.2)",
+          descriptionZh: "支持旧版 VM（iOS 11.2 之前）",
           valueType: "boolean",
           editable: false,
           enabledValue: "-sLEGACY_VM_SUPPORT"
