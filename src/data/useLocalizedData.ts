@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { RefCategory, RefOption, SearchOption } from '@/types'
+import type { RefCategory, RefConfigData, RefOption, SearchOption } from '@/types'
 import { compileOptionsData as rawCompileOptionsData, optimizationLevels as rawOptimizationLevels } from './compileOptions'
 import { refConfigData as rawRefConfigData } from './refConfigData'
 import rawSearchOptions from './options.json'
@@ -45,7 +45,7 @@ export function useLocalizedOptimizationLevels() {
  */
 export function useRefConfigData() {
   const { locale } = useI18n()
-  return computed(() => {
+  return computed((): RefConfigData => {
     const isZhCN = locale.value === 'zh-CN'
     const localizedCategories: RefCategory[] = rawRefConfigData.categories.map(cat => ({
       ...cat,

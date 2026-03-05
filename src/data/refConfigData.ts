@@ -1,4 +1,4 @@
-import type { RefConfigData } from '@/types'
+import type { RefConfigDataRaw } from '@/types'
 
 /**
  * ============================================================================
@@ -70,7 +70,7 @@ const icons = {
  * - number: numeric type, default value is numeric string
  * - string: string type, default value is string
  */
-export const refConfigData: RefConfigData = {
+export const refConfigData: RefConfigDataRaw = {
   categories: [
     {
       name: "Output & Modularization",

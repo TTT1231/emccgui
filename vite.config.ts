@@ -20,5 +20,6 @@ export default defineConfig({
     outDir: 'dist-standalone',
     target: 'esnext',
     minify: 'esbuild'
-  }
+  },
+  publicDir: false
 })

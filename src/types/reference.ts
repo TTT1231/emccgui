@@ -37,16 +37,29 @@ export interface RefOption {
   dynamicDefault?: (optimizationLevel: string) => string
 }
 
-// 配置参考分类
-export interface RefCategory {
-  name: string // Display name (localized after processing by useRefConfigData)
-  nameZh?: string // Chinese name (raw data only)
+// 配置参考分类（原始数据，无 id）
+export interface RefCategoryRaw {
+  name: string // English name (used as stable identifier)
+  nameZh?: string // Chinese name
   icon: string
   options: RefOption[]
-  id: string // Stable identifier for selection (English name, added by useRefConfigData)
 }
 
-// 配置参考数据
+// 配置参考分类（处理后，包含必需的 id）
+export interface RefCategory {
+  id: string // Stable identifier for selection (English name)
+  name: string // Display name (localized after processing by useRefConfigData)
+  nameZh?: string // Chinese name (raw data only, kept for reference)
+  icon: string
+  options: RefOption[]
+}
+
+// 配置参考数据（原始）
+export interface RefConfigDataRaw {
+  categories: RefCategoryRaw[]
+}
+
+// 配置参考数据（处理后）
 export interface RefConfigData {
   categories: RefCategory[]
 }
