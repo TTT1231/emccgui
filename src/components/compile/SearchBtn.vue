@@ -39,12 +39,6 @@ function highlightMatch(text: string, query: string): string {
   const escapedText = escapeHtml(text)
   const chars = query.toLowerCase().split('')
 
-  // 构建正则：匹配每个字符，中间可以有任意字符
-  const pattern = chars.map(c => {
-    const escaped = c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    return `(${escaped})`
-  }).join('.*?')
-
   const regex = new RegExp(`(${chars.map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*?')})`, 'gi')
 
   return escapedText.replace(regex, '<mark class="search-highlight">$1</mark>')

@@ -88,13 +88,3 @@ export function parseCommand(command: string): { name: string; value: string | u
   }
   return { name: command, value: undefined }
 }
-
-/**
- * 将命令名和值组合成完整命令字符串
- */
-export function buildCommand(name: string, value?: string): string{
-  if (value === undefined){
-    return name
-  }
-  return `${name}=${value}`
-}

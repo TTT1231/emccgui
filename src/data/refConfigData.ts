@@ -146,7 +146,7 @@ export const refConfigData: RefConfigData = {
           description: "Specify exported C/C++ functions (comma-separated, requires _ prefix, e.g., _main,_hello)",
           descriptionZh: "指定导出的 C/C++ 函数（逗号分隔，需加 _ 前缀，如 _main,_hello）",
           valueType: "string-array",
-          editable: true,
+          editable: false,
           enabledValue: "-sEXPORTED_FUNCTIONS=\"{value}\""
         },
         {
@@ -155,7 +155,7 @@ export const refConfigData: RefConfigData = {
           description: "Export runtime helper methods (comma-separated, e.g., ccall,cwrap)",
           descriptionZh: "导出运行时辅助方法（逗号分隔，如 ccall,cwrap）",
           valueType: "string-array",
-          editable: true,
+          editable: false,
           enabledValue: "-sEXPORTED_RUNTIME_METHODS=\"{value}\""
         }
       ]
