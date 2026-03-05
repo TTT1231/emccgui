@@ -1,7 +1,10 @@
 ﻿<script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { RefOption } from '@/types'
 import { useCompileStore } from '@/stores/useCompileStore'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   option: RefOption
@@ -24,12 +27,12 @@ const isCompileContrib = computed(() =>
  * 例如 `-g` 选项由 debug 选项激活，currentValue='3' → 显示 `-g3`
  */
 const compileContribDisplayValue = computed(() => {
-  if (!isCompileContrib.value) return '已启用'
+  if (!isCompileContrib.value) return t('reference.enabled')
   // 找到对应的 compileOption（cmdPrefix+cmdName 匹配 option 字段）
   const matchedOpt = store.compileOptions.find(
     o => `${o.cmdPrefix}${o.cmdName}` === props.option.option
   )
-  if (!matchedOpt) return 'Enabled'
+  if (!matchedOpt) return t('reference.enabled')
   // 有 {value} 占位符的选项，只显示当前值本身，不展示完整命令行
   if (matchedOpt.enabledValue?.includes('{value}')) {
     const raw = String(matchedOpt.currentValue ?? matchedOpt.defaultValue ?? '')

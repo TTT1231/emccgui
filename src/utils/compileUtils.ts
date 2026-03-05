@@ -1,66 +1,6 @@
 import type { CompileOptionState, OptionConflict, OutputFormat, ConflictInfo } from '@/types'
 import { isOptionReallyEnabled } from './commandUtils'
 
-// 注：此函数已被 getActiveConflicts 替代
-export function getConflictedOptions(
-  outputFormat: OutputFormat,
-  options: readonly CompileOptionState[],
-  optionConflicts: OptionConflict[]
-): Set<string> {
-  const conflictedKeys = new Set<string>()
-
-  // 1. 纯 WASM 输出模式下，所有 jsWasmOnly 选项都无效
-  if (outputFormat === 'wasm-only') {
-    for (const opt of options) {
-      if (opt.jsWasmOnly && isOptionReallyEnabled(opt, options)) {
-        conflictedKeys.add(opt.key)
-      }
-    }
-  }
-
-  // 2. 检查启用的选项是否触发冲突规则
-  for (const conflict of optionConflicts) {
-    const triggerOpt = options.find(opt => opt.key === conflict.triggerKey)
-    if (!triggerOpt?.enabled) continue
-    for (const conflictKey of conflict.conflictsWith) {
-      const conflictOpt = options.find(opt => opt.key === conflictKey)
-      if (conflictOpt && isOptionReallyEnabled(conflictOpt, options)) {
-        conflictedKeys.add(conflictKey)
-      }
-    }
-  }
-
-  return conflictedKeys
-}
-
-/**
- * 获取冲突描述信息
- */
-export function getConflictReason(
-  optionKey: string,
-  outputFormat: OutputFormat,
-  options: readonly CompileOptionState[],
-  optionConflicts: OptionConflict[]
-): string | null {
-  const opt = options.find(o => o.key === optionKey)
-  if (!opt) return null
-
-  // 检查纯 WASM 模式冲突
-  if (outputFormat === 'wasm-only' && opt.jsWasmOnly && isOptionReallyEnabled(opt, options)) {
-    return '此选项需要 JavaScript glue 代码，纯 WASM 模式下不生成 JS 文件'
-  }
-
-  // 检查选项间冲突规则
-  for (const conflict of optionConflicts) {
-    const triggerOpt = options.find(o => o.key === conflict.triggerKey)
-    if (triggerOpt?.enabled && conflict.conflictsWith.includes(optionKey)) {
-      return conflict.reason
-    }
-  }
-
-  return null
-}
-
 // 生成完整命令字符串辅助函数
 export { formatCommandLine } from './commandUtils'
 

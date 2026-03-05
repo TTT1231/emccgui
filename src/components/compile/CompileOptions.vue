@@ -6,7 +6,7 @@ import { useCompileStore } from '@/stores/useCompileStore'
 import { useLocalizedOptimizationLevels } from '@/data/useLocalizedData'
 import SearchBtn from './SearchBtn.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const store = useCompileStore()
 
 // Localized optimization levels
@@ -38,7 +38,6 @@ const localizedOptionsWithSelect = computed(() => {
 })
 
 // Get localized hint for runtime method
-const { locale } = useI18n()
 const getLocalizedHint = (method: { hint: string; hintZh?: string }) => {
   return locale.value === 'zh-CN' && method.hintZh ? method.hintZh : method.hint
 }
