@@ -43,7 +43,7 @@ export interface RefCategory {
   nameZh?: string // Chinese name (raw data only)
   icon: string
   options: RefOption[]
-  id?: string // Stable identifier for selection (English name, added by useRefConfigData)
+  id: string // Stable identifier for selection (English name, added by useRefConfigData)
 }
 
 // 配置参考数据
