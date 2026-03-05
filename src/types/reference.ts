@@ -39,10 +39,11 @@ export interface RefOption {
 
 // 配置参考分类
 export interface RefCategory {
-  name: string // English name
-  nameZh?: string // Chinese name
+  name: string // Display name (localized after processing by useRefConfigData)
+  nameZh?: string // Chinese name (raw data only)
   icon: string
   options: RefOption[]
+  id?: string // Stable identifier for selection (English name, added by useRefConfigData)
 }
 
 // 配置参考数据

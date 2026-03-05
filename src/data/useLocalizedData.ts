@@ -39,6 +39,9 @@ export function useLocalizedOptimizationLevels() {
  * Localized reference data with translated categories and descriptions
  * Uses nameZh/descriptionZh fields when locale is zh-CN
  * MUST be called from within a component setup function
+ *
+ * Note: Each category gets an `id` field (stable English name) for consistent
+ * identification across language switches, while `name` becomes the display name.
  */
 export function useRefConfigData() {
   const { locale } = useI18n()
@@ -46,7 +49,8 @@ export function useRefConfigData() {
     const isZhCN = locale.value === 'zh-CN'
     const localizedCategories: RefCategory[] = rawRefConfigData.categories.map(cat => ({
       ...cat,
-      name: isZhCN && cat.nameZh ? cat.nameZh : cat.name,
+      id: cat.name, // Stable identifier (always English)
+      name: isZhCN && cat.nameZh ? cat.nameZh : cat.name, // Localized display name
       options: cat.options.map((opt: RefOption) => ({
         ...opt,
         description: isZhCN && opt.descriptionZh ? opt.descriptionZh : opt.description,

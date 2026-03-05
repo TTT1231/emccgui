@@ -48,7 +48,7 @@ const filteredCategories = computed(() => {
   // 正常分类过滤
   return refConfigData.value.categories
     .map((category): RefCategory | null => {
-      if (activeCategory !== 'all' && category.name !== activeCategory) {
+      if (activeCategory !== 'all' && category.id !== activeCategory) {
         return null
       }
 
@@ -90,12 +90,12 @@ function selectCategory(categoryName: string) {
       </button>
       <button
         v-for="cat in refConfigData.categories"
-        :key="cat.name"
+        :key="cat.id"
         class="ref-category-chip"
-        :class="{ active: store.refActiveCategory === cat.name }"
+        :class="{ active: store.refActiveCategory === cat.id }"
         role="tab"
-        :aria-selected="store.refActiveCategory === cat.name"
-        @click="selectCategory(cat.name)"
+        :aria-selected="store.refActiveCategory === cat.id"
+        @click="selectCategory(cat.id)"
       >
         {{ cat.name }}
       </button>
