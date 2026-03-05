@@ -31,9 +31,14 @@ const localizedOptionsWithInput = computed(() => {
 })
 
 const localizedOptionsWithSelect = computed(() => {
+  const isZhCN = locale.value === 'zh-CN'
   return store.optionsWithSelect.map(opt => ({
     ...opt,
     hint: opt.hintKey ? t(`hints.${opt.hintKey}`) : opt.hint,
+    selectOptions: opt.selectOptions?.map(selectOpt => ({
+      ...selectOpt,
+      label: isZhCN && selectOpt.labelZh ? selectOpt.labelZh : selectOpt.label,
+    })),
   }))
 })
 

@@ -8,6 +8,48 @@ import { useSearchOptions } from '@/data/useLocalizedData'
 const { t } = useI18n()
 const localizedOptions = useSearchOptions()
 
+// ===== 搜索高亮 =====
+/**
+ * 获取当前搜索词（@ 符号后面的部分）
+ */
+const searchQuery = computed(() => {
+  const triggerIndex = searchValue.value.lastIndexOf(triggerChar)
+  if (triggerIndex === -1) return ''
+  return searchValue.value.slice(triggerIndex + 1).trim()
+})
+
+/**
+ * 转义 HTML 特殊字符，防止 XSS
+ */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+/**
+ * 高亮文本中匹配搜索关键词的部分（模糊匹配高亮）
+ */
+function highlightMatch(text: string, query: string): string {
+  if (!query) return escapeHtml(text)
+
+  const escapedText = escapeHtml(text)
+  const chars = query.toLowerCase().split('')
+
+  // 构建正则：匹配每个字符，中间可以有任意字符
+  const pattern = chars.map(c => {
+    const escaped = c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    return `(${escaped})`
+  }).join('.*?')
+
+  const regex = new RegExp(`(${chars.map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*?')})`, 'gi')
+
+  return escapedText.replace(regex, '<mark class="search-highlight">$1</mark>')
+}
+
 // 接收已存在的自定义命令列表
 const props = defineProps<{
   existingCommands?: string[]
@@ -306,9 +348,9 @@ const handleFocus = () => {
               <div class="suggestion-content">
                 <div class="suggestion-left">
                   <div class="suggestion-option">
-                    <span class="option-name">{{ option.option }}</span>
+                    <span class="option-name" v-html="highlightMatch(option.option, searchQuery)"></span>
                   </div>
-                  <div class="suggestion-desc">{{ option.descri }}</div>
+                  <div class="suggestion-desc" v-html="highlightMatch(option.descri, searchQuery)"></div>
                 </div>
                 <div class="suggestion-right">
                   <span class="default-value">{{
@@ -773,5 +815,44 @@ const handleFocus = () => {
 .feedback-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+
+/* ===== 搜索高亮 ===== */
+/* 暗黑模式 - 霓虹青绿色（开发者工具风格） */
+:deep(.search-highlight) {
+  background: rgba(34, 211, 238, 0.35);
+  color: #22d3ee;
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-weight: 600;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.3);
+}
+
+/* active 状态下的高亮 - 白色背景用深色文字 */
+.suggestion-item.active :deep(.search-highlight) {
+  background: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  text-shadow: none;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+/* 亮色模式 - 记号笔风格（明黄色背景 + 黑色文字）*/
+[data-theme='light'] :deep(.search-highlight) {
+  background: rgba(250, 204, 21, 0.6);
+  color: #1a1a1a;
+  padding: 1px 3px;
+  border-radius: 2px;
+  font-weight: 700;
+  text-shadow: none;
+  box-shadow: none;
+}
+
+/* 亮色模式 active 状态 - 蓝色主题高亮 */
+[data-theme='light'] .suggestion-item.active :deep(.search-highlight) {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--accent);
+  font-weight: 700;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);
 }
 </style>

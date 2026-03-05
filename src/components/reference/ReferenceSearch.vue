@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { useCompileStore } from '@/stores/useCompileStore'
 
+const { t } = useI18n()
 const store = useCompileStore()
 
 function handleInput(event: Event) {
@@ -24,7 +26,7 @@ function clearSearch() {
         type="text"
         class="ref-search-input"
         :value="store.refSearchQuery"
-        placeholder="Search configuration options..."
+        :placeholder="t('reference.searchPlaceholder')"
         @input="handleInput"
       />
       <button

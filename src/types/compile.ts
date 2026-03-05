@@ -11,6 +11,7 @@ export type ConflictType = 'wasm-only' | 'side-module'
 export interface SelectOption {
   value: string
   label: string
+  labelZh?: string // Chinese label
 }
 
 // 编译选项定义（静态数据）

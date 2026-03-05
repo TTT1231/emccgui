@@ -246,10 +246,10 @@ export const compileOptionsData: CompileOptionDef[] = [
     currentValue: '3',
     formatType: 'arg',
     selectOptions: [
-      { value: '1', label: '-g1 (Preserve whitespace)' },
-      { value: '2', label: '-g2 (Preserve function names)' },
-      { value: '3', label: '-g3 (Preserve DWARF)' },
-      { value: '4', label: '-g4 (Include source code)' }
+      { value: '1', label: '-g1 (Preserve whitespace)', labelZh: '-g1（保留空白）' },
+      { value: '2', label: '-g2 (Preserve function names)', labelZh: '-g2（保留函数名）' },
+      { value: '3', label: '-g3 (Preserve DWARF)', labelZh: '-g3（保留 DWARF）' },
+      { value: '4', label: '-g4 (Include source code)', labelZh: '-g4（包含源代码）' }
     ],
     enabledValue: '-g{value}',
     hint: 'Generate debug info: -g1 preserve whitespace, -g2 preserve function names, -g3 preserve DWARF, -g4 include source code',
@@ -280,8 +280,8 @@ export const compileOptionsData: CompileOptionDef[] = [
     currentValue: '1',
     formatType: 'flag',
     selectOptions: [
-      { value: '1', label: '=1 (Basic assertions)' },
-      { value: '2', label: '=2 (Detailed assertions)' }
+      { value: '1', label: '=1 (Basic assertions)', labelZh: '=1（基本断言）' },
+      { value: '2', label: '=2 (Detailed assertions)', labelZh: '=2（详细断言）' }
     ],
     enabledValue: '-sASSERTIONS={value}',
     hint: 'Enable runtime assertion checks: =1 basic, =2 detailed (increases size)',

@@ -3,8 +3,10 @@ import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RefOption } from '@/types'
 import { useCompileStore } from '@/stores/useCompileStore'
+import { useHighlight } from '@/composables'
 
 const { t } = useI18n()
+const { highlightText } = useHighlight()
 
 const props = defineProps<{
   option: RefOption
@@ -152,11 +154,11 @@ function handleCurrentDblClick(event: MouseEvent) {
     <div class="option-name">
       <span v-if="isCompileContrib" class="check-icon compile-contrib-icon" title="Enabled in compile panel">⊕</span>
       <span v-else-if="isSelected" class="check-icon">✓</span>
-      <span class="option-name-text">{{ option.option }}</span>
+      <span class="option-name-text" v-html="highlightText(option.option)"></span>
     </div>
 
     <!-- 说明 -->
-    <div class="option-desc">{{ option.description }}</div>
+    <div class="option-desc" v-html="highlightText(option.description)"></div>
 
     <!-- 类型 -->
     <div class="option-type" :class="`type-${option.valueType}`">{{ option.valueType === 'string-array' ? 'string | []' : option.valueType }}</div>
@@ -192,9 +194,9 @@ function handleCurrentDblClick(event: MouseEvent) {
           />
         </template>
         <template v-else>
-          <span v-if="displayValue === ''" class="value-placeholder">Double-click to input</span>
+          <span v-if="displayValue === ''" class="value-placeholder">{{ t('reference.doubleClickToInput') }}</span>
           <span v-else class="value-text" :title="String(displayValue)">{{ displayValue }}</span>
-          <span v-if="option.editable" class="edit-hint">Double-click to edit</span>
+          <span v-if="option.editable" class="edit-hint">{{ t('reference.doubleClickToEdit') }}</span>
         </template>
       </template>
       <template v-else>
@@ -520,5 +522,25 @@ function handleCurrentDblClick(event: MouseEvent) {
 
 [data-theme="light"] .option-current:not(.selected) {
   border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 搜索高亮 - 暗黑模式（默认） */
+:deep(.highlight) {
+  background: rgba(251, 191, 36, 0.35);
+  color: #fbbf24;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.3);
+}
+
+/* 搜索高亮 - 亮色模式 */
+[data-theme="light"] :deep(.highlight) {
+  background: rgba(251, 191, 36, 0.5);
+  color: #92400e;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4);
 }
 </style>
