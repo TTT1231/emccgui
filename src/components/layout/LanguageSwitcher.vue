@@ -9,7 +9,7 @@ function toggleLocale() {
   setLocale(newLocale)
 }
 
-const localeLabel = computed(() => currentLocale.value === 'en' ? '中文' : 'EN')
+const localeLabel = computed(() => currentLocale.value === 'en' ? 'EN' : '中文')
 </script>
 
 <template>
