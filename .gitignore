@@ -25,3 +25,6 @@ dist-ssr
 
 # Packaged single file 
 dist-standalone
+
+# Claude Code local settings
+.claude/settings.local.json

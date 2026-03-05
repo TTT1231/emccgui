@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "release": "bash scripts/release.sh"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.0",
