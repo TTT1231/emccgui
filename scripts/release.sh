@@ -31,9 +31,13 @@ if ! grep -q "## $VERSION_NUM" CHANGELOG.md; then
     exit 1
 fi
 
+# Update package.json version
+echo "📝 Updating package.json version to $VERSION_NUM..."
+pnpm version "$VERSION_NUM" --no-git-tag-version --allow-same-version
+
 # Build the project
 echo "📦 Building project..."
-npm run build
+pnpm build
 
 # Check if dist-standalone/index.html exists
 if [ ! -f "dist-standalone/index.html" ]; then
@@ -64,5 +68,12 @@ $CHANGELOG_SECTION
 " \
     dist-standalone/index.html
 
+# Commit version update
+echo "📋 Committing version update..."
+git add package.json
+git commit -m "chore: bump version to $VERSION_NUM"
+
 echo "✅ Release $VERSION created successfully!"
 echo "🔗 https://github.com/TTT1231/emccgui/releases/tag/$VERSION"
+echo ""
+echo "⚠️  Don't forget to push: git push origin main"
